@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Quantum_Count.Client/Quantum_Count.Client.csproj" />
+  <Project Path="Quantum_Count/Quantum_Count.csproj" />
+</Solution>
