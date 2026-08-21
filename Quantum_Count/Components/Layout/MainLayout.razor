@@ -1,96 +1,250 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="@_theme"/>
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <MudLayout>
-    <MudAppBar Elevation="1">
-        <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
+    <MudAppBar Elevation="1" Color="Color.Transparent" Class="quantum-appbar">
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert"Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu />
+    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive"Breakpoint="Breakpoint.Md" ClipMode="DrawerClipMode.Never"
+               Elevation="1" Width="270px" Class="quantum-drawer">
+        <div class="drawer-header">
+            <div class="brand-container">
+                <div class="brand-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Medium" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h6" Class="brand-title">
+                        Quantum Count
+                    </MudText>
+                    <MudText Typo="Typo.caption" Class="brand-subtitle">
+                        Inventory Management
+                    </MudText>
+                </div>
+            </div>
+        </div>
+        <div class="drawer-search">
+            <MudTextField @bind-Value="_searchText" Placeholder="Search..." Variant="Variant.Outlined"
+                          Margin="Margin.Dense" Adornment="Adornment.Start"AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true" Clearable="true" Class="search-field" />
+        </div>
+        <div class="drawer-navigation">
+            <NavMenu SearchText="@_searchText" />
+        </div>
+        <div class="drawer-bottom">
+            <MudDivider Class="drawer-divider" />
+            <MudNavLink Href="/settings"
+                        Icon="@Icons.Material.Filled.Settings"
+                        Match="NavLinkMatch.Prefix">
+                        Settings
+            </MudNavLink>
+        </div>
     </MudDrawer>
-    <MudMainContent Class="pt-16 pa-4">
-        @Body
+    <MudMainContent Class="quantum-main-content">
+        <div class="quantum-page-container">
+            @Body
+        </div>
     </MudMainContent>
 </MudLayout>
-
-
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <a href="." class="reload">
+        Reload
+    </a>
+    <span class="dismiss">
+        🗙
+    </span>
 </div>
-
+<style>
+    *{
+        font-family:"Poppins";
+    }
+    .quantum-appbar {
+        background: #ffffff !important;
+        color: #111111 !important;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .quantum-brand {
+        font-weight: 700;
+        letter-spacing: -0.3px;
+    }
+    .drawer-toggle {
+        margin-right: 6px;
+    }
+    .theme-toggle {
+        margin-right: 8px;
+    }
+    .quantum-drawer {
+        background: #090909 !important;
+        color: #ffffff;
+    }
+        .quantum-drawer .mud-drawer-content {
+            background: #090909 !important;
+        }
+    .drawer-header {
+        padding: 22px 18px 18px 18px;
+    }
+    .brand-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .brand-icon {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #009b72;
+        color: white;
+        border-radius: 10px;
+    }
+    .brand-title {
+        color: #ffffff !important;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+    .brand-subtitle {
+        color: #9ca3af !important;
+        font-size: 11px;
+    }
+    .drawer-search {
+        padding: 4px 14px 16px 14px;
+    }
+    .search-field .mud-input-control-input-container {
+        background: #171717;
+    }
+    .search-field .mud-input-outlined-border {
+        border-color: #303030 !important;
+    }
+    .search-field .mud-input {
+        color: #ffffff !important;
+    }
+    .search-field input::placeholder {
+        color: #8c8c8c !important;
+        opacity: 1;
+    }
+    .search-field .mud-input-adornment {
+        color: #ffffff !important;
+    }
+    .search-field .mud-icon-root {
+        color: #ffffff !important;
+    }
+    .drawer-navigation {
+        padding: 0 10px;
+    }
+    .quantum-drawer .mud-nav-link {
+        color: #d1d5db !important;
+        border-radius: 9px;
+        margin: 4px 0;
+        min-height: 46px;
+        padding-left: 14px;
+        padding-right: 14px;
+        transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+        .quantum-drawer .mud-nav-link:hover {
+            background: #171717 !important;
+            color: #ffffff !important;
+        }
+        .quantum-drawer .mud-nav-link.active {
+            background: #009b72 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0, 155, 114, 0.18);
+        }
+            .quantum-drawer .mud-nav-link.active:hover {
+                background: #00a77a !important;
+                color: #ffffff !important;
+            }
+        .quantum-drawer .mud-nav-link .mud-nav-link-icon {
+            color: inherit !important;
+        }
+    .drawer-bottom {
+        margin-top: auto;
+        padding: 10px;
+    }
+    .drawer-divider {
+        border-color: #292929 !important;
+        margin-bottom: 8px;
+    }
+    .theme-button {
+        justify-content: flex-start;
+        color: #bdbdbd !important;
+        border-radius: 9px;
+        padding: 10px 14px;
+        margin-top: 3px;
+    }
+        .theme-button:hover {
+            background: #171717 !important;
+            color: #ffffff !important;
+        }
+    .quantum-main-content {
+        min-height: calc(100vh - 64px);
+        background: var(--mud-palette-background);
+    }
+    .quantum-page-container {
+        width: 100%;
+        min-height: calc(100vh - 64px);
+    }
+    #blazor-error-ui {
+        background: #ffebee;
+        color: #b71c1c;
+        bottom: 0;
+        box-shadow: 0 -1px 4px rgba(0,0,0,.2);
+        display: none;
+        left: 0;
+        padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+    }
+        #blazor-error-ui .dismiss {
+            cursor: pointer;
+            position: absolute;
+            right: 0.75rem;
+            top: 0.5rem;
+        }
+    @@media (max-width: 960px) {
+        .quantum-brand {
+            font-size: 17px;
+        }
+        .quantum-page-container {
+            padding: 0;
+        }
+    }
+</style>
 @code {
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true;
-    private MudTheme? _theme = null;
-
+    private string _searchText = string.Empty;
+    private MudTheme? _theme;
     protected override void OnInitialized()
     {
-        base.OnInitialized();
-
-        _theme = new()
+        _theme = new MudTheme
         {
             PaletteLight = _lightPalette,
-            PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
         };
     }
-
     private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
-
-    private void DarkModeToggle()
-    {
-        _isDarkMode = !_isDarkMode;
-    }
-
     private readonly PaletteLight _lightPalette = new()
     {
-        Black = "#110e2d",
-        AppbarText = "#424242",
-        AppbarBackground = "rgba(255,255,255,0.8)",
-        DrawerBackground = "#ffffff",
+        Primary = "#0066CC",
+        Black = "#111111",
+        AppbarText = "#111111",
+        AppbarBackground = "#ffffff",
+        Background = "#f7f8fa",
+        Surface = "#ffffff",
+        DrawerBackground = "#090909",
+        TextPrimary = "#111111",
+        TextSecondary = "#666666",
         GrayLight = "#e8e8e8",
-        GrayLighter = "#f9f9f9",
-    };
-
-    private readonly PaletteDark _darkPalette = new()
-    {
-        Primary = "#7e6fff",
-        Surface = "#1e1e2d",
-        Background = "#1a1a27",
-        BackgroundGray = "#151521",
-        AppbarText = "#92929f",
-        AppbarBackground = "rgba(26,26,39,0.8)",
-        DrawerBackground = "#1a1a27",
-        ActionDefault = "#74718e",
-        ActionDisabled = "#9999994d",
-        ActionDisabledBackground = "#605f6d4d",
-        TextPrimary = "#b2b0bf",
-        TextSecondary = "#92929f",
-        TextDisabled = "#ffffff33",
-        DrawerIcon = "#92929f",
-        DrawerText = "#92929f",
-        GrayLight = "#2a2833",
-        GrayLighter = "#1e1e2d",
-        Info = "#4a86ff",
-        Success = "#3dcb6c",
-        Warning = "#ffb545",
-        Error = "#ff3f5f",
-        LinesDefault = "#33323e",
-        TableLines = "#33323e",
-        Divider = "#292838",
-        OverlayLight = "#1e1e2d80",
-    };
-
-    public string DarkLightModeButtonIcon => _isDarkMode switch
-    {
-        true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode,
+        GrayLighter = "#f5f5f5",
+        Divider = "#e5e7eb"
     };
 }
-
-
