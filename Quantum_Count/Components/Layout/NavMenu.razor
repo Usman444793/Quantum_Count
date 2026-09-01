@@ -3,7 +3,7 @@
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "dashboard".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/"
+        <MudNavLink Href="/dashboard"
                     Match="NavLinkMatch.All"
                     Icon="@Icons.Material.Filled.Dashboard">
             Dashboard

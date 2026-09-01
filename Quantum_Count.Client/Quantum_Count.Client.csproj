@@ -1,18 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+	<TargetFramework>net10.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+	<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+	<BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
-    <PackageReference Include="MudBlazor" Version="9.*" />
+	<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+	<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.11" />
+	<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
+	<PackageReference Include="MudBlazor" Version="9.*" />
+	<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Folder Include="Pages\" />
   </ItemGroup>
 
 </Project>

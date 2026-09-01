@@ -2,18 +2,18 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-namespace Quantum_Count.Client.Services;
+namespace Quantum_Count.Services;
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
-    private readonly LocalStorageService _localStorage;
+    private readonly ITokenStorage _localStorage;
     private static readonly ClaimsPrincipal Anonymous =new(new ClaimsIdentity());
-    public CustomAuthStateProvider(LocalStorageService localStorage)
+    public CustomAuthStateProvider(ITokenStorage localStorage)
     {
         _localStorage = localStorage;
     }
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var token = await _localStorage.GetItemAsync("quantum_auth_token");
+        var token = await _localStorage.GetItemAsync("authToken");
         if (string.IsNullOrWhiteSpace(token))
         {
             return new AuthenticationState(Anonymous);
@@ -23,13 +23,13 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     }
     public async Task MarkUserAsAuthenticated(string token)
     {
-        await _localStorage.SetItemAsync("quantum_auth_token",token);
+        await _localStorage.SetItemAsync("authToken",token);
         var user = CreateClaimsPrincipal(token);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
     }
     public async Task MarkUserAsLoggedOut()
     {
-        await _localStorage.RemoveItemAsync("quantum_auth_token");
+        await _localStorage.RemoveItemAsync("authToken");
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(Anonymous)));
     }
     private ClaimsPrincipal CreateClaimsPrincipal(string token)

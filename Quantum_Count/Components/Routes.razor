@@ -1,20 +1,67 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Quantum_Count.Client.Pages
+@using Quantum_Count.Components.Layout
+@using Quantum_Count.Components.Pages
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
+
         <Found Context="routeData">
+
             <AuthorizeRouteView
                 RouteData="@routeData"
                 DefaultLayout="@typeof(MainLayout)">
+
                 <NotAuthorized>
+
                     <RedirectToLogin />
+
                 </NotAuthorized>
+
+                <Authorizing>
+
+                    <div class="authorization-loading">
+
+                        <div class="authorization-spinner"></div>
+
+                        <span>Checking authentication...</span>
+
+                    </div>
+
+                </Authorizing>
+
             </AuthorizeRouteView>
+
+            <FocusOnNavigate
+                RouteData="@routeData"
+                Selector="h1" />
+
         </Found>
+
         <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <h1>Page not found</h1>
+
+            <LayoutView
+                Layout="@typeof(PublicLayout)">
+
+                <div class="not-found-page">
+
+                    <div class="not-found-code">
+                        404
+                    </div>
+
+                    <h1>Page not found</h1>
+
+                    <p>
+                        The page you're looking for doesn't exist.
+                    </p>
+
+                    <a href="/" class="not-found-button">
+                        Return to Quantum Count
+                    </a>
+
+                </div>
+
             </LayoutView>
+
         </NotFound>
+
     </Router>
 </CascadingAuthenticationState>

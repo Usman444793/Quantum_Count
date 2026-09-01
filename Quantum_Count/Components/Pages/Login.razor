@@ -1,0 +1,183 @@
+﻿@page "/login"
+@layout PublicLayout
+@using Quantum_Count.DTO
+@using Quantum_Count.Services
+@using Microsoft.JSInterop
+@using System.Collections.Generic
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+<PageTitle>Login - Quantum Count</PageTitle>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">QC</div>
+        <h1>Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to Quantum Count</p>
+        <form method="post" action="/api/auth/login-form" class="login-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input id="email" name="Email" class="form-input" placeholder="Enter your email" required />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="Password" type="password" class="form-input" placeholder="Enter your password" required />
+            </div>
+            <button type="submit" class="auth-button">Sign In</button>
+        </form>
+
+        @if (showError)
+        {
+            <div class="error-message">@errorText</div>
+        }
+
+        <div class="auth-footer">
+            <span>Don't have an account?</span>
+            <a href="/register">Create account</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 64px);
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 20px;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .auth-logo {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0f766e, #14b8a6);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 24px;
+    }
+
+    .auth-card h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 8px 0;
+    }
+
+    .auth-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0 0 24px 0;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #111827;
+        font-family: "Poppins", sans-serif;
+        transition: border-color 0.2s ease;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0f766e;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+    .auth-button {
+        width: 100%;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #0f766e, #14b8a6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+        margin-top: 24px;
+        font-family: "Poppins", sans-serif;
+    }
+
+        .auth-button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .error-message {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+    }
+
+        .auth-footer span {
+            color: #64748b;
+        }
+
+        .auth-footer a {
+            color: #0f766e;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+
+            .auth-footer a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+@code {
+    private bool showError;
+    private string errorText = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var val))
+        {
+            showError = true;
+            errorText = val == "invalid" ? "Invalid email or password." : "Authentication error.";
+        }
+    }
+}

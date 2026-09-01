@@ -8,17 +8,21 @@
     <ResourcePreloader />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
+    <!-- CDN fallback for MudBlazor (matches local package if assets missing) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mudblazor@9.9.0/MudBlazor.min.css" />
+    <link rel="stylesheet" href="css/site.css" />
     <link rel="stylesheet" href="@Assets["Quantum_Count.styles.css"]" />
     <ImportMap />
     <link rel="icon" type="image/ico" href="favicon.ico" />
     <HeadOutlet />
 </head>
-
 <body>
+    <MudPopoverProvider />
     <Routes />
     <ReconnectModal />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_framework/blazor.server.js"]"></script>
     <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mudblazor@9.9.0/MudBlazor.min.js"></script>
+    <script src="/js/formSubmit.js"></script>
 </body>
-
 </html>

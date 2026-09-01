@@ -1,4 +1,5 @@
-﻿namespace Quantum_Count.DTOs;
+﻿namespace Quantum_Count.DTO;
+
 public class AuthResponse
 {
     public string Token { get; set; } = string.Empty;

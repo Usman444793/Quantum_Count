@@ -1,0 +1,103 @@
+﻿@page "/"
+@layout PublicLayout
+<PageTitle>Quantum Count - Inventory Management</PageTitle>
+<div class="landing-page">
+    <header class="landing-header">
+        <div class="brand">
+            <div class="brand-icon">QC</div>
+            <div>
+                <div class="brand-name">Quantum Count</div>
+                <div class="brand-subtitle">Inventory Management</div>
+            </div>
+        </div>
+        <nav class="landing-nav">
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+            <a href="#support">Support</a>
+            <a href="/login" class="login-link">Login</a>
+            <a href="/register" class="signup-button">Sign Up</a>
+        </nav>
+    </header>
+    <main class="hero-section">
+        <div class="hero-content">
+            <span class="hero-badge"> Modern Inventory Management</span>
+            <h1>Manage your inventory.
+            <br />
+            <span>Make better decisions.</span>
+            </h1>
+            <p> Quantum Count gives your organization one place
+                to manage materials, projects, equipment,
+                procurement and inventory analytics.</p>
+            <div class="hero-actions">
+                <a href="/register" class="primary-button"> Get Started </a>
+                <a href="/login" class="secondary-button"> Sign In </a>
+            </div>
+        </div>
+    </main>
+    <section id="features" class="features-section">
+        <div class="section-heading">
+            <span>FEATURES</span>
+            <h2> Everything you need to manage inventory</h2>
+            <p>
+                A centralized platform designed for
+                modern inventory operations.
+            </p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Inventory</h3>
+                <p>
+                    Track materials, quantities,
+                    stock levels and availability.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>Projects</h3>
+                <p>
+                    Connect materials and resources
+                    with organizational projects.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Assets</h3>
+                <p>
+                    Manage equipment and organizational
+                    assets from one place.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analytics</h3>
+                <p>
+                    Understand inventory performance
+                    through meaningful reports.
+                </p>
+            </div>
+        </div>
+    </section>
+    <footer class="public-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="brand-icon small">
+                    QC
+                </div>
+                <div>
+                    <strong>Quantum Count</strong>
+                    <span>Smart Inventory Management</span>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <NavLink href="/login">Sign In</NavLink>
+            </div>
+            <div class="copyright">
+                © @DateTime.Now.Year Quantum Count. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</div>

@@ -1,4 +1,6 @@
-﻿@page "/"
+﻿@page "/dashboard"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
 <PageTitle>Home</PageTitle>
 <div class="container">
 <h1>Welcome to Quantum Count </h1>
