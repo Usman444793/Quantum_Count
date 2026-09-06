@@ -1,19 +1,9 @@
-
-/* =========================================
-   QUANTUM COUNT - NAV MENU
-   ========================================= */
 .nav-menu {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-
-
-/* =========================================
-   NAVIGATION ITEM
-   ========================================= */
-
 .nav-link {
     width: 100%;
     min-height: 46px;
@@ -34,12 +24,6 @@
     white-space: nowrap;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-
-/* =========================================
-   ICON
-   ========================================= */
-
 .nav-icon {
     width: 22px;
     min-width: 22px;
@@ -53,12 +37,6 @@
     line-height: 1;
     text-align: center;
 }
-
-
-/* =========================================
-   TEXT
-   ========================================= */
-
 .nav-link span:last-child {
     display: block;
     flex: 1;
@@ -68,27 +46,14 @@
     white-space: nowrap;
     line-height: 1.2;
 }
-
-
-/* =========================================
-   HOVER
-   ========================================= */
-
 .nav-link:hover {
     background: rgba(20, 184, 166, 0.10);
     color: #ffffff;
     transform: translateX(2px);
 }
-
     .nav-link:hover .nav-icon {
         color: #5eead4;
     }
-
-
-/* =========================================
-   ACTIVE
-   ========================================= */
-
 .nav-link.active {
     position: relative;
     background: linear-gradient( 135deg, #0f766e, #14b8a6 );
@@ -96,10 +61,6 @@
     font-weight: 600;
     box-shadow: 0 7px 18px rgba(15, 118, 110, 0.24);
 }
-
-
-    /* Active indicator */
-
     .nav-link.active::before {
         content: "";
         position: absolute;
@@ -110,19 +71,9 @@
         border-radius: 0 5px 5px 0;
         background: #99f6e4;
     }
-
-
-    /* Active icon */
-
     .nav-link.active .nav-icon {
         color: #ffffff;
     }
-
-
-    /* =========================================
-   ACTIVE HOVER
-   ========================================= */
-
     .nav-link.active:hover {
         background: linear-gradient( 135deg, #115e59, #0f766e );
         color: #ffffff;

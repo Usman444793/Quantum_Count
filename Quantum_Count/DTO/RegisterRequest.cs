@@ -3,7 +3,6 @@ namespace Quantum_Count.DTO
 {
     public class RegisterRequest
     {
-
         [Required(ErrorMessage = "Your Name is required")]
         public string FullName { get; set; } = string.Empty;
         [Required(ErrorMessage = "Email is required")]

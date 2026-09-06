@@ -1,7 +1,428 @@
 ﻿@page "/materials"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-<h2>Materials and Inventory Management Page</h2>
-@code {
+@using System.Linq
+@using MudBlazor
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+<PageTitle>Materials & Inventory | Quantum Count</PageTitle>
+<div class="materials-page">
+    <div class="page-header">
+        <div class="page-title-section">
+            <h1>Materials</h1>
+            <p>Manage your inventory, stock levels and material costs.</p>
+        </div>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="primary-action" Href="/materials/new">New Material</MudButton>
+    </div>
+    @if (_loading)
+    {
+        <div class="loading-state">
 
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary"
+                                 Size="Size.Large" />
+
+            <span>Loading materials...</span>
+
+        </div>
+    }
+    else
+    {
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-card-content">
+                    <span class="summary-label">
+                        Inventory Value
+                    </span>
+                    <span class="summary-value">
+                        @InventoryValue.ToString("C")
+                    </span>
+                    <span class="summary-description">
+                        Current stock value
+                    </span>
+                </div>
+                <div class="summary-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Payments" />
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-content">
+
+                    <span class="summary-label">
+                        Materials
+                    </span>
+
+                    <span class="summary-value">
+                        @_materials.Count
+                    </span>
+
+                    <span class="summary-description">
+                        Active materials
+                    </span>
+
+                </div>
+
+                <div class="summary-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-card-content">
+
+                    <span class="summary-label">
+                        Low Stock
+                    </span>
+
+                    <span class="summary-value warning-number">
+                        @LowStockCount
+                    </span>
+
+                    <span class="summary-description">
+                        Need attention
+                    </span>
+
+                </div>
+
+                <div class="summary-icon warning">
+                    <MudIcon Icon="@Icons.Material.Filled.WarningAmber" />
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-card-content">
+
+                    <span class="summary-label">
+                        Out of Stock
+                    </span>
+
+                    <span class="summary-value danger-number">
+                        @OutOfStockCount
+                    </span>
+
+                    <span class="summary-description">
+                        Currently unavailable
+                    </span>
+
+                </div>
+
+                <div class="summary-icon danger">
+                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" />
+                </div>
+            </div>
+        </div>
+        <div class="materials-container">
+            <div class="section-header">
+                <div>
+                    <h2>Materials</h2>
+
+                    <span>
+                        @FilteredMaterials.Count() materials displayed
+                    </span>
+                </div>
+
+            </div>
+            <div class="filter-bar">
+
+                <MudTextField T="string"
+                              @bind-Value="_searchText"
+                              Placeholder="Search by name, code or category..."
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              Clearable="true"
+                              Class="search-box" />
+                <MudSelect T="int?"
+                           @bind-Value="_selectedCategory"
+                           Label="Category"
+                           Variant="Variant.Outlined"
+                           Dense="true"
+                           Clearable="true"
+                           Class="category-filter">
+
+                    <MudSelectItem T="int?" Value="@(null)">
+                        All Categories
+                    </MudSelectItem>
+
+                    @foreach (var category in _categories)
+                    {
+                        <MudSelectItem T="int?" Value="@category.Id">
+                            @category.Name
+                        </MudSelectItem>
+                    }
+
+                </MudSelect>
+
+
+                <MudSelect T="string"
+                           @bind-Value="_stockFilter"
+                           Label="Stock Status"
+                           Variant="Variant.Outlined"
+                           Dense="true"
+                           Class="status-filter">
+
+                    <MudSelectItem Value="@("All")">
+                        All Stock
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("In Stock")">
+                        In Stock
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("Low Stock")">
+                        Low Stock
+                    </MudSelectItem>
+
+                    <MudSelectItem Value="@("Out of Stock")">
+                        Out of Stock
+                    </MudSelectItem>
+                </MudSelect>
+            </div>
+            <div class="table-wrapper">
+                <MudTable Items="@FilteredMaterials"
+                          Hover="true"
+                          Breakpoint="Breakpoint.None"
+                          Elevation="0"
+                          Dense="false"
+                          Class="materials-table">
+                    <HeaderContent>
+                        <MudTh>
+                            Material
+                        </MudTh>
+                        <MudTh>
+                            Inventory
+                        </MudTh>
+                        <MudTh>
+                            Category
+                        </MudTh>
+                        <MudTh>
+                            Status
+                        </MudTh>
+                        <MudTh>
+                            Unit Cost
+                        </MudTh>
+                        <MudTh>
+                            Total Value
+                        </MudTh>
+                        <MudTh>
+                            Actions
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="material">
+                        <MudTd>
+                            <div class="material-cell">
+                                <div class="material-avatar">
+                                    @GetInitials(material.Name)
+                                </div>
+                                <div class="material-info">
+                                    <div class="material-name">
+                                        @material.Name
+                                    </div>
+                                    <div class="material-code">
+                                        @material.MaterialCode
+                                    </div>
+                                </div>
+                            </div>
+                        </MudTd>
+                        <MudTd>
+                            <div class="inventory-cell">
+                                <span class="inventory-quantity">
+                                    @material.Quantity.ToString("0.##")
+                                </span>
+                                <span class="inventory-unit">
+                                    @material.Unit
+                                </span>
+                            </div>
+                        </MudTd>
+                        <MudTd>
+                            <span class="category-name">
+                                @(material.Category?.Name ?? "Uncategorized")
+                            </span>
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string"
+                                     Size="Size.Small"
+                                     Variant="Variant.Filled"
+                                     Class="@GetStockClass(material)">
+                                @GetStockStatus(material)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <span class="cost-value">
+                                @material.UnitPrice.ToString("C")
+                            </span>
+                            <span class="cost-unit">
+                                / @material.Unit
+                            </span>
+                        </MudTd>
+                        <MudTd>
+                            <div class="total-value">
+                                <strong>
+                                    @((material.Quantity * material.UnitPrice).ToString("C"))
+                                </strong>
+                            </div>
+                        </MudTd>
+                        <MudTd Class="actions-column">
+
+                            <div class="action-menu-wrapper">
+
+                                <button class="action-button"
+                                        title="Actions"
+                                        @onclick="() => ToggleMaterialMenu(material.Id)">
+
+                                    ⋮
+
+                                </button>
+
+                                @if (_openMaterialMenuId == material.Id)
+                                {
+                                    <div class="action-menu">
+
+                                        <button @onclick="() => EditMaterial(material.Id)">
+
+                                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
+
+                                            <span>Edit</span>
+
+                                        </button>
+
+                                        <button @onclick="() => DeleteMaterialAsync(material)">
+
+                                            <MudIcon Icon="@Icons.Material.Filled.Delete" />
+
+                                            <span>Delete</span>
+
+                                        </button>
+
+                                    </div>
+                                }
+
+                            </div>
+
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <div class="empty-state">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory2"Size="Size.Large" />
+                            <h3>No materials found</h3>
+                            <p>  Try changing your search or filters.</p>
+                        </div>
+                    </NoRecordsContent>
+                </MudTable>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    private bool _loading = true;
+    private string _searchText = string.Empty;
+    private int? _selectedCategory;
+    private string _stockFilter = "All";
+    private List<Material> _materials = new();
+    private List<InventoryCategory> _categories = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        try
+        {
+            _materials = await InventoryService.GetMaterialsAsync();
+            _categories = await InventoryService.GetCategoriesAsync();
+        }
+        catch
+        {
+            Snackbar.Add("Unable to load materials.",Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    private IEnumerable<Material> FilteredMaterials =>
+        _materials.Where(m =>
+            (string.IsNullOrWhiteSpace(_searchText) ||m.Name.Contains(_searchText,StringComparison.OrdinalIgnoreCase)
+                ||m.MaterialCode.Contains( _searchText,StringComparison.OrdinalIgnoreCase)
+                ||(m.Category?.Name?.Contains(_searchText,StringComparison.OrdinalIgnoreCase)?? false))
+&&(!_selectedCategory.HasValue || m.CategoryId == _selectedCategory.Value)&& (_stockFilter == "All" || GetStockStatus(m) == _stockFilter));
+    private decimal InventoryValue => _materials.Sum(m => m.Quantity * m.UnitPrice);
+    private int LowStockCount => _materials.Count(m => m.Quantity > 0 && m.Quantity <= m.MinimumStockLevel);
+    private int OutOfStockCount => _materials.Count(m => m.Quantity <= 0);
+    private string GetStockStatus(Material material)
+    {
+        if (material.Quantity <= 0)
+            return "Out of Stock";
+        if (material.Quantity <= material.MinimumStockLevel)
+            return "Low Stock";
+        return "In Stock";
+    }
+    private string GetStockClass(Material material)
+    {
+        return GetStockStatus(material) switch
+        {
+            "In Stock" => "stock-in",
+            "Low Stock" => "stock-low",
+            "Out of Stock" => "stock-out",
+            _ => "stock-default"
+        };
+    }
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1)
+            return words[0][0].ToString().ToUpper();
+        return $"{words[0][0]}{words[1][0]}".ToUpper();
+    }
+    private int? _openMaterialMenuId;
+
+    private void ToggleMaterialMenu(int id)
+    {
+        _openMaterialMenuId =
+            _openMaterialMenuId == id
+                ? null
+                : id;
+    }
+
+    private void EditMaterial(int id)
+    {
+        _openMaterialMenuId = null;
+
+        Navigation.NavigateTo($"/materials/edit/{id}");
+    }
+    private async Task DeleteMaterialAsync(Material material)
+    {
+        var confirmed =
+            await DialogService.ShowMessageBoxAsync(
+                "Delete Material",
+                $"Are you sure you want to delete '{material.Name}'?",
+                yesText: "Delete",
+                cancelText: "Cancel");
+        if (confirmed != true)
+            return;
+        var deleted = await InventoryService.DeleteMaterialAsync(material.Id);
+        if (deleted)
+        {
+            _materials.Remove(material);
+            Snackbar.Add("Material deleted successfully.",Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Unable to delete material.",Severity.Error);
+        }
+    }
 }

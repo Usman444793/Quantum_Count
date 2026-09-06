@@ -17,8 +17,6 @@ window.submitPost = (url, data) => {
         console.error('submitPost error', e);
     }
 };
-
-// Toggle account popover when avatar clicked (fallback if Blazor handler doesn't run)
 document.addEventListener('click', function (e) {
     try {
         var avatar = e.target.closest('.avatar-button');
@@ -30,8 +28,6 @@ document.addEventListener('click', function (e) {
             }
             return;
         }
-
-        // click outside: hide popover
         var popEl = document.querySelector('.account-popover');
         if (popEl && !e.target.closest('.account-popover')) {
             popEl.classList.remove('visible');
@@ -41,13 +37,3 @@ document.addEventListener('click', function (e) {
         console.error('popover toggle error', err);
     }
 });
-
-window.logoutAndRedirect = async () => {
-    try {
-        // call logout endpoint and then navigate to login
-        await fetch('/api/auth/logout', { method: 'GET', credentials: 'include' });
-    } catch (err) {
-        console.error('logout fetch failed', err);
-    }
-    window.location.href = '/login';
-};

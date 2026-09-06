@@ -1,16 +1,14 @@
-﻿@using System.Security.Claims
+﻿@inject HttpClient Http
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
-@using Quantum_Count.Services
 @using Microsoft.JSInterop
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
-@* AuthService not required in layout; use AuthenticationStateProvider for user info *@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JS
 <MudThemeProvider Theme="@_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
-
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Transparent" Class="quantum-appbar">
     <MudSpacer />
@@ -20,106 +18,87 @@
                 <button type="button" class="avatar-button" @onclick:stopPropagation="true" @onclick="ToggleAccountMenu" aria-expanded="@(accountMenuOpen)">
                     <div class="avatar-circle">@GetInitial(authState.User)</div>
                 </button>
-
                 <div class="account-popover @(accountMenuOpen ? "visible" : "hidden")" role="menu">
                     <div class="user-menu-header">
                         <strong>@GetUserName(authState.User)</strong>
                         <div class="user-email">@GetUserEmail(authState.User)</div>
                     </div>
                     <div class="popover-divider"></div>
+                    <a class="popover-item" href="/dashboard">Dashboard</a>
+                    <a class="popover-item" href="/materials">Materials & Equipment</a>
+                    <a class="popover-item" href="/projects">Projects</a>
+                    <a class="popover-item" href="/equipment">Equipments & Assets</a>
+                    <a class="popover-item" href="/procurement">Procurement</a>
+                    <a class="popover-item" href="/reports">Reports & Analytics</a>
+                    <a class="popover-item" href="/staff">Staff & Roles</a>
                     <a class="popover-item" href="/settings">Settings</a>
-                    <button class="popover-item" @onclick="Logout">Logout</button>
+                        <a href="/api/auth/logout" class="popover-item">
+                            <span>↪</span>
+                            <span>Logout</span>
+                        </a>
                 </div>
             </div>
         </Authorized>
         <NotAuthorized>
-            <MudButton Href="/login"
-                       Variant="Variant.Text"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Login">
+            <MudButton Href="/login" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Login">
                 Sign in
             </MudButton>
         </NotAuthorized>
     </AuthorizeView>
 </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" Breakpoint="Breakpoint.Md" ClipMode="DrawerClipMode.Never"
-               Elevation="1" Width="270px" Class="quantum-drawer">
+     Elevation="1" Width="270px" Class="quantum-drawer">
         <div class="drawer-header">
             <div class="brand-container">
                 <div class="brand-icon">
                     <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Medium" />
                 </div>
                 <div>
-                    <MudText Typo="Typo.h6" Class="brand-title">
-                        Quantum Count
-                    </MudText>
-                    <MudText Typo="Typo.caption" Class="brand-subtitle">
-                        Inventory Management
-                    </MudText>
+                    <MudText Typo="Typo.h6" Class="brand-title"> Quantum Count </MudText>
+                    <MudText Typo="Typo.caption" Class="brand-subtitle"> Inventory Management </MudText>
                 </div>
             </div>
         </div>
-
         <div class="drawer-search">
             <MudTextField @bind-Value="_searchText" Placeholder="Search..." Variant="Variant.Outlined"
-                          Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                          Immediate="true" Clearable="true" Class="search-field" />
+             Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Clearable="true" Class="search-field" />
         </div>
-
         <div class="drawer-navigation">
             <NavMenu SearchText="@_searchText" />
         </div>
-
         <div class="drawer-bottom">
             <MudDivider Class="drawer-divider" />
-            <MudNavLink Href="/settings"
-                        Icon="@Icons.Material.Filled.Settings"
-                        Match="NavLinkMatch.Prefix">
-                Settings
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" Match="NavLinkMatch.Prefix"> Settings
             </MudNavLink>
         </div>
     </MudDrawer>
-
     <MudMainContent Class="quantum-main-content">
-        <div class="quantum-page-container">
-            @Body
-        </div>
+        <div class="quantum-page-container"> @Body </div>
     </MudMainContent>
 </MudLayout>
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">
-        Reload
-    </a>
-    <span class="dismiss">
-        🗙
-    </span>
+<div id="blazor-error-ui" data-nosnippet> An unhandled error has occurred.
+    <a href="." class="reload"> Reload </a>
+    <span class="dismiss"> 🗙 </span>
 </div>
-
 <style>
     * {
         font-family: "Poppins";
     }
-
     .quantum-appbar {
         background: #ffffff !important;
         color: #111111 !important;
         border-bottom: 1px solid #e5e7eb;
     }
-
 .account-menu-wrapper {
     position: relative;
     display: inline-block;
 }
-
 .avatar-button {
     background: transparent;
     border: none;
     padding: 0;
     cursor: pointer;
 }
-
 .avatar-circle {
     width: 40px;
     height: 40px;
@@ -131,12 +110,10 @@
     justify-content: center;
     font-weight: 700;
 }
-
 .account-popover {
-    /* Use fixed positioning to avoid being clipped by parent containers */
     position: fixed;
     right: 18px;
-    top: 56px; /* below app bar */
+    top: 56px;
     background: white;
     color: #111827;
     border-radius: 8px;
@@ -146,22 +123,18 @@
     padding: 8px;
     display: block;
 }
-
 .user-menu-header {
     padding: 8px 12px;
 }
-
 .user-email {
     font-size: 12px;
     color: #6b7280;
 }
-
 .popover-divider {
     height: 1px;
     background: #e5e7eb;
     margin: 6px 0;
 }
-
 .popover-item {
     display: block;
     width: 100%;
@@ -172,46 +145,36 @@
     color: inherit;
     text-decoration: none;
 }
-
 .popover-item:hover {
     background: #f3f4f6;
 }
-
 .account-popover.hidden { display: none; }
 .account-popover.visible { display: block; }
-
     .quantum-brand {
         font-weight: 700;
         letter-spacing: -0.3px;
     }
-
     .drawer-toggle {
         margin-right: 6px;
     }
-
     .theme-toggle {
         margin-right: 8px;
     }
-
     .quantum-drawer {
         background: #090909 !important;
         color: #ffffff;
     }
-
         .quantum-drawer .mud-drawer-content {
             background: #090909 !important;
         }
-
     .drawer-header {
         padding: 22px 18px 18px 18px;
     }
-
     .brand-container {
         display: flex;
         align-items: center;
         gap: 12px;
     }
-
     .brand-icon {
         width: 38px;
         height: 38px;
@@ -222,51 +185,40 @@
         color: white;
         border-radius: 10px;
     }
-
     .brand-title {
         color: #ffffff !important;
         font-weight: 700;
         line-height: 1.1;
     }
-
     .brand-subtitle {
         color: #9ca3af !important;
         font-size: 11px;
     }
-
     .drawer-search {
         padding: 4px 14px 16px 14px;
     }
-
     .search-field .mud-input-control-input-container {
         background: #171717;
     }
-
     .search-field .mud-input-outlined-border {
         border-color: #303030 !important;
     }
-
     .search-field .mud-input {
         color: #ffffff !important;
     }
-
     .search-field input::placeholder {
         color: #8c8c8c !important;
         opacity: 1;
     }
-
     .search-field .mud-input-adornment {
         color: #ffffff !important;
     }
-
     .search-field .mud-icon-root {
         color: #ffffff !important;
     }
-
     .drawer-navigation {
         padding: 0 10px;
     }
-
     .quantum-drawer .mud-nav-link {
         color: #d1d5db !important;
         border-radius: 9px;
@@ -276,38 +228,31 @@
         padding-right: 14px;
         transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
     }
-
         .quantum-drawer .mud-nav-link:hover {
             background: #171717 !important;
             color: #ffffff !important;
         }
-
         .quantum-drawer .mud-nav-link.active {
             background: #009b72 !important;
             color: #ffffff !important;
             font-weight: 600;
             box-shadow: 0 3px 10px rgba(0, 155, 114, 0.18);
         }
-
-            .quantum-drawer .mud-nav-link.active:hover {
-                background: #00a77a !important;
-                color: #ffffff !important;
-            }
-
+         .quantum-drawer .mud-nav-link.active:hover {
+             background: #00a77a !important;
+             color: #ffffff !important;
+         }
         .quantum-drawer .mud-nav-link .mud-nav-link-icon {
             color: inherit !important;
         }
-
     .drawer-bottom {
         margin-top: auto;
         padding: 10px;
     }
-
     .drawer-divider {
         border-color: #292929 !important;
         margin-bottom: 8px;
     }
-
     .theme-button {
         justify-content: flex-start;
         color: #bdbdbd !important;
@@ -315,22 +260,18 @@
         padding: 10px 14px;
         margin-top: 3px;
     }
-
         .theme-button:hover {
             background: #171717 !important;
             color: #ffffff !important;
         }
-
     .quantum-main-content {
         min-height: calc(100vh - 64px);
         background: var(--mud-palette-background);
     }
-
     .quantum-page-container {
         width: 100%;
         min-height: calc(100vh - 64px);
     }
-
     #blazor-error-ui {
         background: #ffebee;
         color: #b71c1c;
@@ -343,41 +284,32 @@
         width: 100%;
         z-index: 1000;
     }
-
         #blazor-error-ui .dismiss {
             cursor: pointer;
             position: absolute;
             right: 0.75rem;
             top: 0.5rem;
-            /* =========================
-       USER MENU
-       ========================= */
-
             .user-avatar {
                 cursor: pointer;
                 font-weight: 700;
                 font-size: 14px;
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
-
-                .user-avatar:hover {
+            .user-avatar:hover {
                     transform: scale(1.05);
                     box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
                 }
-
             .user-menu-header {
                 display: flex;
                 flex-direction: column;
                 min-width: 190px;
                 padding: 4px 0;
             }
-
                 .user-menu-header strong {
                     font-size: 14px;
                     color: #111827;
                     line-height: 1.4;
                 }
-
                 .user-menu-header span {
                     margin-top: 3px;
                     font-size: 12px;
@@ -388,93 +320,34 @@
         .quantum-brand {
             font-size: 17px;
         }
-
         .quantum-page-container {
             padding: 0;
         }
     }
     }
 </style>
-
 @code {
     private bool _drawerOpen = true;
     private string _searchText = string.Empty;
     private MudTheme? _theme;
-
-    // user info shown in the top-right menu
-    private string userName = "User";
-    private string userEmail = "user@example.com";
-    private string userInitial = "U";
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-
-        try
-        {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            if (user?.Identity?.IsAuthenticated == true)
-            {
-                userName = user.FindFirst("FullName")?.Value ?? user.Identity?.Name ?? "User";
-                userEmail = user.FindFirst(ClaimTypes.Email)?.Value ?? "user@example.com";
-                userInitial = !string.IsNullOrEmpty(userName) ? userName[0].ToString().ToUpper() : "U";
-            }
-            else
-            {
-                userName = "User";
-                userEmail = "user@example.com";
-                userInitial = "U";
-            }
-
-            StateHasChanged();
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
     private string GetUserName(ClaimsPrincipal user)
     {
         return user?.FindFirst("FullName")?.Value ?? user?.Identity?.Name ?? "User";
     }
-
     private string GetUserEmail(ClaimsPrincipal user)
     {
         return user?.FindFirst(ClaimTypes.Email)?.Value ?? "user@example.com";
     }
-
     private string GetInitial(ClaimsPrincipal user)
     {
         var name = GetUserName(user);
         return string.IsNullOrEmpty(name) ? "U" : name[0].ToString().ToUpper();
     }
-
-    private async Task Logout()
-    {
-        // Use JS helper to ensure cookie-signout request includes credentials and follow-up redirect
-        try
-        {
-            await JS.InvokeVoidAsync("logoutAndRedirect");
-        }
-        catch
-        {
-            // Fallback to server navigation
-            Navigation.NavigateTo("/api/auth/logout", forceLoad: true);
-        }
-    }
-
-    // account popover state
     private bool accountMenuOpen = false;
-
     private void ToggleAccountMenu()
     {
         accountMenuOpen = !accountMenuOpen;
     }
-
-    // color palette
     private readonly PaletteLight _lightPalette = new()
     {
         Primary = "#0f766e",
@@ -492,4 +365,3 @@
         Divider = "#e5e7eb"
     };
 }
-

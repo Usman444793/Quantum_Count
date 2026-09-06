@@ -16,47 +16,39 @@
         </div>
         <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
             <DataAnnotationsValidator />
-
             @if (!string.IsNullOrEmpty(errorMessage))
             {
                 <div class="register-error">@errorMessage</div>
             }
-
             <div class="register-field">
                 <label for="fullname">Full Name</label>
                 <InputText id="fullname" @bind-Value="registerModel.FullName" class="register-input" placeholder="Enter your full name" />
                 <ValidationMessage For="@(() => registerModel.FullName)" />
             </div>
-
             <div class="register-field">
                 <label for="email">Email Address</label>
                 <InputText id="email" @bind-Value="registerModel.Email" class="register-input" type="email" placeholder="Enter your email address" />
                 <ValidationMessage For="@(() => registerModel.Email)" />
             </div>
-
             <div class="register-field">
                 <label for="password">Password</label>
                 <InputText id="password" @bind-Value="registerModel.Password" class="register-input" type="password" placeholder="Enter password" />
                 <ValidationMessage For="@(() => registerModel.Password)" />
             </div>
-
             <button type="submit" class="register-button" disabled="@isLoading">
                 @(isLoading ? "Creating account..." : "Create Account")
             </button>
         </EditForm>
-
         @if (showError)
         {
             <div class="register-error">@errorText</div>
         }
-
         <div class="register-footer">
             <span>Already have an account?</span>
             <a href="/login">Sign in</a>
         </div>
     </div>
 </div>
-
 <style>
     .register-page {
         display: flex;
@@ -66,7 +58,6 @@
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         padding: 20px;
     }
-
     .register-card {
         background: white;
         border-radius: 12px;
@@ -75,7 +66,6 @@
         width: 100%;
         max-width: 400px;
     }
-
     .register-logo {
         width: 48px;
         height: 48px;
@@ -89,7 +79,6 @@
         font-size: 20px;
         margin-bottom: 24px;
     }
-
     .register-header h1 {
         font-size: 28px;
         font-weight: 700;
@@ -102,11 +91,9 @@
         font-size: 14px;
         margin: 0 0 24px 0;
     }
-
     .register-field {
         margin-bottom: 16px;
     }
-
         .register-field label {
             display: block;
             font-weight: 600;
@@ -114,7 +101,6 @@
             margin-bottom: 8px;
             font-size: 14px;
         }
-
     .register-input {
         width: 100%;
         padding: 10px 12px;
@@ -125,13 +111,11 @@
         font-family: "Poppins", sans-serif;
         transition: border-color 0.2s ease;
     }
-
         .register-input:focus {
             outline: none;
             border-color: #0f766e;
             box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
         }
-
     .register-button {
         width: 100%;
         padding: 12px 16px;
@@ -146,16 +130,13 @@
         margin-top: 24px;
         font-family: "Poppins", sans-serif;
     }
-
         .register-button:hover:not(:disabled) {
             opacity: 0.9;
         }
-
         .register-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-
     .register-error {
         background: #fee2e2;
         color: #991b1b;
@@ -164,36 +145,30 @@
         margin-bottom: 16px;
         font-size: 14px;
     }
-
     .register-footer {
         text-align: center;
         margin-top: 24px;
         font-size: 14px;
     }
-
         .register-footer span {
             color: #64748b;
         }
-
         .register-footer a {
             color: #0f766e;
             font-weight: 600;
             text-decoration: none;
             margin-left: 4px;
         }
-
             .register-footer a:hover {
                 text-decoration: underline;
             }
 </style>
-
 @code {
     private bool showError;
     private string errorText = string.Empty;
     private RegisterRequest registerModel = new();
     private bool isLoading;
     private string? errorMessage;
-
     protected override void OnInitialized()
     {
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
@@ -209,7 +184,6 @@
                 errorText = "Registration error.";
         }
     }
-
     private async Task HandleRegister()
     {
         isLoading = true;
@@ -223,7 +197,6 @@
                 ["Email"] = registerModel.Email ?? string.Empty,
                 ["Password"] = registerModel.Password ?? string.Empty
             };
-
             await JS.InvokeVoidAsync("submitPost", "/api/auth/register-form", data);
         }
         catch (Exception ex)

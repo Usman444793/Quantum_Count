@@ -1,0 +1,143 @@
+.category-form-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.form-header {
+    margin-bottom: 28px;
+}
+
+.back-button {
+    padding-left: 0 !important;
+    color: #159570 !important;
+    font-weight: 600 !important;
+}
+
+.form-header h1 {
+    margin: 15px 0 5px;
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.form-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.form-loading {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #6b7280;
+}
+
+.form-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, .04);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    background: #e8f7f3;
+    color: #159570;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-title h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+.section-title p {
+    margin: 4px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.form-fields {
+    display: grid;
+    gap: 22px;
+}
+
+.info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 14px;
+    border-radius: 9px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid #eef0f2;
+}
+
+.cancel-button {
+    color: #374151 !important;
+}
+
+.save-button {
+    min-width: 155px;
+    border-radius: 9px !important;
+    background: #159570 !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+    .save-button:hover {
+        background: #117d5d !important;
+    }
+
+@media (max-width: 600px) {
+
+    .category-form-page {
+        padding: 20px 14px;
+    }
+
+    .form-card {
+        padding: 20px;
+    }
+
+    .form-header h1 {
+        font-size: 25px;
+    }
+
+    .form-footer {
+        flex-direction: column-reverse;
+    }
+
+    .cancel-button,
+    .save-button {
+        width: 100%;
+    }
+}

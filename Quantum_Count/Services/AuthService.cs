@@ -1,10 +1,7 @@
-﻿
-using Quantum_Count.DTO;
+﻿using Quantum_Count.DTO;
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
-
 namespace Quantum_Count.Services;
-
 public class AuthService
 {
     private readonly HttpClient _http;
@@ -13,13 +10,11 @@ public class AuthService
     private const string UserNameKey = "quantumcount_name";
     private const string UserEmailKey = "quantumcount_email";
     private const string UserIdKey = "quantumcount_userid";
-
     public AuthService(HttpClient http, ITokenStorage tokenStorage)
     {
         _http = http;
         _tokenStorage = tokenStorage;
     }
-
     public async Task<AuthResponse?> LoginAsync(string email, string password)
     {
         try
@@ -29,16 +24,12 @@ public class AuthService
                 Email = email,
                 Password = password
             };
-
             var response = await _http.PostAsJsonAsync("api/auth/login", request);
-
             if (!response.IsSuccessStatusCode)
                 return null;
-
             var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
             if (result is null)
                 return null;
-
             await SaveSessionAsync(result);
             return result;
         }
@@ -48,7 +39,6 @@ public class AuthService
             return null;
         }
     }
-
     public async Task<AuthResponse?> RegisterAsync(string fullName, string email, string password)
     {
         try
@@ -59,16 +49,12 @@ public class AuthService
                 Email = email,
                 Password = password
             };
-
             var response = await _http.PostAsJsonAsync("api/auth/register", request);
-
             if (!response.IsSuccessStatusCode)
                 return null;
-
             var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
             if (result is null)
                 return null;
-
             await SaveSessionAsync(result);
             return result;
         }
@@ -78,7 +64,6 @@ public class AuthService
             return null;
         }
     }
-
     private async Task SaveSessionAsync(AuthResponse result)
     {
         await _tokenStorage.SetItemAsync(TokenKey, result.Token);
@@ -86,27 +71,22 @@ public class AuthService
         await _tokenStorage.SetItemAsync(UserNameKey, result.FullName);
         await _tokenStorage.SetItemAsync(UserEmailKey, result.Email);
     }
-
     public async Task<string?> GetTokenAsync()
     {
         return await _tokenStorage.GetItemAsync(TokenKey);
     }
-
     public async Task<string?> GetUserNameAsync()
     {
         return await _tokenStorage.GetItemAsync(UserNameKey);
     }
-
     public async Task<string?> GetUserEmailAsync()
     {
         return await _tokenStorage.GetItemAsync(UserEmailKey);
     }
-
     public async Task<string?> GetUserIdAsync()
     {
         return await _tokenStorage.GetItemAsync(UserIdKey);
     }
-
     public async Task<bool> IsLoggedInAsync()
     {
         var token = await GetTokenAsync();
@@ -116,14 +96,11 @@ public class AuthService
     {
         try
         {
-            var response = await _http.PostAsync(
-                "api/auth/logout",
-                null);
+            var response = await _http.PostAsync("api/auth/logout", null);
             await _tokenStorage.RemoveItemAsync(TokenKey);
             await _tokenStorage.RemoveItemAsync(UserIdKey);
             await _tokenStorage.RemoveItemAsync(UserNameKey);
             await _tokenStorage.RemoveItemAsync(UserEmailKey);
-
             return response.IsSuccessStatusCode;
         }
         catch

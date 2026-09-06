@@ -3,70 +3,51 @@
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "dashboard".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/dashboard"
-                    Match="NavLinkMatch.All"
-                    Icon="@Icons.Material.Filled.Dashboard">
-            Dashboard
-        </MudNavLink>
+        <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard"> Dashboard </MudNavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "materials inventory".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (string.IsNullOrWhiteSpace(SearchText) || "materials inventory".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/materials"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.Inventory2">
-            Materials & Inventory
+        <MudNavLink Href="/materials" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory2">
+          Materials & Inventory </MudNavLink>
+    }
+    @if (string.IsNullOrWhiteSpace(SearchText) || "categories".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    {
+        <MudNavLink href="/categories" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Category">
+          Categories
         </MudNavLink>
     }
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "projects".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/projects"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.Apartment">
-            Projects
-        </MudNavLink>
+        <MudNavLink Href="/projects" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Apartment">
+            Projects </MudNavLink>
     }
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "equipment assets".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/equipment"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.Construction">
-            Equipment & Assets
-        </MudNavLink>
+        <MudNavLink Href="/equipment" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Construction">
+            Equipment & Assets </MudNavLink>
     }
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "procurement".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/procurement"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.ShoppingCart">
-            Procurement
-        </MudNavLink>
+        <MudNavLink Href="/procurement" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ShoppingCart">
+            Procurement </MudNavLink>
     }
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "reports analytics".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/reports"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.BarChart">
-            Reports & Analytics
-        </MudNavLink>
+        <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">
+            Reports & Analytics </MudNavLink>
     }
     @if (string.IsNullOrWhiteSpace(SearchText) ||
          "staff roles".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
     {
-        <MudNavLink Href="/staff"
-                    Match="NavLinkMatch.Prefix"
-                    Icon="@Icons.Material.Filled.People">
-            Staff & Roles
-        </MudNavLink>
+        <MudNavLink Href="/staff" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
+            Staff & Roles </MudNavLink>
     }
 </MudNavMenu>
 @code {
-
     [Parameter]
     public string SearchText { get; set; } = string.Empty;
-
 }

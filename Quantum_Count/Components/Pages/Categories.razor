@@ -1,0 +1,541 @@
+﻿@page "/categories"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Categories | Quantum Count</PageTitle>
+
+<div class="categories-page">
+
+    <!-- HEADER -->
+
+    <div class="page-header">
+
+        <div class="page-title-section">
+
+            <h1>Categories</h1>
+
+            <p>
+                Organize materials and equipment using inventory categories.
+            </p>
+
+        </div>
+
+        <button class="primary-action"
+                @onclick="CreateCategory">
+
+            <span class="action-icon">+</span>
+
+            New Category
+
+        </button>
+
+    </div>
+
+
+    @if (_loading)
+    {
+        <div class="loading-state">
+
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary" />
+
+            <span>Loading categories...</span>
+
+        </div>
+    }
+    else
+    {
+
+        <!-- SUMMARY -->
+
+        <div class="summary-grid">
+
+            <div class="summary-card">
+
+                <div class="summary-content">
+
+                    <span class="summary-label">
+                        Total Categories
+                    </span>
+
+                    <span class="summary-value">
+                        @_categories.Count
+                    </span>
+
+                    <span class="summary-description">
+                        Active categories
+                    </span>
+
+                </div>
+
+                <div class="summary-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" />
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-content">
+
+                    <span class="summary-label">
+                        Materials
+                    </span>
+
+                    <span class="summary-value">
+                        @_categories.Sum(c => c.Materials?.Count ?? 0)
+                    </span>
+
+                    <span class="summary-description">
+                        Categorized materials
+                    </span>
+
+                </div>
+
+                <div class="summary-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
+                </div>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <div class="summary-content">
+
+                    <span class="summary-label">
+                        Equipment
+                    </span>
+
+                    <span class="summary-value">
+                        @_categories.Sum(c => c.Equipment?.Count ?? 0)
+                    </span>
+
+                    <span class="summary-description">
+                        Categorized assets
+                    </span>
+
+                </div>
+
+                <div class="summary-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Build" />
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MAIN -->
+
+        <div class="categories-container">
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>Inventory Categories</h2>
+
+                    <span>
+                        @_categories.Count categories available
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <div class="filter-bar">
+
+                <div class="search-wrapper">
+
+                    <MudIcon Icon="@Icons.Material.Filled.Search"
+                             Class="search-icon" />
+
+                    <input class="search-input"
+                           placeholder="Search categories..."
+                           @bind="_searchText"
+                           @bind:event="oninput" />
+
+                    @if (!string.IsNullOrWhiteSpace(_searchText))
+                    {
+                        <button class="clear-search"
+                                @onclick="ClearSearch">
+                            ×
+                        </button>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div class="table-wrapper">
+
+                <table class="categories-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Category</th>
+
+                            <th>Description</th>
+
+                            <th>Materials</th>
+
+                            <th>Equipment</th>
+
+                            <th>Created</th>
+
+                            <th>Status</th>
+
+                            <th class="actions-column">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var category in FilteredCategories)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    <div class="category-cell">
+
+                                        <div class="category-avatar">
+                                            <MudIcon Icon="@Icons.Material.Filled.Category" />
+                                        </div>
+
+                                        <div>
+
+                                            <div class="category-name">
+                                                @category.Name
+                                            </div>
+
+                                            <div class="category-id">
+                                                CAT-@category.Id.ToString("000")
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="description">
+                                        @(string.IsNullOrWhiteSpace(category.Description)
+                                            ? "No description"
+                                            : category.Description)
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="count-badge">
+                                        @(category.Materials?.Count ?? 0)
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="count-badge">
+                                        @(category.Equipment?.Count ?? 0)
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="date-value">
+                                        @category.CreatedAt.ToLocalTime()
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td class="actions-column">
+
+                                    <div class="action-menu-wrapper">
+
+                                        <button class="action-button"
+                                                title="Actions"
+                                                @onclick="() => ToggleMenu(category.Id)">
+
+                                            ⋮
+
+                                        </button>
+
+
+                                        @if (_openMenuId == category.Id)
+                                        {
+                                            <div class="action-menu">
+
+                                                <button @onclick="() => EditCategory(category.Id)">
+
+                                                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
+
+                                                    <span>Edit</span>
+
+                                                </button>
+
+
+                                                <button @onclick="() => DeleteCategory(category)">
+
+                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
+
+                                                    <span>Delete</span>
+
+                                                </button>
+
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+
+                @if (!FilteredCategories.Any())
+                {
+                    <div class="empty-state">
+
+                        <MudIcon Icon="@Icons.Material.Filled.Category"
+                                 Size="Size.Large" />
+
+                        <h3>No categories found</h3>
+
+                        <p>
+                            Try changing your search or create a new category.
+                        </p>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    }
+
+
+    <!-- DELETE CONFIRMATION -->
+    @if (_categoryToDelete != null)
+    {
+        <div class="confirmation-overlay">
+
+            <div class="confirmation-card">
+
+                <div class="confirmation-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                </div>
+
+                <h2>Delete Category?</h2>
+
+                <p>
+                    Are you sure you want to delete
+                    <strong>@_categoryToDelete.Name</strong>?
+                </p>
+
+                <p class="confirmation-note">
+                    The category will be deactivated. Existing materials
+                    and equipment will not be deleted.
+                </p>
+
+                <div class="confirmation-actions">
+
+                    <button class="cancel-button"
+                            @onclick="CancelDelete">
+
+                        Cancel
+
+                    </button>
+
+                    <button class="delete-button"
+                            @onclick="ConfirmDelete">
+
+                        Delete Category
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+
+@code {
+
+    private List<InventoryCategory> _categories = new();
+
+    private string _searchText = string.Empty;
+
+    private bool _loading = true;
+
+    private int? _openMenuId;
+
+    private InventoryCategory? _categoryToDelete;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+    }
+
+
+    private async Task LoadCategoriesAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            _categories =
+                await InventoryService.GetCategoriesAsync();
+        }
+        catch
+        {
+            Snackbar.Add(
+                "Unable to load categories.",
+                Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+
+    private IEnumerable<InventoryCategory> FilteredCategories =>
+        _categories.Where(c =>
+            string.IsNullOrWhiteSpace(_searchText)
+            ||
+            c.Name.Contains(
+                _searchText,
+                StringComparison.OrdinalIgnoreCase)
+            ||
+            (c.Description?.Contains(
+                _searchText,
+                StringComparison.OrdinalIgnoreCase) ?? false));
+
+
+    private void CreateCategory()
+    {
+        Navigation.NavigateTo("/categories/new");
+    }
+
+
+    private void EditCategory(int id)
+    {
+        _openMenuId = null;
+
+        Navigation.NavigateTo($"/categories/edit/{id}");
+    }
+
+
+    private void ToggleMenu(int id)
+    {
+        _openMenuId =
+            _openMenuId == id
+                ? null
+                : id;
+    }
+
+
+    private void DeleteCategory(InventoryCategory category)
+    {
+        _openMenuId = null;
+
+        _categoryToDelete = category;
+    }
+
+
+    private void CancelDelete()
+    {
+        _categoryToDelete = null;
+    }
+
+
+    private async Task ConfirmDelete()
+    {
+        if (_categoryToDelete == null)
+            return;
+
+        var category = _categoryToDelete;
+
+        _categoryToDelete = null;
+
+        var deleted =
+            await InventoryService.DeleteCategoryAsync(
+                category.Id);
+
+        if (deleted)
+        {
+            _categories.Remove(category);
+
+            Snackbar.Add(
+                "Category deleted successfully.",
+                Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(
+                "Unable to delete category.",
+                Severity.Error);
+        }
+    }
+
+
+    private void ClearSearch()
+    {
+        _searchText = string.Empty;
+    }
+}

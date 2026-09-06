@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
-
 namespace Quantum_Count.Services;
-
 public interface ITokenStorage
 {
     Task SetItemAsync(string key, string value);

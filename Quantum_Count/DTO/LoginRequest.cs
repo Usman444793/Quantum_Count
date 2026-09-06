@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace Quantum_Count.DTO;
 public class LoginRequest
 {

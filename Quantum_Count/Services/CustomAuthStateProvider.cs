@@ -67,7 +67,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
                 }
             }
             var identity = new ClaimsIdentity(claims,authenticationType: "jwt");
-
             return new ClaimsPrincipal(identity);
         }
         catch
