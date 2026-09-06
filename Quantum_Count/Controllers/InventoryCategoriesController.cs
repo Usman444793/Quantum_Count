@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Quantum_Count.Data;
 using Quantum_Count.Models;
@@ -7,6 +8,7 @@ namespace Quantum_Count.Controllers;
 
 [ApiController]
 [Route("api/inventory-categories")]
+[Authorize]
 public class InventoryCategoriesController : ControllerBase
 {
     private readonly ApplicationDbContext _context;

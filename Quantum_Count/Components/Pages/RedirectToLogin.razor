@@ -1,14 +1,11 @@
-﻿@inject NavigationManager Navigation
+@inject NavigationManager Navigation
 <div class="redirect-login">
     <div class="redirect-spinner"></div>
     <p>Redirecting to sign in...</p>
 </div>
 @code {
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
-        {
-            Navigation.NavigateTo("/login",forceLoad: true);
-        }
+        Navigation.NavigateTo("/login");
     }
 }

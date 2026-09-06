@@ -26,14 +26,9 @@
                    StartIcon="@Icons.Material.Filled.Add"
                    Class="primary-action"
                    Href="/equipment/new">
-
             New Equipment
-
         </MudButton>
-
     </div>
-
-
     @if (_loading)
     {
         <div class="loading-state">
@@ -186,8 +181,6 @@
                               Immediate="true"
                               Clearable="true"
                               Class="search-box" />
-
-
                 <MudSelect T="int?"
                            @bind-Value="_selectedCategory"
                            Label="Category"
@@ -196,19 +189,22 @@
                            Clearable="true"
                            Class="category-filter">
 
-                    <MudSelectItem T="int?" Value="@(null)">
+                    <MudSelectItem T="int?"
+                                   Value="@((int?)null)">
                         All Categories
                     </MudSelectItem>
 
                     @foreach (var category in _categories)
                     {
-                        <MudSelectItem T="int?" Value="@category.Id">
+                        <MudSelectItem T="int?"
+                                       Value="@((int?)category.Id)">
+
                             @category.Name
+
                         </MudSelectItem>
                     }
 
                 </MudSelect>
-
 
                 <MudSelect T="string"
                            @bind-Value="_statusFilter"

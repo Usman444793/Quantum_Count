@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +6,7 @@ using Quantum_Count.Models;
 namespace Quantum_Count.Services;
 public class JwtService
 {
+    public const string CookieName = "jwt_token";
     private readonly IConfiguration _configuration;
     public JwtService(IConfiguration configuration)
     {
@@ -19,15 +20,24 @@ public class JwtService
         var audience = jwtSettings["Audience"];
         var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");
         var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new(ClaimTypes.Name, user.FullName),
-            new(ClaimTypes.NameIdentifier, user.Id)
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(ClaimTypes.Name, user.FullName ?? user.UserName ?? "User"),
+            new(ClaimTypes.Email, user.Email ?? ""),
+            new("FullName", user.FullName ?? "")
         };
-        var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(issuer: issuer,audience: audience,claims: claims,expires: expiresAt,signingCredentials: credentials);
-        return (new JwtSecurityTokenHandler().WriteToken(token),expiresAt);
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),SecurityAlgorithms.HmacSha256);
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            expires: expiresAt,
+            signingCredentials: credentials);
+        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
     }
 }

@@ -1,8 +1,8 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Quantum_Count.Components.Layout
 @using Quantum_Count.Components.Pages
 <CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
+    <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Quantum_Count.Client._Imports).Assembly }">
         <Found Context="routeData">
             <AuthorizeRouteView
                 RouteData="@routeData"

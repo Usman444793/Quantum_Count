@@ -1,4 +1,4 @@
-﻿@page "/login"
+@page "/login"
 @layout PublicLayout
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.WebUtilities
@@ -11,9 +11,10 @@
         <h1>Welcome Back</h1>
         <p class="auth-subtitle">Sign in to Quantum Count</p>
         <form method="post" action="/api/auth/login-form" class="login-form">
+            <AntiforgeryToken />
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input id="email" name="Email" class="form-input" placeholder="Enter your email" required />
+                <input id="email" name="Email" type="email" class="form-input" placeholder="Enter your email" required />
             </div>
             <div class="form-group">
                 <label for="password">Password</label>

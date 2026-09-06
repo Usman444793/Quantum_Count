@@ -151,14 +151,17 @@
                            Clearable="true"
                            Class="category-filter">
 
-                    <MudSelectItem T="int?" Value="@(null)">
+                    <MudSelectItem T="int?" Value="@((int?)null)">
                         All Categories
                     </MudSelectItem>
 
                     @foreach (var category in _categories)
                     {
-                        <MudSelectItem T="int?" Value="@category.Id">
+                        <MudSelectItem T="int?"
+                                       Value="@((int?)category.Id)">
+
                             @category.Name
+
                         </MudSelectItem>
                     }
 

@@ -1,11 +1,8 @@
-﻿@page "/register"
+@page "/register"
 @layout PublicLayout
-@using Quantum_Count.Services
 @using Quantum_Count.DTO
-@using Microsoft.JSInterop
-@using System.Collections.Generic
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
 <PageTitle>Create Account - Quantum Count</PageTitle>
 <div class="register-page">
     <div class="register-card">
@@ -14,35 +11,26 @@
             <h1>Create Account</h1>
             <p>Start using Quantum Count</p>
         </div>
-        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
-            <DataAnnotationsValidator />
-            @if (!string.IsNullOrEmpty(errorMessage))
+        <form method="post" action="/api/auth/register-form" class="register-form">
+            <AntiforgeryToken />
+            @if (showError)
             {
-                <div class="register-error">@errorMessage</div>
+                <div class="register-error">@errorText</div>
             }
             <div class="register-field">
                 <label for="fullname">Full Name</label>
-                <InputText id="fullname" @bind-Value="registerModel.FullName" class="register-input" placeholder="Enter your full name" />
-                <ValidationMessage For="@(() => registerModel.FullName)" />
+                <input id="fullname" name="FullName" class="register-input" placeholder="Enter your full name" required />
             </div>
             <div class="register-field">
                 <label for="email">Email Address</label>
-                <InputText id="email" @bind-Value="registerModel.Email" class="register-input" type="email" placeholder="Enter your email address" />
-                <ValidationMessage For="@(() => registerModel.Email)" />
+                <input id="email" name="Email" type="email" class="register-input" placeholder="Enter your email address" required />
             </div>
             <div class="register-field">
                 <label for="password">Password</label>
-                <InputText id="password" @bind-Value="registerModel.Password" class="register-input" type="password" placeholder="Enter password" />
-                <ValidationMessage For="@(() => registerModel.Password)" />
+                <input id="password" name="Password" type="password" class="register-input" placeholder="Enter password (min 8 chars)" required minlength="8" />
             </div>
-            <button type="submit" class="register-button" disabled="@isLoading">
-                @(isLoading ? "Creating account..." : "Create Account")
-            </button>
-        </EditForm>
-        @if (showError)
-        {
-            <div class="register-error">@errorText</div>
-        }
+            <button type="submit" class="register-button">Create Account</button>
+        </form>
         <div class="register-footer">
             <span>Already have an account?</span>
             <a href="/login">Sign in</a>
@@ -166,9 +154,7 @@
 @code {
     private bool showError;
     private string errorText = string.Empty;
-    private RegisterRequest registerModel = new();
-    private bool isLoading;
-    private string? errorMessage;
+
     protected override void OnInitialized()
     {
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
@@ -179,31 +165,9 @@
             if (val == "exists")
                 errorText = "An account with this email already exists.";
             else if (val == "invalid")
-                errorText = "Invalid registration details.";
+                errorText = "Invalid registration details. Please check all fields.";
             else
-                errorText = "Registration error.";
-        }
-    }
-    private async Task HandleRegister()
-    {
-        isLoading = true;
-        errorMessage = null;
-
-        try
-        {
-            var data = new Dictionary<string, string>
-            {
-                ["FullName"] = registerModel.FullName ?? string.Empty,
-                ["Email"] = registerModel.Email ?? string.Empty,
-                ["Password"] = registerModel.Password ?? string.Empty
-            };
-            await JS.InvokeVoidAsync("submitPost", "/api/auth/register-form", data);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            errorMessage = "Unable to connect to the server.";
-            isLoading = false;
+                errorText = "Registration failed. Ensure password has at least 8 characters, numbers, uppercase, and special characters.";
         }
     }
 }
