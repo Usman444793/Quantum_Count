@@ -24,7 +24,7 @@
 
         <MudButton Variant="Variant.Filled"
                    StartIcon="@Icons.Material.Filled.Add"
-                   Class="primary-action"
+                   Class="new-inventory-button"
                    Href="/equipment/new">
             New Equipment
         </MudButton>
@@ -493,10 +493,10 @@
             _categories =
                 await InventoryService.GetCategoriesAsync();
         }
-        catch
+        catch (Exception ex)
         {
             Snackbar.Add(
-                "Unable to load equipment.",
+                $"Unable to load equipment: {ex.Message}",
                 Severity.Error);
         }
         finally
@@ -622,5 +622,9 @@
                 "Unable to delete equipment.",
                 Severity.Error);
         }
+    }
+    private void OnCategoryChanged(int? value)
+    {
+        _selectedCategory = value;
     }
 }

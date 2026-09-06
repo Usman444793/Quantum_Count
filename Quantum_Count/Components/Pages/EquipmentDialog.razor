@@ -96,50 +96,35 @@
                                       Variant="Variant.Outlined"
                                       Required="true" />
 
-                        <MudSelect T="int"
-                                   Label="Category"
-                                   @bind-Value="_model.CategoryId"
-                                   Variant="Variant.Outlined"
-                                   Required="true">
+                        <div class="native-form-field">
+                            <select id="equipment-category"
+                                    class="native-select"
+                                    @bind="_model.CategoryId">
+                                <option value="0">Select a category</option>
+                                @foreach (var category in _categories)
+                                {
+                                    <option value="@category.Id">
+                                        @category.Name
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => _model.CategoryId)" />
+                        </div>
+                        <div class="native-form-field">
+                            <select id="equipment-status"
+                                    class="native-select"
+                                    @bind="_model.Status">
 
-                            @foreach (var category in _categories)
-                            {
-                                <MudSelectItem T="int"
-                                               Value="@category.Id">
+                                <option value="Available">Available</option>
+                                <option value="In Use">In Use</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Damaged">Damaged</option>
+                                <option value="Retired">Retired</option>
 
-                                    @category.Name
+                            </select>
 
-                                </MudSelectItem>
-                            }
-
-                        </MudSelect>
-
-                        <MudSelect T="string"
-                                   Label="Status"
-                                   @bind-Value="_model.Status"
-                                   Variant="Variant.Outlined">
-
-                            <MudSelectItem Value="@("Available")">
-                                Available
-                            </MudSelectItem>
-
-                            <MudSelectItem Value="@("In Use")">
-                                In Use
-                            </MudSelectItem>
-
-                            <MudSelectItem Value="@("Maintenance")">
-                                Maintenance
-                            </MudSelectItem>
-
-                            <MudSelectItem Value="@("Damaged")">
-                                Damaged
-                            </MudSelectItem>
-
-                            <MudSelectItem Value="@("Retired")">
-                                Retired
-                            </MudSelectItem>
-
-                        </MudSelect>
+                            <ValidationMessage For="@(() => _model.Status)" />
+                        </div>
 
                     </div>
 
@@ -188,9 +173,16 @@
                                          Adornment="Adornment.Start"
                                          AdornmentText="$" />
 
-                        <MudDatePicker Label="Purchase Date"
-                                       @bind-Date="_model.PurchaseDate"
-                                       Variant="Variant.Outlined" />
+                        <div class="native-form-field">
+                            <label for="purchase-date">
+                                Purchase Date
+                            </label>
+
+                            <input id="purchase-date"
+                                   type="date"
+                                   class="native-date-input"
+                                   @bind="_model.PurchaseDate" />
+                        </div>
 
                     </div>
 
@@ -286,10 +278,10 @@
                 _model = equipment;
             }
         }
-        catch
+        catch (Exception ex)
         {
             Snackbar.Add(
-                "Unable to load equipment.",
+                $"Unable to load equipment: {ex.Message}",
                 Severity.Error);
         }
         finally

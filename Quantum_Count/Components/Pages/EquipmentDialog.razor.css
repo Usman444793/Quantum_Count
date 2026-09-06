@@ -202,7 +202,96 @@
     .save-button:disabled {
         opacity: 0.65;
     }
+.native-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+}
 
+    .native-form-field label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+.native-select {
+    width: 100%;
+    height: 56px;
+    padding: 0 42px 0 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background-color: white;
+    color: #1f2937;
+    font-size: 15px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .native-select:hover {
+        border-color: teal;
+    }
+
+    .native-select:focus {
+        border-color: #159570;
+        box-shadow: 0 0 0 2px rgba(21, 149, 112, 0.12);
+    }
+
+    .native-select option {
+        color: #1f2937;
+        background: white;
+    }
+
+        .native-select option[value="0"] {
+            color: #9ca3af;
+        }
+
+.native-form-field .validation-message {
+    color: #dc2626;
+    font-size: 12px;
+}
+/* ================================
+   NATIVE DATE INPUT
+   ================================ */
+
+.native-date-input {
+    width: 100%;
+    height: 56px;
+    padding: 0 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #1f2937;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+    .native-date-input:hover {
+        border-color: #9ca3af;
+        background-color: #fafafa;
+    }
+
+    .native-date-input:focus {
+        border-color: #159570;
+        box-shadow: 0 0 0 2px rgba(21, 149, 112, 0.12);
+        background-color: #ffffff;
+    }
+
+    /* Calendar icon */
+    .native-date-input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: 0.7;
+        width: 18px;
+        height: 18px;
+    }
+
+        .native-date-input::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
 /* =========================================================
    VALIDATION
 ========================================================= */

@@ -23,7 +23,8 @@ public class Equipment
     public string? Description { get; set; } = string.Empty;
     public bool isActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedAt { get; set; } 
+    public DateTime? UpdatedAt { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a category.")]
     public int CategoryId { get; set; }
     public InventoryCategory? Category { get; set; }
 }

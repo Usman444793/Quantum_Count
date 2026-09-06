@@ -1,5 +1,4 @@
-﻿using Quantum_Count.Components.Pages;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 namespace Quantum_Count.Models;
 public class InventoryCategory
 {

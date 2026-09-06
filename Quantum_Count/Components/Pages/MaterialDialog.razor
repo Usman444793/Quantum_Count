@@ -98,26 +98,20 @@
                                       Required="true"
                                       RequiredError="Material name is required." />
 
-                        <MudSelect T="int"
-                                   Label="Category"
-                                   @bind-Value="_model.CategoryId"
-                                   Variant="Variant.Outlined"
-                                   Required="true"
-                                   RequiredError="Select a category.">
-
-                            @foreach (var category in _categories)
-                            {
-                                <MudSelectItem T="int"
-                                               Value="@category.Id">
-
-                                    @category.Name
-
-                                </MudSelectItem>
-                            }
-
-                        </MudSelect>
-
-
+                        <div class="native-form-field">
+                            <select id="material-category"
+                                    class="native-select"
+                                    @bind="_model.CategoryId">
+                                <option value="0">Select a category</option>
+                                @foreach (var category in _categories)
+                                {
+                                    <option value="@category.Id">
+                                        @category.Name
+                                    </option>
+                                }
+                            </select>
+                            <ValidationMessage For="@(() => _model.CategoryId)" />
+                        </div>
                         <MudTextField T="string"
                                       Label="Unit"
                                       @bind-Value="_model.Unit"
@@ -271,10 +265,10 @@
                 _model = material;
             }
         }
-        catch
+        catch (Exception ex)
         {
             Snackbar.Add(
-                "Unable to load material.",
+                $"Unable to load material: {ex.Message}",
                 Severity.Error);
         }
         finally

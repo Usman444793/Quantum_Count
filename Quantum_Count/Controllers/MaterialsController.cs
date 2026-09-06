@@ -79,12 +79,12 @@ public class MaterialsController : ControllerBase
                 message = "Material Not Found"
             });
         }
-        var categoryExists = await _context.Materials.AnyAsync(m => m.CategoryId == material.CategoryId && material.isActive); 
+        var categoryExists = await _context.InventoryCategories.AnyAsync(c => c.Id == material.CategoryId && c.isActive);
         if (!categoryExists)
         {
             return BadRequest(new
             {
-                message = "The Selected Category does not Exists or is Inactive."
+                message = "The selected category does not exist or is inactive."
             });
         }
         var DuplicateCodeExists = await _context.Materials.AnyAsync(m => m.MaterialCode == material.MaterialCode && m.Id != id);

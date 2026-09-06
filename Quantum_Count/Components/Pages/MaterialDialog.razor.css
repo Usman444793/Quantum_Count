@@ -109,7 +109,70 @@
     gap: 15px;
     color: #777;
 }
+/* ================================
+   CATEGORY FIELD
+   ================================ */
 
+.native-form-field {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+}
+
+    .native-form-field label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 2px;
+    }
+
+/* Native Blazor category select */
+.native-select {
+    width: 100%;
+    height: 56px;
+    padding: 0 42px 0 16px;
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+    appearance: auto;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+    .native-select:hover {
+        border-color: #9ca3af;
+        background-color: #fafafa;
+    }
+
+    .native-select:focus {
+        border-color: #159570;
+        box-shadow: 0 0 0 2px rgba(21, 149, 112, 0.12);
+        background-color: #ffffff;
+    }
+
+    /* Placeholder */
+    .native-select option[value="0"] {
+        color: #9ca3af;
+    }
+
+    /* Normal options */
+    .native-select option {
+        color: #1f2937;
+        background-color: #ffffff;
+        padding: 10px;
+    }
+
+/* Validation message */
+.native-form-field .validation-message {
+    margin-top: 2px;
+    color: #dc2626;
+    font-size: 0.75rem;
+}
 @media (max-width: 700px) {
 
     .material-form-page {

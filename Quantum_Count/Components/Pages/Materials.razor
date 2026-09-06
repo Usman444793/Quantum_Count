@@ -16,7 +16,7 @@
             <h1>Materials</h1>
             <p>Manage your inventory, stock levels and material costs.</p>
         </div>
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="primary-action" Href="/materials/new">New Material</MudButton>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="new-inventory-button" Href="/materials/new">New Material</MudButton>
     </div>
     @if (_loading)
     {
@@ -144,14 +144,16 @@
                               Clearable="true"
                               Class="search-box" />
                 <MudSelect T="int?"
-                           @bind-Value="_selectedCategory"
+                           Value="_selectedCategory"
+                           ValueChanged="OnCategoryChanged"
                            Label="Category"
                            Variant="Variant.Outlined"
                            Dense="true"
                            Clearable="true"
                            Class="category-filter">
 
-                    <MudSelectItem T="int?" Value="@((int?)null)">
+                    <MudSelectItem T="int?"
+                                   Value="@((int?)null)">
                         All Categories
                     </MudSelectItem>
 
@@ -167,29 +169,34 @@
 
                 </MudSelect>
 
-
                 <MudSelect T="string"
                            @bind-Value="_stockFilter"
                            Label="Stock Status"
                            Variant="Variant.Outlined"
                            Dense="true"
+                           Clearable="false"
                            Class="status-filter">
 
-                    <MudSelectItem Value="@("All")">
+                    <MudSelectItem T="string"
+                                   Value="@("All")">
                         All Stock
                     </MudSelectItem>
 
-                    <MudSelectItem Value="@("In Stock")">
+                    <MudSelectItem T="string"
+                                   Value="@("In Stock")">
                         In Stock
                     </MudSelectItem>
 
-                    <MudSelectItem Value="@("Low Stock")">
+                    <MudSelectItem T="string"
+                                   Value="@("Low Stock")">
                         Low Stock
                     </MudSelectItem>
 
-                    <MudSelectItem Value="@("Out of Stock")">
+                    <MudSelectItem T="string"
+                                   Value="@("Out of Stock")">
                         Out of Stock
                     </MudSelectItem>
+
                 </MudSelect>
             </div>
             <div class="table-wrapper">
@@ -346,9 +353,9 @@
             _materials = await InventoryService.GetMaterialsAsync();
             _categories = await InventoryService.GetCategoriesAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            Snackbar.Add("Unable to load materials.",Severity.Error);
+            Snackbar.Add($"Unable to load materials: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -427,5 +434,9 @@
         {
             Snackbar.Add("Unable to delete material.",Severity.Error);
         }
+    }
+    private void OnCategoryChanged(int? value)
+    {
+        _selectedCategory = value;
     }
 }
