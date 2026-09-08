@@ -30,7 +30,6 @@ builder.Services.AddIdentity<ApplicationUsers, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders()
 .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
-
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 builder.Services.AddAuthentication(options =>
     {

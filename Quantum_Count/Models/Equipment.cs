@@ -16,6 +16,7 @@ public class Equipment
     [MaxLength(100)]
     public string? Model { get; set; } = string.Empty;
     public DateTime? PurchaseDate { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "Purchase price cannot be negative")]
     public decimal PurchasePrice { get; set; } = 0;
     [MaxLength(50)]
     public string Status { get; set; } = "Available";

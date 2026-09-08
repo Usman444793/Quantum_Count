@@ -5,24 +5,17 @@ namespace Quantum_Count.Services;
 public class InventoryService
 {
     private readonly ApplicationDbContext _context;
-
     public InventoryService(ApplicationDbContext context)
     {
         _context = context;
     }
     public async Task<List<InventoryCategory>> GetCategoriesAsync()
     {
-        return await _context.InventoryCategories
-            .AsNoTracking()
-            .Where(c => c.isActive)
-            .OrderBy(c => c.Name)
-            .ToListAsync();
+        return await _context.InventoryCategories.AsNoTracking().Where(c => c.isActive).OrderBy(c => c.Name).ToListAsync();
     }
-
     public async Task<List<InventoryCategory>> GetCategoriesWithCountsAsync()
     {
-        return await _context.InventoryCategories
-            .AsNoTracking()
+        return await _context.InventoryCategories.AsNoTracking()
             .Include(c => c.Materials.Where(m => m.isActive))
             .Include(c => c.Equipment.Where(e => e.isActive))
             .Where(c => c.isActive)
@@ -31,11 +24,9 @@ public class InventoryService
     }
     public async Task<InventoryCategory?> GetCategoryAsync(int id)
     {
-        return await _context.InventoryCategories
-            .FirstOrDefaultAsync(c => c.Id == id);
+        return await _context.InventoryCategories.FirstOrDefaultAsync(c => c.Id == id);
     }
-    public async Task<InventoryCategory> CreateCategoryAsync(
-        InventoryCategory category)
+    public async Task<InventoryCategory> CreateCategoryAsync(InventoryCategory category)
     {
         category.Name = category.Name.Trim();
         category.Description = category.Description?.Trim();
@@ -150,7 +141,7 @@ public class InventoryService
     }
     public async Task<Equipment?> GetEquipmentAsync(int id)
     {
-        return await _context.Equipment.Include(e => e.Category).FirstOrDefaultAsync(e => e.Id == id);
+        return await _context.Equipment.Include(e => e.Category).AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && e.isActive);
     }
     public async Task<Equipment> CreateEquipmentAsync(Equipment equipment)
     {
@@ -195,5 +186,144 @@ public class InventoryService
         equipment.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         return true;
+    }
+    public async Task<List<InventoryTransactions>> GetTransactionsAsync()
+    {
+        return await _context.InventoryTransactions.Include(t => t.Material).AsNoTracking().OrderByDescending(t => t.CreatedAt).ToListAsync();
+    }
+    public async Task<List<InventoryTransactions>> GetMaterialTransactionsAsync(int materialId)
+    {
+        return await _context.InventoryTransactions.Include(t => t.Material).Where(t => t.MaterialId == materialId).AsNoTracking().OrderByDescending(t => t.CreatedAt).ToListAsync();
+    }
+    public async Task<InventoryTransactions?> GetTransactionAsync(int id)
+    {
+        return await _context.InventoryTransactions.Include(t => t.Material).FirstOrDefaultAsync(t => t.Id == id);
+    }
+    public async Task<(bool success,string message,InventoryTransactions? transaction)> CreateTransactionAsync(InventoryTransactions transaction,string? createdBy = null)
+    {
+        var material = await _context.Materials.FirstOrDefaultAsync(m => m.Id == transaction.MaterialId && m.isActive);
+        if (material == null) 
+        {
+            return (false,"Material not found or is not active",null);
+        }
+        if (transaction.Quantity <= 0)
+        {
+            return (false, "Quantity must be grater than 0", null);
+        }
+        var transactionType = transaction.TransactionType.Trim();
+        decimal StockChange;
+        switch (transactionType) 
+        {
+            case "Stock In":
+            case "Return":
+                StockChange =transaction.Quantity; 
+                break;
+            case "Stock Out":
+            case "Damaged":
+                StockChange = -transaction.Quantity;
+                break;
+            case "Adjustment":
+                StockChange = transaction.Quantity;
+                break;
+            default:
+                return (false, "Invalid Transaction type", null);
+        }
+        var newQuantity = material.Quantity + StockChange;
+        if (newQuantity < 0)
+        {
+            return (false, $"Insufficient stock. Available Quantity: {material.Quantity}", null);
+        }
+        transaction.TransactionType = transactionType;
+        transaction.Reference = transaction.Reference?.Trim();
+        transaction.Notes = transaction.Notes?.Trim();
+        transaction.CreatedBy = createdBy;
+        transaction.CreatedAt = DateTime.UtcNow;
+        material.Quantity = newQuantity;
+        material.UpdatedAt = DateTime.UtcNow;
+        _context.InventoryTransactions.Add(transaction);
+        await _context.SaveChangesAsync();
+        return (true, "Transaction created successfully", transaction);
+    }
+    public async Task<List<EquipmentHistory>> GetEquipmentHistoryAsync(
+    int equipmentId)
+    {
+        return await _context.EquipmentHistories
+            .Include(h => h.Equipment)
+            .Where(h => h.EquipmentId == equipmentId)
+            .AsNoTracking()
+            .OrderByDescending(h => h.CreatedAt)
+            .ToListAsync();
+    }
+    public async Task<EquipmentHistory?> GetEquipmentHistoryByIdAsync(int id)
+    {
+        return await _context.EquipmentHistories
+            .Include(h => h.Equipment)
+            .FirstOrDefaultAsync(h => h.Id == id);
+    }
+    public async Task<(bool success, string message, EquipmentHistory? history)>
+    CreateEquipmentHistoryAsync(
+        EquipmentHistory history,
+        string? performedBy = null)
+    {
+        var equipment = await _context.Equipment
+            .FirstOrDefaultAsync(e =>
+                e.Id == history.EquipmentId &&
+                e.isActive);
+
+        if (equipment == null)
+        {
+            return (
+                false,
+                "Equipment not found or is not active.",
+                null
+            );
+        }
+
+        if (string.IsNullOrWhiteSpace(history.ActivityType))
+        {
+            return (
+                false,
+                "Activity type is required.",
+                null
+            );
+        }
+
+        var validTypes = new[]
+        {
+        "Assignment",
+        "Return",
+        "Maintenance",
+        "Repair",
+        "Inspection",
+        "Status Change"
+    };
+
+        var activityType = history.ActivityType.Trim();
+
+        if (!validTypes.Contains(activityType))
+        {
+            return (
+                false,
+                "Invalid activity type.",
+                null
+            );
+        }
+
+        history.ActivityType = activityType;
+        history.Reference = history.Reference?.Trim();
+        history.Notes = history.Notes?.Trim();
+        history.PerformedBy = performedBy;
+        history.CreatedBy = performedBy ?? "System";
+        history.CreatedAt = DateTime.UtcNow;
+
+        _context.EquipmentHistories.Add(history);
+
+        await _context.SaveChangesAsync();
+
+        return (
+            true,
+            "Equipment history created successfully.",
+            history
+        );
     }
 }

@@ -15,7 +15,11 @@ public class JwtService
     public (string Token, DateTime ExpiresAt) GenerateToken(ApplicationUsers user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
-        var key = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT key is missing.");
+        var key = jwtSettings["Key"];
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new InvalidOperationException("JWT key is missing or not configured. Set it in appsettings.Development.json for development or in user secrets/environment variables for production.");
+        }
         var issuer = jwtSettings["Issuer"];
         var audience = jwtSettings["Audience"];
         var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");

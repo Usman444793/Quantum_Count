@@ -1,0 +1,826 @@
+﻿@page "/equipment/{EquipmentId:int}/transaction/new"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@using MudBlazor
+
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<PageTitle>New Equipment Transaction - Quantum Count</PageTitle>
+
+
+@if (Loading)
+{
+    <div class="equipment-transaction-page">
+
+        <div class="loading-state">
+
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary"
+                                 Size="Size.Large" />
+
+            <h3>Loading equipment...</h3>
+
+        </div>
+
+    </div>
+}
+else if (HasError)
+{
+    <div class="equipment-transaction-page">
+
+        <div class="error-state">
+
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline"
+                     Size="Size.Large" />
+
+            <h3>Unable to Load Equipment</h3>
+
+            <p>
+                @ErrorMessage
+            </p>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Href="/equipment">
+
+                Back to Equipment
+
+            </MudButton>
+
+        </div>
+
+    </div>
+}
+else if (LoadedEquipment == null)
+{
+    <div class="equipment-transaction-page">
+
+        <div class="error-state">
+
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline"
+                     Size="Size.Large" />
+
+            <h3>Equipment Not Found</h3>
+
+            <p>
+                No equipment was found with ID @EquipmentId.
+            </p>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Href="/equipment">
+
+                Back to Equipment
+
+            </MudButton>
+
+        </div>
+
+    </div>
+}
+else if (HistoryModel == null)
+{
+    <div class="equipment-transaction-page">
+
+        <div class="error-state">
+
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline"
+                     Size="Size.Large" />
+
+            <h3>Unable to Initialize Transaction</h3>
+
+            <p>
+                Transaction information could not be initialized.
+            </p>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Href="@($"/equipment/{EquipmentId}/history")">
+
+                Back to History
+
+            </MudButton>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="equipment-transaction-page">
+
+        <!-- ================================================= -->
+        <!-- HEADER -->
+        <!-- ================================================= -->
+
+        <div class="transaction-header">
+
+            <MudButton Variant="Variant.Text"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       Href="@($"/equipment/{EquipmentId}/history")">
+
+                Back to History
+
+            </MudButton>
+
+
+            <div>
+
+                <h1>
+                    New Equipment Transaction
+                </h1>
+
+                <p>
+                    Record activity for this equipment
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- EQUIPMENT SUMMARY -->
+        <!-- ================================================= -->
+
+        <div class="equipment-summary">
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Equipment
+                </span>
+
+                <strong>
+                    @LoadedEquipment.Name
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Code
+                </span>
+
+                <strong>
+                    @LoadedEquipment.EquipmentCode
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Current Status
+                </span>
+
+                <strong>
+                    @LoadedEquipment.Status
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span class="summary-label">
+                    Serial Number
+                </span>
+
+                <strong>
+                    @(LoadedEquipment.SerialNumber ?? "—")
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- ERROR -->
+        <!-- ================================================= -->
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="error-message">
+
+                <MudAlert Severity="Severity.Error">
+
+                    @ErrorMessage
+
+                </MudAlert>
+
+            </div>
+        }
+
+
+        <!-- ================================================= -->
+        <!-- FORM -->
+        <!-- ================================================= -->
+
+        <EditForm Model="HistoryModel"
+                  OnValidSubmit="CreateTransaction">
+
+            <DataAnnotationsValidator />
+
+
+            <div class="form-card">
+
+
+                <div class="form-title">
+
+                    <h2>
+                        Equipment Activity
+                    </h2>
+
+                    <p>
+                        Enter the details of this equipment transaction
+                    </p>
+
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <!-- ===================================== -->
+                    <!-- EQUIPMENT -->
+                    <!-- ===================================== -->
+
+                    <div class="form-group">
+
+                        <label for="equipment">
+                            Equipment
+                        </label>
+
+                        <input id="equipment"
+                               class="form-input"
+                               value="@($"{LoadedEquipment.EquipmentCode} - {LoadedEquipment.Name}")"
+                               readonly />
+
+                    </div>
+
+
+                    <!-- ===================================== -->
+                    <!-- ACTIVITY -->
+                    <!-- ===================================== -->
+
+                    <div class="form-group">
+
+                        <label for="activityType">
+                            Activity Type *
+                        </label>
+
+                        <InputSelect id="activityType"
+                                     class="form-input"
+                                     @bind-Value="HistoryModel.ActivityType">
+
+                            <option value="">
+                                Select activity type
+                            </option>
+
+                            <option value="Assignment">
+                                Assignment
+                            </option>
+
+                            <option value="Return">
+                                Return
+                            </option>
+
+                            <option value="Maintenance">
+                                Maintenance
+                            </option>
+
+                            <option value="Repair">
+                                Repair
+                            </option>
+
+                            <option value="Inspection">
+                                Inspection
+                            </option>
+
+                            <option value="Status Change">
+                                Status Change
+                            </option>
+
+                        </InputSelect>
+
+                        <ValidationMessage For="@(() => HistoryModel.ActivityType)" />
+
+                    </div>
+
+
+                    <!-- ===================================== -->
+                    <!-- TRANSACTION TYPE -->
+                    <!-- ===================================== -->
+
+                    <div class="form-group">
+
+                        <label for="transactionType">
+                            Transaction Type
+                        </label>
+
+                        <InputSelect id="transactionType"
+                                     class="form-input"
+                                     @bind-Value="HistoryModel.TransactionType">
+
+                            <option value="">
+                                Select transaction type
+                            </option>
+
+                            <option value="Assigned">
+                                Assigned
+                            </option>
+
+                            <option value="Checked Out">
+                                Checked Out
+                            </option>
+
+                            <option value="Returned">
+                                Returned
+                            </option>
+
+                            <option value="Maintenance">
+                                Maintenance
+                            </option>
+
+                            <option value="Damaged">
+                                Damaged
+                            </option>
+
+                            <option value="Repaired">
+                                Repaired
+                            </option>
+
+                            <option value="Retired">
+                                Retired
+                            </option>
+
+                        </InputSelect>
+
+                    </div>
+
+
+                    <!-- ===================================== -->
+                    <!-- REFERENCE -->
+                    <!-- ===================================== -->
+
+                    <div class="form-group">
+
+                        <label for="reference">
+                            Reference
+                        </label>
+
+                        <InputText id="reference"
+                                   class="form-input"
+                                   placeholder="Work order, ticket number, etc."
+                                   @bind-Value="HistoryModel.Reference" />
+
+                    </div>
+
+
+                    <!-- ===================================== -->
+                    <!-- NOTES -->
+                    <!-- ===================================== -->
+
+                    <div class="form-group full-width">
+
+                        <label for="notes">
+                            Notes
+                        </label>
+
+                        <InputTextArea id="notes"
+                                       class="form-input notes-input"
+                                       rows="5"
+                                       placeholder="Additional information..."
+                                       @bind-Value="HistoryModel.Notes" />
+
+                    </div>
+
+                </div>
+
+
+                <!-- ========================================= -->
+                <!-- ACTIONS -->
+                <!-- ========================================= -->
+
+                <div class="form-actions">
+
+                    <MudButton Variant="Variant.Text"
+                               Href="@($"/equipment/{EquipmentId}/history")"
+                               Disabled="Saving">
+
+                        Cancel
+
+                    </MudButton>
+
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="Saving">
+
+                        @if (Saving)
+                        {
+                            <span>
+                                Saving...
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+                                Create Transaction
+                            </span>
+                        }
+
+                    </MudButton>
+
+                </div>
+
+            </div>
+
+        </EditForm>
+
+    </div>
+}
+
+
+@code
+{
+    // =========================================================
+    // ROUTE PARAMETER
+    // =========================================================
+
+    [Parameter]
+    public int EquipmentId { get; set; }
+
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    private bool Loading { get; set; } = true;
+
+    private bool Saving { get; set; }
+
+    private string ErrorMessage { get; set; } = string.Empty;
+
+
+    // =========================================================
+    // DATA
+    // =========================================================
+
+    private Equipment? LoadedEquipment { get; set; }
+
+    private EquipmentHistory? HistoryModel { get; set; }
+
+
+    // =========================================================
+    // USER
+    // =========================================================
+
+    private string CurrentUserName { get; set; } = "System";
+
+
+    // =========================================================
+    // INITIALIZATION
+    // =========================================================
+
+    protected override async Task OnInitializedAsync()
+    {
+        Loading = true;
+
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            Console.WriteLine(
+                "======================================");
+
+            Console.WriteLine(
+                "NEW EQUIPMENT TRANSACTION");
+
+            Console.WriteLine(
+                $"EquipmentId = {EquipmentId}");
+
+            Console.WriteLine(
+                "======================================");
+
+
+            // -------------------------------------------------
+            // Validate ID
+            // -------------------------------------------------
+
+            if (EquipmentId <= 0)
+            {
+                ErrorMessage =
+                    "Invalid equipment ID.";
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // Authentication
+            // -------------------------------------------------
+
+            try
+            {
+                var authenticationState =
+                    await AuthenticationStateProvider
+                        .GetAuthenticationStateAsync();
+
+                if (authenticationState.User.Identity?.IsAuthenticated == true)
+                {
+                    CurrentUserName =
+                        authenticationState.User.Identity.Name
+                        ?? "System";
+                }
+            }
+            catch (Exception authException)
+            {
+                Console.WriteLine(
+                    $"Authentication error: {authException}");
+
+                CurrentUserName = "System";
+            }
+
+
+            // -------------------------------------------------
+            // Load equipment
+            // -------------------------------------------------
+
+            Console.WriteLine(
+                $"Loading equipment {EquipmentId}...");
+
+
+            var equipment =
+                await InventoryService
+                    .GetEquipmentAsync(EquipmentId);
+
+
+            if (equipment == null)
+            {
+                Console.WriteLine(
+                    "Equipment returned NULL.");
+
+                ErrorMessage =
+                    $"Equipment with ID {EquipmentId} was not found.";
+
+                return;
+            }
+
+
+            Console.WriteLine(
+                $"Equipment found: {equipment.Name}");
+
+
+            // -------------------------------------------------
+            // Assign loaded equipment
+            // -------------------------------------------------
+
+            LoadedEquipment = equipment;
+
+
+            // -------------------------------------------------
+            // Create history model
+            // -------------------------------------------------
+
+            HistoryModel =
+                new EquipmentHistory
+                {
+                    EquipmentId = equipment.Id,
+
+                    ActivityType = string.Empty,
+
+                    Reference = string.Empty,
+
+                    Notes = string.Empty,
+
+                    PerformedBy = CurrentUserName,
+
+                    TransactionType = string.Empty,
+
+                    CreatedAt = DateTime.UtcNow,
+
+                    CreatedBy = CurrentUserName
+                };
+
+
+            Console.WriteLine(
+                "History model initialized successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                "======================================");
+
+            Console.WriteLine(
+                "ERROR LOADING NEW TRANSACTION PAGE");
+
+            Console.WriteLine(
+                ex.ToString());
+
+            Console.WriteLine(
+                "======================================");
+
+
+            ErrorMessage =
+                $"Unable to load equipment: {ex.Message}";
+        }
+        finally
+        {
+            Loading = false;
+
+            Console.WriteLine(
+                $"Loading = {Loading}");
+        }
+    }
+
+
+    // =========================================================
+    // CREATE TRANSACTION
+    // =========================================================
+
+    private async Task CreateTransaction()
+    {
+        if (Saving)
+        {
+            return;
+        }
+
+
+        if (LoadedEquipment == null)
+        {
+            ErrorMessage =
+                "Equipment is not loaded.";
+
+            Snackbar.Add(
+                ErrorMessage,
+                Severity.Error);
+
+            return;
+        }
+
+
+        if (HistoryModel == null)
+        {
+            ErrorMessage =
+                "Transaction model is not initialized.";
+
+            Snackbar.Add(
+                ErrorMessage,
+                Severity.Error);
+
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(
+                HistoryModel.ActivityType))
+        {
+            ErrorMessage =
+                "Please select an activity type.";
+
+            Snackbar.Add(
+                ErrorMessage,
+                Severity.Warning);
+
+            return;
+        }
+
+
+        Saving = true;
+
+        ErrorMessage = string.Empty;
+
+
+        try
+        {
+            // -------------------------------------------------
+            // Set values
+            // -------------------------------------------------
+
+            HistoryModel.EquipmentId =
+                LoadedEquipment.Id;
+
+
+            HistoryModel.ActivityType =
+                HistoryModel.ActivityType.Trim();
+
+
+            if (string.IsNullOrWhiteSpace(
+                    HistoryModel.TransactionType))
+            {
+                HistoryModel.TransactionType = null;
+            }
+            else
+            {
+                HistoryModel.TransactionType =
+                    HistoryModel.TransactionType.Trim();
+            }
+
+
+            if (string.IsNullOrWhiteSpace(
+                    HistoryModel.Reference))
+            {
+                HistoryModel.Reference = null;
+            }
+            else
+            {
+                HistoryModel.Reference =
+                    HistoryModel.Reference.Trim();
+            }
+
+
+            if (string.IsNullOrWhiteSpace(
+                    HistoryModel.Notes))
+            {
+                HistoryModel.Notes = null;
+            }
+            else
+            {
+                HistoryModel.Notes =
+                    HistoryModel.Notes.Trim();
+            }
+
+
+            HistoryModel.PerformedBy =
+                CurrentUserName;
+
+            HistoryModel.CreatedBy =
+                CurrentUserName;
+
+            HistoryModel.CreatedAt =
+                DateTime.UtcNow;
+
+
+            // -------------------------------------------------
+            // Create record
+            // -------------------------------------------------
+
+            var result =
+                await InventoryService
+                    .CreateEquipmentHistoryAsync(
+                        HistoryModel,
+                        CurrentUserName);
+
+
+            if (!result.success)
+            {
+                ErrorMessage =
+                    result.message;
+
+                Snackbar.Add(
+                    ErrorMessage,
+                    Severity.Error);
+
+                return;
+            }
+
+
+            // -------------------------------------------------
+            // Success
+            // -------------------------------------------------
+
+            Snackbar.Add(
+                "Equipment transaction created successfully.",
+                Severity.Success);
+
+
+            Navigation.NavigateTo(
+                $"/equipment/{EquipmentId}/history");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                ex.ToString());
+
+
+            ErrorMessage =
+                $"Unable to create transaction: {ex.Message}";
+
+
+            Snackbar.Add(
+                ErrorMessage,
+                Severity.Error);
+        }
+        finally
+        {
+            Saving = false;
+        }
+    }
+}

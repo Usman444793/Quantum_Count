@@ -11,167 +11,99 @@
 <PageTitle>Equipment & Assets | Quantum Count</PageTitle>
 <div class="equipment-page">
     <div class="page-header">
-
         <div class="page-title-section">
-
             <h1>Equipment & Assets</h1>
-
-            <p>
-                Manage equipment, assets, maintenance and operational status.
-            </p>
-
+            <p> Manage equipment, assets, maintenance and operational status.</p>
         </div>
-
-        <MudButton Variant="Variant.Filled"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   Class="new-inventory-button"
-                   Href="/equipment/new">
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="new-inventory-button"Href="/equipment/new">
             New Equipment
         </MudButton>
     </div>
     @if (_loading)
     {
         <div class="loading-state">
-
-            <MudProgressCircular Indeterminate="true"
-                                 Color="Color.Primary"
-                                 Size="Size.Large" />
-
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
             <span>Loading equipment...</span>
-
         </div>
     }
     else
     {
-        <!-- SUMMARY -->
-
         <div class="summary-grid">
-
             <div class="summary-card">
-
                 <div class="summary-card-content">
-
                     <span class="summary-label">
                         Total Equipment
                     </span>
-
                     <span class="summary-value">
                         @_equipment.Count
                     </span>
-
                     <span class="summary-description">
                         Active assets
                     </span>
-
                 </div>
-
                 <div class="summary-icon">
                     <MudIcon Icon="@Icons.Material.Filled.Build" />
                 </div>
-
             </div>
-
-
             <div class="summary-card">
-
                 <div class="summary-card-content">
-
                     <span class="summary-label">
                         Available
                     </span>
-
                     <span class="summary-value success-number">
                         @AvailableCount
                     </span>
-
                     <span class="summary-description">
                         Ready for use
                     </span>
-
                 </div>
-
                 <div class="summary-icon">
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" />
                 </div>
-
             </div>
-
-
             <div class="summary-card">
-
                 <div class="summary-card-content">
-
                     <span class="summary-label">
                         In Use
                     </span>
-
                     <span class="summary-value">
                         @InUseCount
                     </span>
-
                     <span class="summary-description">
                         Currently assigned
                     </span>
-
                 </div>
-
                 <div class="summary-icon blue">
                     <MudIcon Icon="@Icons.Material.Filled.Engineering" />
                 </div>
-
             </div>
-
-
             <div class="summary-card">
-
                 <div class="summary-card-content">
-
                     <span class="summary-label">
                         Maintenance
                     </span>
-
                     <span class="summary-value warning-number">
                         @MaintenanceCount
                     </span>
-
                     <span class="summary-description">
                         Requires attention
                     </span>
-
                 </div>
-
                 <div class="summary-icon warning">
                     <MudIcon Icon="@Icons.Material.Filled.BuildCircle" />
                 </div>
-
             </div>
-
         </div>
-
-
-        <!-- MAIN CONTAINER -->
-
         <div class="equipment-container">
-
             <div class="section-header">
-
                 <div>
-
                     <h2>Equipment</h2>
-
                     <span>
                         @FilteredEquipment.Count() assets displayed
                     </span>
-
                 </div>
-
             </div>
-
-
-            <!-- FILTERS -->
-
             <div class="filter-bar">
-
                 <MudTextField T="string"
                               @bind-Value="_searchText"
                               Placeholder="Search by name, code, serial number..."
@@ -181,388 +113,180 @@
                               Immediate="true"
                               Clearable="true"
                               Class="search-box" />
-                <MudSelect T="int?"
-                           @bind-Value="_selectedCategory"
-                           Label="Category"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           Clearable="true"
-                           Class="category-filter">
-
-                    <MudSelectItem T="int?"
-                                   Value="@((int?)null)">
+                <MudSelect T="int?" @bind-Value="_selectedCategory" Label="Category" Variant="Variant.Outlined" Dense="true"
+                           Clearable="true" Class="category-filter">
+                    <MudSelectItem T="int?" Value="@((int?)null)">
                         All Categories
                     </MudSelectItem>
-
                     @foreach (var category in _categories)
                     {
-                        <MudSelectItem T="int?"
-                                       Value="@((int?)category.Id)">
-
+                        <MudSelectItem T="int?" Value="@((int?)category.Id)">
                             @category.Name
-
                         </MudSelectItem>
                     }
-
                 </MudSelect>
-
                 <MudSelect T="string"
-                           @bind-Value="_statusFilter"
-                           Label="Status"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           Class="status-filter">
-
+                           @bind-Value="_statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="status-filter">
                     <MudSelectItem Value="@("All")">
                         All Status
                     </MudSelectItem>
-
                     <MudSelectItem Value="@("Available")">
                         Available
                     </MudSelectItem>
-
                     <MudSelectItem Value="@("In Use")">
                         In Use
                     </MudSelectItem>
-
                     <MudSelectItem Value="@("Maintenance")">
                         Maintenance
                     </MudSelectItem>
-
                     <MudSelectItem Value="@("Damaged")">
-                        Damaged
+                       Damaged
                     </MudSelectItem>
-
                     <MudSelectItem Value="@("Retired")">
                         Retired
                     </MudSelectItem>
-
                 </MudSelect>
-
             </div>
-
-
-            <!-- TABLE -->
-
             <div class="table-wrapper">
-
-                <MudTable Items="@FilteredEquipment"
-                          Hover="true"
-                          Breakpoint="Breakpoint.None"
-                          Elevation="0"
-                          Class="equipment-table">
-
+                <MudTable Items="@FilteredEquipment" Hover="true" Breakpoint="Breakpoint.None" Elevation="0" Class="equipment-table">
                     <HeaderContent>
-
                         <MudTh>Equipment</MudTh>
-
                         <MudTh>Serial Number</MudTh>
-
                         <MudTh>Category</MudTh>
-
                         <MudTh>Status</MudTh>
-
                         <MudTh>Brand / Model</MudTh>
-
                         <MudTh>Purchase Price</MudTh>
-
                         <MudTh>Purchase Date</MudTh>
-
                         <MudTh>Actions</MudTh>
-
                     </HeaderContent>
-
-
                     <RowTemplate Context="equipment">
-
-                        <!-- EQUIPMENT -->
-
                         <MudTd>
-
                             <div class="equipment-cell">
-
                                 <div class="equipment-avatar">
                                     <MudIcon Icon="@Icons.Material.Filled.Build" />
                                 </div>
-
                                 <div class="equipment-info">
-
                                     <div class="equipment-name">
                                         @equipment.Name
                                     </div>
-
                                     <div class="equipment-code">
                                         @equipment.EquipmentCode
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </MudTd>
-
-
-                        <!-- SERIAL -->
-
                         <MudTd>
-
                             <span class="serial-number">
-                                @(string.IsNullOrWhiteSpace(
-                                    equipment.SerialNumber)
-                                    ? "—"
-                                    : equipment.SerialNumber)
+                                @(string.IsNullOrWhiteSpace( equipment.SerialNumber) ? "—" : equipment.SerialNumber)
                             </span>
-
                         </MudTd>
-
-
-                        <!-- CATEGORY -->
-
                         <MudTd>
-
                             <span class="category-name">
                                 @(equipment.Category?.Name ?? "Uncategorized")
                             </span>
-
                         </MudTd>
-
-
-                        <!-- STATUS -->
-
                         <MudTd>
-
-                            <MudChip T="string"
-                                     Size="Size.Small"
-                                     Variant="Variant.Filled"
-                                     Class="@GetStatusClass(equipment.Status)">
-
+                            <MudChip T="string"  Size="Size.Small" Variant="Variant.Filled" Class="@GetStatusClass(equipment.Status)">
                                 @equipment.Status
-
                             </MudChip>
-
                         </MudTd>
-
-
-                        <!-- BRAND / MODEL -->
-
                         <MudTd>
-
                             <div class="brand-model">
-
                                 <strong>
-                                    @(string.IsNullOrWhiteSpace(equipment.Brand)
-                                        ? "—"
-                                        : equipment.Brand)
+                                    @(string.IsNullOrWhiteSpace(equipment.Brand) ? "—" : equipment.Brand)
                                 </strong>
-
                                 @if (!string.IsNullOrWhiteSpace(equipment.Model))
                                 {
-                                    <span>
-                                        @equipment.Model
-                                    </span>
+                                    <span>@equipment.Model </span>
                                 }
-
                             </div>
-
                         </MudTd>
-
-
-                        <!-- PRICE -->
-
                         <MudTd>
-
                             <span class="price-value">
                                 @equipment.PurchasePrice.ToString("C")
                             </span>
-
                         </MudTd>
-
-
-                        <!-- DATE -->
-
                         <MudTd>
-
                             <span class="date-value">
-                                @(equipment.PurchaseDate?.ToString(
-                                    "dd MMM yyyy") ?? "—")
+                             @(equipment.PurchaseDate?.ToString( "dd MMM yyyy") ?? "—")
                             </span>
-
                         </MudTd>
-
-
-                        <!-- ACTIONS -->
-
                         <MudTd Class="actions-column">
-
                             <div class="action-menu-wrapper">
-
-                                <button class="action-button"
-                                        title="Actions"
-                                        @onclick="() => ToggleEquipmentMenu(equipment.Id)">
-
+                                <button class="action-button" title="Actions" @onclick="() => ToggleEquipmentMenu(equipment.Id)">
                                     ⋮
-
                                 </button>
-
                                 @if (_openEquipmentMenuId == equipment.Id)
                                 {
                                     <div class="action-menu">
-
+                                        <button @onclick="() => ViewHistory(equipment.Id)">
+                                            <MudIcon Icon="@Icons.Material.Filled.History" />
+                                            <span>Equipment History</span>
+                                        </button>
                                         <button @onclick="() => EditEquipment(equipment.Id)">
-
                                             <MudIcon Icon="@Icons.Material.Filled.Edit" />
-
-                                            <span>Edit</span>
-
+                                            <span>Edit Equipment</span>
                                         </button>
-
                                         <button @onclick="() => DeleteEquipmentAsync(equipment)">
-
                                             <MudIcon Icon="@Icons.Material.Filled.Delete" />
-
-                                            <span>Delete</span>
-
+                                            <span>Delete Equipment</span>
                                         </button>
-
-                                    </div>
+                                  </div>
                                 }
-
                             </div>
-
                         </MudTd>
                     </RowTemplate>
-
-
                     <NoRecordsContent>
-
                         <div class="empty-state">
-
-                            <MudIcon Icon="@Icons.Material.Filled.Build"
-                                     Size="Size.Large" />
-
+                            <MudIcon Icon="@Icons.Material.Filled.Build" Size="Size.Large" />
                             <h3>No equipment found</h3>
-
-                            <p>
-                                Try changing your search or filters.
-                            </p>
-
+                            <p> Try changing your search or filters.</p>
                         </div>
-
                     </NoRecordsContent>
-
                 </MudTable>
-
             </div>
-
         </div>
     }
-
 </div>
-
-
 @code {
-
     private bool _loading = true;
-
     private string _searchText = string.Empty;
-
     private int? _selectedCategory;
-
     private string _statusFilter = "All";
-
     private List<Equipment> _equipment = new();
-
     private List<InventoryCategory> _categories = new();
-
-
     protected override async Task OnInitializedAsync()
     {
         await LoadDataAsync();
     }
-
-
     private async Task LoadDataAsync()
     {
         _loading = true;
 
         try
         {
-            _equipment =
-                await InventoryService.GetEquipmentAsync();
-
-            _categories =
-                await InventoryService.GetCategoriesAsync();
+            _equipment =  await InventoryService.GetEquipmentAsync();
+            _categories = await InventoryService.GetCategoriesAsync();
         }
         catch (Exception ex)
         {
-            Snackbar.Add(
-                $"Unable to load equipment: {ex.Message}",
-                Severity.Error);
+            Snackbar.Add($"Unable to load equipment: {ex.Message}",Severity.Error);
         }
         finally
         {
             _loading = false;
         }
     }
-
-
-    private IEnumerable<Equipment> FilteredEquipment =>
-        _equipment.Where(e =>
-            (
-                string.IsNullOrWhiteSpace(_searchText)
-                ||
-                e.Name.Contains(
-                    _searchText,
-                    StringComparison.OrdinalIgnoreCase)
-                ||
-                e.EquipmentCode.Contains(
-                    _searchText,
-                    StringComparison.OrdinalIgnoreCase)
-                ||
-                (
-                    e.SerialNumber?.Contains(
-                        _searchText,
-                        StringComparison.OrdinalIgnoreCase)
-                    ?? false
-                )
-                ||
-                (
-                    e.Brand?.Contains(
-                        _searchText,
-                        StringComparison.OrdinalIgnoreCase)
-                    ?? false
-                )
-            )
-            &&
-            (
-                !_selectedCategory.HasValue
-                ||
-                e.CategoryId == _selectedCategory.Value
-            )
-            &&
-            (
-                _statusFilter == "All"
-                ||
-                e.Status == _statusFilter
-            )
+    private IEnumerable<Equipment> FilteredEquipment => _equipment.Where(e =>
+            (string.IsNullOrWhiteSpace(_searchText) ||e.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) 
+            ||  e.EquipmentCode.Contains( _searchText,StringComparison.OrdinalIgnoreCase)
+                || (e.SerialNumber?.Contains(_searchText,StringComparison.OrdinalIgnoreCase) ?? false)
+                || (e.Brand?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) )
+            &&(!_selectedCategory.HasValue || e.CategoryId == _selectedCategory.Value) && ( _statusFilter == "All" || e.Status == _statusFilter)
         );
-
-
-    private int AvailableCount =>
-        _equipment.Count(
-            e => e.Status == "Available");
-
-
-    private int InUseCount =>
-        _equipment.Count(
-            e => e.Status == "In Use");
-
-
-    private int MaintenanceCount =>
-        _equipment.Count(
-            e => e.Status == "Maintenance");
-
-
+    private int AvailableCount =>_equipment.Count(e => e.Status == "Available");
+    private int InUseCount => _equipment.Count(e => e.Status == "In Use");
+    private int MaintenanceCount => _equipment.Count( e => e.Status == "Maintenance");
     private string GetStatusClass(string status)
     {
         return status switch
@@ -576,55 +300,38 @@
         };
     }
     private int? _openEquipmentMenuId;
-
     private void ToggleEquipmentMenu(int id)
     {
-        _openEquipmentMenuId =
-            _openEquipmentMenuId == id
-                ? null
-                : id;
+        _openEquipmentMenuId = _openEquipmentMenuId == id ? null : id;
     }
-
     private void EditEquipment(int id)
     {
         _openEquipmentMenuId = null;
-
         Navigation.NavigateTo($"/equipment/edit/{id}");
     }
-    private async Task DeleteEquipmentAsync(
-        Equipment equipment)
+    private async Task DeleteEquipmentAsync(Equipment equipment)
     {
-        var confirmed =
-            await DialogService.ShowMessageBoxAsync(
-                "Delete Equipment",
-                $"Are you sure you want to delete '{equipment.Name}'?",
-                yesText: "Delete",
-                cancelText: "Cancel");
-
+        var confirmed = await DialogService.ShowMessageBoxAsync( "Delete Equipment", $"Are you sure you want to delete '{equipment.Name}'?",yesText: "Delete",cancelText: "Cancel");
         if (confirmed != true)
             return;
-
-        var deleted =
-            await InventoryService.DeleteEquipmentAsync(
-                equipment.Id);
-
+        var deleted = await InventoryService.DeleteEquipmentAsync(equipment.Id);
         if (deleted)
         {
             _equipment.Remove(equipment);
-
-            Snackbar.Add(
-                "Equipment deleted successfully.",
-                Severity.Success);
+            Snackbar.Add("Equipment deleted successfully.", Severity.Success);
         }
         else
         {
-            Snackbar.Add(
-                "Unable to delete equipment.",
-                Severity.Error);
+            Snackbar.Add("Unable to delete equipment.", Severity.Error);
         }
     }
     private void OnCategoryChanged(int? value)
     {
         _selectedCategory = value;
+    }
+    private void ViewHistory(int id)
+    {
+        _openEquipmentMenuId = null;
+        Navigation.NavigateTo($"/equipment/{id}/history");
     }
 }

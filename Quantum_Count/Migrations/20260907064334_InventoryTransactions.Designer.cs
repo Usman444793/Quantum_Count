@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Quantum_Count.Data;
 
@@ -11,9 +12,11 @@ using Quantum_Count.Data;
 namespace Quantum_Count.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907064334_InventoryTransactions")]
+    partial class InventoryTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,51 +302,6 @@ namespace Quantum_Count.Migrations
                     b.ToTable("Equipment");
                 });
 
-            modelBuilder.Entity("Quantum_Count.Models.EquipmentHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActivityType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EquipmentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("PerformedBy")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Reference")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("TransactionType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EquipmentId");
-
-                    b.ToTable("EquipmentHistories");
-                });
-
             modelBuilder.Entity("Quantum_Count.Models.InventoryCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -372,7 +330,7 @@ namespace Quantum_Count.Migrations
                     b.ToTable("InventoryCategories");
                 });
 
-            modelBuilder.Entity("Quantum_Count.Models.InventoryTransactions", b =>
+            modelBuilder.Entity("Quantum_Count.Models.InventoryTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -541,18 +499,7 @@ namespace Quantum_Count.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Quantum_Count.Models.EquipmentHistory", b =>
-                {
-                    b.HasOne("Quantum_Count.Models.Equipment", "Equipment")
-                        .WithMany()
-                        .HasForeignKey("EquipmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Equipment");
-                });
-
-            modelBuilder.Entity("Quantum_Count.Models.InventoryTransactions", b =>
+            modelBuilder.Entity("Quantum_Count.Models.InventoryTransaction", b =>
                 {
                     b.HasOne("Quantum_Count.Models.Material", "Material")
                         .WithMany()

@@ -21,13 +21,8 @@
     @if (_loading)
     {
         <div class="loading-state">
-
-            <MudProgressCircular Indeterminate="true"
-                                 Color="Color.Primary"
-                                 Size="Size.Large" />
-
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
             <span>Loading materials...</span>
-
         </div>
     }
     else
@@ -35,87 +30,52 @@
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="summary-card-content">
-                    <span class="summary-label">
-                        Inventory Value
-                    </span>
-                    <span class="summary-value">
-                        @InventoryValue.ToString("C")
-                    </span>
-                    <span class="summary-description">
-                        Current stock value
-                    </span>
+                    <span class="summary-label"> Inventory Value </span>
+                    <span class="summary-value"> @InventoryValue.ToString("C") </span>
+                    <span class="summary-description"> Current stock value </span>
                 </div>
-                <div class="summary-icon">
+                <div class="summary-icon"> 
                     <MudIcon Icon="@Icons.Material.Filled.Payments" />
                 </div>
             </div>
             <div class="summary-card">
                 <div class="summary-card-content">
-
-                    <span class="summary-label">
-                        Materials
-                    </span>
-
-                    <span class="summary-value">
-                        @_materials.Count
-                    </span>
-
-                    <span class="summary-description">
-                        Active materials
-                    </span>
-
+                    <span class="summary-label"> Materials </span>
+                    <span class="summary-value">   @_materials.Count </span>
+                    <span class="summary-description"> Active materials </span>
                 </div>
-
                 <div class="summary-icon">
                     <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
                 </div>
-
             </div>
-
-
             <div class="summary-card">
-
-                <div class="summary-card-content">
-
+               <div class="summary-card-content">
                     <span class="summary-label">
                         Low Stock
                     </span>
-
                     <span class="summary-value warning-number">
                         @LowStockCount
                     </span>
-
                     <span class="summary-description">
                         Need attention
                     </span>
-
                 </div>
-
                 <div class="summary-icon warning">
                     <MudIcon Icon="@Icons.Material.Filled.WarningAmber" />
                 </div>
-
             </div>
-
-
             <div class="summary-card">
-
                 <div class="summary-card-content">
-
                     <span class="summary-label">
                         Out of Stock
                     </span>
-
                     <span class="summary-value danger-number">
                         @OutOfStockCount
                     </span>
-
                     <span class="summary-description">
                         Currently unavailable
                     </span>
-
                 </div>
-
                 <div class="summary-icon danger">
                     <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" />
                 </div>
@@ -125,15 +85,12 @@
             <div class="section-header">
                 <div>
                     <h2>Materials</h2>
-
                     <span>
                         @FilteredMaterials.Count() materials displayed
                     </span>
                 </div>
-
             </div>
             <div class="filter-bar">
-
                 <MudTextField T="string"
                               @bind-Value="_searchText"
                               Placeholder="Search by name, code or category..."
@@ -151,24 +108,18 @@
                            Dense="true"
                            Clearable="true"
                            Class="category-filter">
-
                     <MudSelectItem T="int?"
                                    Value="@((int?)null)">
                         All Categories
                     </MudSelectItem>
-
                     @foreach (var category in _categories)
                     {
                         <MudSelectItem T="int?"
                                        Value="@((int?)category.Id)">
-
                             @category.Name
-
                         </MudSelectItem>
                     }
-
                 </MudSelect>
-
                 <MudSelect T="string"
                            @bind-Value="_stockFilter"
                            Label="Stock Status"
@@ -176,27 +127,22 @@
                            Dense="true"
                            Clearable="false"
                            Class="status-filter">
-
                     <MudSelectItem T="string"
                                    Value="@("All")">
                         All Stock
                     </MudSelectItem>
-
                     <MudSelectItem T="string"
                                    Value="@("In Stock")">
                         In Stock
                     </MudSelectItem>
-
                     <MudSelectItem T="string"
                                    Value="@("Low Stock")">
                         Low Stock
                     </MudSelectItem>
-
                     <MudSelectItem T="string"
                                    Value="@("Out of Stock")">
                         Out of Stock
                     </MudSelectItem>
-
                 </MudSelect>
             </div>
             <div class="table-wrapper">
@@ -284,42 +230,28 @@
                             </div>
                         </MudTd>
                         <MudTd Class="actions-column">
-
                             <div class="action-menu-wrapper">
-
-                                <button class="action-button"
-                                        title="Actions"
-                                        @onclick="() => ToggleMaterialMenu(material.Id)">
-
+                                <button class="action-button" title="Actions" @onclick="() => ToggleMaterialMenu(material.Id)">
                                     ⋮
-
                                 </button>
-
                                 @if (_openMaterialMenuId == material.Id)
                                 {
                                     <div class="action-menu">
-
+                                        <button @onclick="() => ViewTransactions(material.Id)">
+                                            <MudIcon Icon="@Icons.Material.Filled.SwapVert" />
+                                            <span>Move Stock</span>
+                                        </button>
                                         <button @onclick="() => EditMaterial(material.Id)">
-
                                             <MudIcon Icon="@Icons.Material.Filled.Edit" />
-
-                                            <span>Edit</span>
-
+                                            <span>Edit Material</span>
                                         </button>
-
                                         <button @onclick="() => DeleteMaterialAsync(material)">
-
                                             <MudIcon Icon="@Icons.Material.Filled.Delete" />
-
-                                            <span>Delete</span>
-
+                                            <span>Delete Material</span>
                                         </button>
-
                                     </div>
                                 }
-
                             </div>
-
                         </MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
@@ -399,15 +331,11 @@
         return $"{words[0][0]}{words[1][0]}".ToUpper();
     }
     private int? _openMaterialMenuId;
-
     private void ToggleMaterialMenu(int id)
     {
         _openMaterialMenuId =
-            _openMaterialMenuId == id
-                ? null
-                : id;
+        _openMaterialMenuId == id ? null : id;
     }
-
     private void EditMaterial(int id)
     {
         _openMaterialMenuId = null;
@@ -438,5 +366,10 @@
     private void OnCategoryChanged(int? value)
     {
         _selectedCategory = value;
+    }
+    private void ViewTransactions(int materialId)
+    {
+        _openMaterialMenuId = null;
+        Navigation.NavigateTo($"/materials/{materialId}/transactions");
     }
 }

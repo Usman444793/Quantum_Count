@@ -6,11 +6,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUsers>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-
     }
     public DbSet<Material> Materials { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<InventoryCategory> InventoryCategories { get; set; }
+    public DbSet<InventoryTransactions> InventoryTransactions { get; set; }
+    public DbSet<EquipmentHistory> EquipmentHistories { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -26,5 +27,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUsers>
         builder.Entity<Material>().HasIndex(m => m.MaterialCode).IsUnique();
         builder.Entity<Equipment>().HasIndex(e => e.EquipmentCode).IsUnique();
         builder.Entity<Equipment>().HasIndex(e => e.SerialNumber).IsUnique().HasFilter($"[SerialNumber] IS NOT NULL");
+        builder.Entity<InventoryTransactions>().HasOne(t => t.Material).WithMany().HasForeignKey(t => t.MaterialId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<InventoryTransactions>().Property(t => t.Quantity).HasPrecision(18, 2);
+        builder.Entity<EquipmentHistory>().HasOne(a => a.Equipment).WithMany().HasForeignKey(a => a.EquipmentId).OnDelete(DeleteBehavior.Restrict);
     }
 }

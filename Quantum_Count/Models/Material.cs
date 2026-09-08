@@ -14,9 +14,13 @@ public class Material
     [Required]
     [MaxLength(50)]
     public string Unit { get; set; } = string.Empty;
+    [Range(0, double.MaxValue, ErrorMessage = "Quantity cannot be negative")]
     public decimal Quantity { get; set; } = 0;
+    [Range(0, double.MaxValue, ErrorMessage = "Minimum stock level cannot be negative")]
     public decimal MinimumStockLevel { get; set; } = 0;
+    [Range(0, double.MaxValue, ErrorMessage = "Maximum stock level cannot be negative")]
     public decimal MaximumStockLevel { get; set; } = 0;
+    [Range(0, double.MaxValue, ErrorMessage = "Unit price cannot be negative")]
     public decimal UnitPrice { get; set; } = 0;
     public bool isActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

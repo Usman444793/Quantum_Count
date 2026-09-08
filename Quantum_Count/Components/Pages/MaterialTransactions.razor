@@ -1,0 +1,208 @@
+﻿@page "/materials/{Id:int}/transactions"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Stock Movement</PageTitle>
+<div class="transactions-page">
+@if (_loading)
+    {
+        <div class= "loading-container" >
+            <MudProgressCircular Indeterminate = "true"Color = "Color.Primary"/>
+            <p> Loading transactions...</p>
+        </div>
+    }
+    else if (_material == null)
+    {
+        <div class="error-container">
+            <h3>Material not found</h3>
+            <button class="teal-button" onclick="GoBack">Back to Materials</button>
+        </div>
+    }
+    else
+    {
+        <div class="page-header">
+        <div>
+            <h1>Stock Movement</h1>
+            <p class="page-subtitle">
+                @_material.Name
+                    <span class="material-code">(@_material.MaterialCode)</span>
+            </p>
+       </div>
+       <div class="header-actions">
+           <MudButton Variant="Variant.Outlined" OnClick="GoBack">Back</MudButton>
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="teal-button" OnClick="NewTransaction">
+                    New Transaction
+                </MudButton>
+       </div>
+       </div>
+        <div class="stock-summary">
+
+            <div class="stock-card">
+
+                <span class="stock-label">
+                    Current Stock
+                </span>
+
+                <strong class="stock-value">
+                    @_material.Quantity.ToString("0.##")
+                </strong>
+
+                <span class="stock-unit">
+                    @_material.Unit
+                </span>
+
+            </div>
+
+            <div class="stock-card">
+
+                <span class="stock-label">
+                    Minimum Level
+                </span>
+
+                <strong class="stock-value">
+                    @_material.MinimumStockLevel.ToString("0.##")
+                </strong>
+
+                <span class="stock-unit">
+                    @_material.Unit
+                </span>
+
+            </div>
+
+            <div class="stock-card">
+
+                <span class="stock-label">
+                    Transactions
+                </span>
+
+                <strong class="stock-value">
+                    @_transactions.Count
+                </strong>
+
+                <span class="stock-unit">
+                    records
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="transactions-card">
+
+            <div class="section-header">
+                <h2>Transaction History</h2>
+            </div>
+
+            @if (!_transactions.Any())
+            {
+                <div class="empty-state">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Large" />
+                    <h3>No transactions yet</h3>
+                    <p>Create a stock movement to start tracking this material.</p>
+                    <MudButton Variant="Variant.Filled" Class="teal-button" StartIcon="@Icons.Material.Filled.Add" OnClick="NewTransaction">
+                        New Transaction
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <MudTable Items="_transactions" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Date</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Quantity</MudTh>
+                        <MudTh>Reference</MudTh>
+                        <MudTh>Notes</MudTh>
+                        <MudTh>Created By</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            @context.CreatedAt
+                        </MudTd>
+                        <MudTd>
+                            <MudChip T="string" Size="Size.Small" Color="@GetTransactionColor(context.TransactionType)">
+                                @context.TransactionType
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <strong class="@GetQuantityClass(context.TransactionType)">
+                                @GetQuantityDisplay(context)
+                            </strong>
+                        </MudTd>
+                        <MudTd>
+                            @(string.IsNullOrWhiteSpace(context.Reference) ? "-" : context.Reference)
+                        </MudTd>
+                        <MudTd>
+                            @(string.IsNullOrWhiteSpace(context.Notes) ? "-" : context.Notes)
+                        </MudTd>
+                        <MudTd>
+                            @(string.IsNullOrWhiteSpace(context.CreatedBy) ? "System" : context.CreatedBy)
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </div>
+    }
+ </div>
+@code{
+    [Parameter]
+    public int Id { get; set; }
+    private Material? _material;
+    private List<InventoryTransactions> _transactions = new();
+    private bool _loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        _material = await InventoryService.GetMaterialAsync(Id);
+        if(_material != null)
+        {
+            _transactions = await InventoryService.GetMaterialTransactionsAsync(Id);
+        }
+        _loading = false;
+    }
+    private void NewTransaction()
+    {
+        Navigation.NavigateTo($"/materials/{Id}/transactions/new");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/materials");
+    }
+    private string GetQuantityDisplay(InventoryTransactions transaction)
+    {
+        return transaction.TransactionType switch
+        {
+            "Stock In" => $"+{transaction.Quantity:0.##}",
+            "Return" => $"+{transaction.Quantity:0.##}",
+            "Stock Out" => $"-{transaction.Quantity:0.##}",
+            "Damaged" => $"-{transaction.Quantity:0.##}",
+            _ => transaction.Quantity.ToString("0.##")
+        };
+    }
+    private string GetQuantityClass(string transactionType)
+    {
+        return transactionType switch
+        {
+            "Stock In" => "quantity-positive",
+            "Return" => "quantity-positive",
+            "Stock Out" => "quantity-negative",
+            "Damaged" => "quantity-negative",
+            _ => "quantity-neutral"
+        };
+    }
+    private Color GetTransactionColor(string transactionType)
+    {
+        return transactionType switch
+        {
+            "Stock In" => Color.Success,
+            "Return" => Color.Success,
+            "Stock Out" => Color.Warning,
+            "Damaged" => Color.Error,
+            "Adjustment" => Color.Info,
+            _ => Color.Default
+        };
+    }
+}

@@ -1,22 +1,17 @@
 ﻿@page "/materials/new"
 @page "/materials/edit/{Id:int}"
-
 @attribute [Authorize]
-
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-
 <PageTitle>
     @(_isEdit ? "Edit Material" : "New Material") | Quantum Count
 </PageTitle>
-
 <div class="material-form-page">
 
     <div class="form-header">

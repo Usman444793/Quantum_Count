@@ -1,0 +1,213 @@
+﻿@page "/equipment/{EquipmentId:int}/history"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+<PageTitle>Equipment History | Quantum Count</PageTitle>
+<div class="equipment-history-page">
+    @if (_loading)
+    {
+        <div class="history-loading">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            <span>Loading equipment history...</span>
+        </div>
+    }
+    else if (_equipment == null)
+    {
+        <div class="history-empty">
+            <MudIcon Icon="@Icons.Material.Filled.BuildCircle" Size="Size.Large" />
+            <h2>Equipment not found</h2>
+            <p>
+                The equipment you're looking for does not exist
+                or is no longer active.
+            </p>
+            <MudButton Variant="Variant.Filled" Class="teal-button" Href="/equipment">
+                Back to Equipment
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <div class="history-header">
+            <div>
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.ArrowBack" Class="back-button" Href="/equipment">
+                    Back to Equipment
+                </MudButton>
+                <div class="history-title-row">
+                    <div class="history-equipment-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.Build" />
+                    </div>
+                    <div>
+                        <h1>@_equipment.Name</h1>
+                        <p>
+                            @_equipment.EquipmentCode
+                            @if (!string.IsNullOrWhiteSpace(_equipment.SerialNumber))
+                            {
+                                <span> · @_equipment.SerialNumber</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="teal-button" Href="@($"/equipment/{EquipmentId}/transaction/new")">
+                New Transaction
+            </MudButton>
+        </div>
+        <div class="equipment-summary">
+            <div class="equipment-summary-card">
+                <span class="summary-label">
+                    Status
+                </span>
+                <span class="status-badge @GetStatusClass(_equipment.Status)">
+                    @_equipment.Status
+                </span>
+            </div>
+            <div class="equipment-summary-card">
+                <span class="summary-label">
+                    Category
+                </span>
+                <strong>
+                    @_equipment.Category?.Name
+                </strong>
+            </div>
+            <div class="equipment-summary-card">
+                <span class="summary-label">
+                    Brand
+                </span>
+                <strong>
+                    @(string.IsNullOrWhiteSpace(_equipment.Brand) ? "—" : _equipment.Brand)
+                </strong>
+            </div>
+            <div class="equipment-summary-card">
+                <span class="summary-label">
+                    Model
+                </span>
+                <strong>
+                    @(string.IsNullOrWhiteSpace(_equipment.Model) ? "—" : _equipment.Model)
+                </strong>
+            </div>
+        </div>
+        <div class="history-container">
+            <div class="history-section-header">
+                <div>
+                    <h2>Equipment History</h2>
+                    <span>
+                        @_transactions.Count transaction(s)
+                    </span>
+                </div>
+            </div>
+            @if (!_transactions.Any())
+            {
+                <div class="history-empty-table">
+                    <MudIcon Icon="@Icons.Material.Filled.History"
+                             Size="Size.Large" />
+                    <h3>No transaction history</h3>
+                    <p>
+                        No activity has been recorded for this equipment yet.
+                    </p>
+                    <MudButton Variant="Variant.Filled" Class="teal-button" Href="@($"/equipment/{EquipmentId}/transaction/new")">
+                        Record First Transaction
+                    </MudButton>
+                </div>
+            }
+            else
+            {
+                <div class="history-table-wrapper">
+                    <MudTable Items="_transactions"  Hover="true"  Breakpoint="Breakpoint.None" Elevation="0" Class="equipment-history-table">
+                        <HeaderContent>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Transaction</MudTh>
+                            <MudTh>Reference</MudTh>
+                            <MudTh>Notes</MudTh>
+                            <MudTh>Performed By</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="transaction">
+                            <MudTd>
+                                <div class="history-date">
+                                    <strong>
+                                        @(transaction.CreatedAt?.ToString("dd MMM yyyy") ?? "—")
+                                    </strong>
+                                    <span>
+                                        @(transaction.CreatedAt?.ToString("HH:mm") ?? "—")
+                                    </span>
+                                </div>
+                            </MudTd>
+                            <MudTd>
+                                <span class="transaction-badge @GetTransactionClass(transaction.TransactionType ?? "Unknown")">
+                                    @(transaction.TransactionType ?? transaction.ActivityType ?? "Unknown")
+                                </span>
+                            </MudTd>
+                            <MudTd>
+                                @(string.IsNullOrWhiteSpace(transaction.Reference) ? "—" : transaction.Reference)
+                            </MudTd>
+                            <MudTd>
+                                <span class="history-notes">
+                                    @(string.IsNullOrWhiteSpace(transaction.Notes)  ? "—" : transaction.Notes)
+                                </span>
+                            </MudTd>
+                            <MudTd>
+                                @(string.IsNullOrWhiteSpace(transaction.CreatedBy) ? "System" : transaction.CreatedBy)
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </div>
+            }
+        </div>
+    }
+</div>
+@code {
+
+    [Parameter]
+    public int EquipmentId { get; set; }
+    private Equipment? _equipment;
+    private List<EquipmentHistory> _transactions = new();
+    private bool _loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _equipment = await InventoryService.GetEquipmentAsync(EquipmentId);
+            if (_equipment == null)
+                return;
+            _transactions = await InventoryService.GetEquipmentHistoryAsync(EquipmentId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Unable to load equipment history: {ex.Message}",Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Available" => "status-available",
+            "In Use" => "status-in-use",
+            "Maintenance" => "status-maintenance",
+            "Damaged" => "status-damaged",
+            "Retired" => "status-retired",
+            _ => "status-default"
+        };
+    }
+    private string GetTransactionClass(string type)
+    {
+        return type switch
+        {
+            "Assigned" => "transaction-assigned",
+            "Checked Out" => "transaction-out",
+            "Returned" => "transaction-returned",
+            "Maintenance" => "transaction-maintenance",
+            "Damaged" => "transaction-damaged",
+            "Repaired" => "transaction-repaired",
+            "Retired" => "transaction-retired",
+            _ => "transaction-default"
+        };
+    }
+}
