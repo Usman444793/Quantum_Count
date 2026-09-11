@@ -1,0 +1,314 @@
+﻿@page "/projects/{Id:int}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Project Details | Quantum Count</PageTitle>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading project...</p>
+    </div>
+}
+else if (project == null)
+{
+    <div class="error-container">
+        <h3>Project not found</h3>
+        <button class="secondary-button" @onclick="GoBack">
+            Back to Projects
+        </button>
+    </div>
+}
+else
+{
+    <div class="project-details-page">
+        <div class="details-header">
+            <div>
+                <div class="page-breadcrumb">
+                    Projects
+                    <span>/</span>
+                    @project.ProjectCode
+                </div>
+                <div class="title-row">
+                    <h1>@project.Name</h1>
+                    <span class="@GetStatusClass(project.Status)">
+                        @project.Status
+                    </span>
+                </div>
+                <p>
+                    @project.ProjectCode
+                    @if (!string.IsNullOrWhiteSpace(project.ClientOrDepartment))
+                    {
+                        <span> · @project.ClientOrDepartment</span>
+                    }
+                </p>
+            </div>
+            <div class="details-actions">
+                <button class="secondary-button"
+                        @onclick="EditProject">
+                    Edit
+                </button>
+                <button class="secondary-button" @onclick="GoBack">
+                    Back
+                </button>
+            </div>
+        </div>
+        <div class="overview-grid">
+            <div class="overview-card">
+                <span>Progress</span>
+                <strong>@progress%</strong>
+                <div class="progress-track">
+                    <div class="progress-fill"
+                         style="width:@progress%">
+                    </div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <span>Budget</span>
+                <strong>@project.Budget.ToString("N2")</strong>
+            </div>
+            <div class="overview-card">
+                <span>Materials</span>
+                <strong>@project.Materials.Count</strong>
+            </div>
+            <div class="overview-card">
+                <span>Equipment</span>
+                <strong>@project.Equipment.Count</strong>
+            </div>
+            <div class="overview-card">
+                <span>Tasks</span>
+                <strong>@project.Tasks.Count</strong>
+            </div>
+        </div>
+        <div class="details-section">
+            <h2>Project Information</h2>
+            <div class="information-grid">
+                <div>
+                    <span>Start Date</span>
+                    <strong>
+                        @project.StartDate
+                    </strong>
+                </div>
+                <div>
+                    <span>End Date</span>
+                    <strong>
+                        @(project.EndDate?.ToString("dd MMM yyyy") ?? "Not specified")
+                    </strong>
+                </div>
+                <div>
+                    <span>Client / Department</span>
+                    <strong>
+                        @(project.ClientOrDepartment ?? "Not specified")
+                    </strong>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(project.Description))
+            {
+                <div class="project-description-box">
+                    <span>Description</span>
+                    <p>@project.Description</p>
+                </div>
+            }
+        </div>
+        <div class="details-section">
+            <div class="section-header">
+                <div>
+                    <h2>Materials</h2>
+                    <p>Materials allocated to this project.</p>
+                </div>
+                <button class="primary-button" @onclick="AddMaterial">
+                    + Issue Material
+                </button>
+            </div>
+            @if (project.Materials.Any())
+            {
+                <div class="operation-list">
+                    @foreach (var item in project.Materials)
+                    {
+                        <div class="operation-row">
+                            <div>
+                                <strong>
+                                    @(item.Material?.Name ?? "Unknown Material")
+                                </strong>
+                                <span>
+                                    Issued:
+                                    @item.QuantityIssued
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                    Used:
+                                    @item.QuantityUsed
+                                </span>
+                                <span>
+                                    Returned:
+                                    @item.QuantityReturned
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="section-empty">
+                    No materials have been issued to this project.
+                </div>
+            }
+        </div>
+        <div class="details-section">
+            <div class="section-header">
+                <div>
+                    <h2>Equipment</h2>
+                    <p>Equipment currently or previously assigned.</p>
+                </div>
+                <button class="primary-button" @onclick="AssignEquipment">
+                    + Assign Equipment
+                </button>
+            </div>
+            @if (project.Equipment.Any())
+            {
+                <div class="operation-list">
+                    @foreach (var item in project.Equipment)
+                    {
+                        <div class="operation-row">
+                            <div>
+                                <strong>
+                                    @(item.Equipment?.Name ?? "Unknown Equipment")
+                                </strong>
+                                <span>
+                                    @(item.Equipment?.EquipmentCode ?? "")
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                    Assigned: @item.AssignedAt.ToString("dd MMM yyyy")
+                                </span>
+                                <span>
+                                    @(item.ReturnedAt == null ? "Currently Assigned" : $"Returned {item.ReturnedAt:dd MMM yyyy}")
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="section-empty">
+                    No equipment has been assigned to this project.
+                </div>
+            }
+
+        </div>
+        <div class="details-section">
+            <div class="section-header">
+                <div>
+                    <h2>Tasks</h2>
+                    <p>Project tasks and progress.</p>
+                </div>
+                <button class="primary-button"
+                        @onclick="AddTask">
+                    + Add Task
+                </button>
+            </div>
+            @if (project.Tasks.Any())
+            {
+                <div class="operation-list">
+                    @foreach (var task in project.Tasks.Where(t => t.IsActive))
+                    {
+                        <div class="task-row">
+                            <div class="task-main">
+                                <strong>@task.Title</strong>
+                                <span>@task.Status</span>
+                            </div>
+                            <div class="task-progress">
+                                <div class="progress-track">
+                                    <div class="progress-fill"
+                                         style="width:@task.Progress%">
+                                    </div>
+                                </div>
+                                <strong>@task.Progress%</strong>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="section-empty">
+                    No tasks have been created for this project.
+                </div>
+            }
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Project? project;
+    private int progress;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+    private async Task LoadProject()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            project = await InventoryService.GetProjectAsync(Id);
+
+            if (project != null)
+            {
+                progress = await InventoryService.GetTaskProgressAsync(Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Planning" => "status planning",
+            "Active" => "status active",
+            "On Hold" => "status on-hold",
+            "Completed" => "status completed",
+            "Cancelled" => "status cancelled",
+            _ => "status"
+        };
+    }
+    private void EditProject()
+    {
+        Navigation.NavigateTo($"/projects/edit/{Id}");
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/projects");
+    }
+    private void AddMaterial()
+    {
+        Navigation.NavigateTo($"/projects/{Id}/materials");
+    }
+    private void AssignEquipment()
+    {
+        Navigation.NavigateTo($"/projects/{Id}/equipment");
+    }
+    private void AddTask()
+    {
+        Navigation.NavigateTo($"/projects/{Id}/tasks");
+    }
+}

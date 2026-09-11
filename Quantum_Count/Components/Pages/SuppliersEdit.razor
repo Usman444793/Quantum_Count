@@ -1,0 +1,224 @@
+﻿@page "/suppliers/edit/{Id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+
+@attribute [Authorize]
+
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Supplier | Quantum Count</PageTitle>
+
+<div class="supplier-form-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Edit Supplier</h1>
+            <p>Update supplier information.</p>
+        </div>
+
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Navigation.NavigateTo("/suppliers"))">
+            Back
+        </MudButton>
+
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="supplier-loading">
+
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary" />
+
+            <MudText>
+                Loading supplier...
+            </MudText>
+
+        </div>
+    }
+    else if (notFound)
+    {
+        <MudAlert Severity="Severity.Warning"
+                  Variant="Variant.Outlined">
+
+            Supplier not found.
+
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="supplier-form-card" Elevation="1">
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <MudAlert Severity="Severity.Error"
+                          Variant="Variant.Outlined"
+                          Class="mb-4">
+                    @errorMessage
+                </MudAlert>
+            }
+
+            <EditForm Model="@supplier"
+                      OnValidSubmit="@UpdateSupplier">
+
+                <DataAnnotationsValidator />
+
+                <div class="form-section">
+
+                    <h3>Supplier Information</h3>
+
+                    <div class="form-grid">
+
+                        <MudTextField @bind-Value="supplier!.SupplierCode"
+                                      Label="Supplier Code"
+                                      Variant="Variant.Outlined"
+                                      Required="true" />
+
+                        <MudTextField @bind-Value="supplier.CompanyName"
+                                      Label="Company Name"
+                                      Variant="Variant.Outlined"
+                                      Required="true" />
+
+                        <MudTextField @bind-Value="supplier.ContactPerson"
+                                      Label="Contact Person"
+                                      Variant="Variant.Outlined" />
+
+                        <MudTextField @bind-Value="supplier.Phone"
+                                      Label="Phone"
+                                      Variant="Variant.Outlined" />
+
+                        <MudTextField @bind-Value="supplier.Email"
+                                      Label="Email"
+                                      Variant="Variant.Outlined"
+                                      InputType="InputType.Email" />
+
+                        <MudTextField @bind-Value="supplier.TaxNumber"
+                                      Label="Tax Number"
+                                      Variant="Variant.Outlined" />
+
+                    </div>
+
+                    <MudTextField @bind-Value="supplier.Address"
+                                  Label="Address"
+                                  Variant="Variant.Outlined"
+                                  Lines="3"
+                                  Class="mt-4" />
+
+                </div>
+
+                <div class="form-section">
+
+                    <h3>Status</h3>
+
+                    <MudSwitch @bind-Value="supplier.IsActive"
+                               Color="Color.Primary">
+                        Active Supplier
+                    </MudSwitch>
+
+                </div>
+
+                <div class="form-actions">
+
+                    <MudButton Variant="Variant.Outlined"
+                               OnClick="@(() => Navigation.NavigateTo("/suppliers"))">
+                        Cancel
+                    </MudButton>
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@isSaving"
+                               StartIcon="@Icons.Material.Filled.Save">
+
+                        @(isSaving ? "Saving..." : "Update Supplier")
+
+                    </MudButton>
+
+                </div>
+
+            </EditForm>
+
+        </MudPaper>
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Supplier? supplier;
+
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool notFound;
+
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadSupplier();
+    }
+
+    private async Task LoadSupplier()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            supplier =
+                await InventoryService.GetSupplierAsync(Id);
+
+            if (supplier == null)
+            {
+                notFound = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task UpdateSupplier()
+    {
+        if (supplier == null)
+            return;
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            var result =
+                await InventoryService.UpdateSupplierAsync(supplier);
+
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+
+            Navigation.NavigateTo("/suppliers");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

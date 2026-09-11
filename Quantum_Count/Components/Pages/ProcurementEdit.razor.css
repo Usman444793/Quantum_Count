@@ -1,0 +1,522 @@
+/* =========================================================
+   PROCUREMENT
+   ========================================================= */
+
+.procurement-page,
+.procurement-form-page,
+.purchase-order-details {
+    padding: 28px;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 700;
+    }
+
+    .page-header p {
+        margin: 6px 0 0;
+        opacity: 0.65;
+    }
+
+.po-heading-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+    .po-heading-row h1 {
+        margin: 0;
+    }
+
+.po-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.procurement-summary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.procurement-stat {
+    padding: 18px;
+    border-radius: 12px;
+    background: rgba(20, 20, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+    .procurement-stat span {
+        display: block;
+        font-size: 13px;
+        opacity: 0.6;
+        margin-bottom: 8px;
+    }
+
+    .procurement-stat strong {
+        font-size: 25px;
+    }
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.procurement-toolbar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.procurement-search {
+    width: 100%;
+    max-width: 500px;
+}
+
+.status-filter {
+    min-width: 200px;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.procurement-table-wrapper,
+.po-items-wrapper {
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.procurement-table {
+    width: 100%;
+}
+
+    .procurement-table th {
+        font-weight: 600;
+    }
+
+    .procurement-table td {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+.material-code {
+    display: block;
+    font-size: 11px;
+    opacity: 0.55;
+    margin-top: 3px;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.po-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.po-draft {
+    background: rgba(150, 150, 150, 0.15);
+    color: #aaa;
+}
+
+.po-ordered {
+    background: rgba(60, 130, 255, 0.15);
+    color: #5c9dff;
+}
+
+.po-partial {
+    background: rgba(255, 170, 40, 0.15);
+    color: #f2a93b;
+}
+
+.po-received {
+    background: rgba(0, 180, 150, 0.15);
+    color: #00b496;
+}
+
+.po-cancelled {
+    background: rgba(230, 70, 70, 0.15);
+    color: #e66a6a;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.procurement-loading {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.procurement-empty {
+    min-height: 300px;
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+.po-empty-items {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0.7;
+}
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.procurement-form-card {
+    padding: 30px;
+    border-radius: 12px;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+    .form-section h3 {
+        margin: 0 0 20px;
+        font-size: 18px;
+    }
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.native-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+    .native-form-field label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+.native-select,
+.native-date-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #111827;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .native-select:hover,
+    .native-date-input:hover {
+        border-color: #009b72;
+    }
+
+    .native-select:focus,
+    .native-date-input:focus {
+        border-color: #009b72;
+        box-shadow: 0 0 0 3px rgba(0, 155, 114, 0.10);
+    }
+
+    .native-select option {
+        background: white;
+        color: #111827;
+    }
+
+.validation-message {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 2px;
+}
+/* =========================================================
+   INFO BOX
+   ========================================================= */
+
+.po-info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 18px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    background: rgba(0, 180, 150, 0.08);
+    border: 1px solid rgba(0, 180, 150, 0.18);
+}
+
+    .po-info-box p {
+        margin: 5px 0 0;
+        opacity: 0.65;
+    }
+
+/* =========================================================
+   PO DETAILS
+   ========================================================= */
+
+.po-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.po-overview-card {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+    .po-overview-card span {
+        display: block;
+        font-size: 12px;
+        opacity: 0.55;
+        margin-bottom: 8px;
+    }
+
+    .po-overview-card strong {
+        display: block;
+        font-size: 18px;
+    }
+
+.po-notes {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+    .po-notes p {
+        margin: 8px 0 0;
+        opacity: 0.7;
+    }
+
+/* =========================================================
+   SECTION HEADER
+   ========================================================= */
+
+.po-section-header {
+    margin-bottom: 15px;
+}
+
+    .po-section-header h2 {
+        margin: 0;
+        font-size: 21px;
+    }
+
+    .po-section-header p {
+        margin: 5px 0 0;
+        opacity: 0.6;
+    }
+
+/* =========================================================
+   ADD ITEM
+   ========================================================= */
+
+.add-item-card {
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+}
+
+    .add-item-card h3 {
+        margin: 0 0 18px;
+    }
+
+.add-item-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: center;
+}
+
+/* =========================================================
+   RECEIVE
+   ========================================================= */
+
+.receive-card {
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.receive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .receive-header h3 {
+        margin: 0;
+    }
+
+    .receive-header p {
+        margin: 5px 0 0;
+        opacity: 0.6;
+    }
+
+.receive-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+    .receive-info div {
+        padding: 15px;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.035);
+    }
+
+    .receive-info span {
+        display: block;
+        font-size: 12px;
+        opacity: 0.55;
+        margin-bottom: 5px;
+    }
+
+    .receive-info strong {
+        font-size: 19px;
+    }
+
+.receive-form {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 600px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .procurement-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .po-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .add-item-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 800px) {
+
+    .procurement-page,
+    .procurement-form-page,
+    .purchase-order-details {
+        padding: 18px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .po-header-actions {
+        width: 100%;
+    }
+
+    .procurement-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .procurement-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .procurement-search {
+        max-width: none;
+    }
+
+    .status-filter {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .add-item-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .receive-info {
+        grid-template-columns: 1fr;
+    }
+
+    .receive-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .procurement-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .po-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}

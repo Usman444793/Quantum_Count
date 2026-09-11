@@ -67,6 +67,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<ReportsService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>

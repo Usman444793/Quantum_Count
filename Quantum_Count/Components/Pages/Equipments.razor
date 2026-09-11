@@ -15,9 +15,10 @@
             <h1>Equipment & Assets</h1>
             <p> Manage equipment, assets, maintenance and operational status.</p>
         </div>
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="new-inventory-button"Href="/equipment/new">
+        <button class="new-inventory-button" @onclick= "NewEquipment">
+            <span class="button-icon">+ &nbsp;&nbsp;</span>
             New Equipment
-        </MudButton>
+        </button>
     </div>
     @if (_loading)
     {
@@ -104,48 +105,25 @@
                 </div>
             </div>
             <div class="filter-bar">
-                <MudTextField T="string"
-                              @bind-Value="_searchText"
-                              Placeholder="Search by name, code, serial number..."
-                              Variant="Variant.Outlined"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              Immediate="true"
-                              Clearable="true"
-                              Class="search-box" />
-                <MudSelect T="int?" @bind-Value="_selectedCategory" Label="Category" Variant="Variant.Outlined" Dense="true"
-                           Clearable="true" Class="category-filter">
-                    <MudSelectItem T="int?" Value="@((int?)null)">
-                        All Categories
-                    </MudSelectItem>
+                <input type="text" 
+                       class="search-box" 
+                       @bind="_searchText"
+                       placeholder="Search by name, code, serial number..." />
+                <select class="category-filter" @bind="_selectedCategory">
+                    <option value="@((int?)null)">Simple Selection Cat</option>
                     @foreach (var category in _categories)
                     {
-                        <MudSelectItem T="int?" Value="@((int?)category.Id)">
-                            @category.Name
-                        </MudSelectItem>
+                        <option value="@category.Id">@category.Name</option>
                     }
-                </MudSelect>
-                <MudSelect T="string"
-                           @bind-Value="_statusFilter" Label="Status" Variant="Variant.Outlined" Dense="true" Class="status-filter">
-                    <MudSelectItem Value="@("All")">
-                        All Status
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Available")">
-                        Available
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("In Use")">
-                        In Use
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Maintenance")">
-                        Maintenance
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Damaged")">
-                       Damaged
-                    </MudSelectItem>
-                    <MudSelectItem Value="@("Retired")">
-                        Retired
-                    </MudSelectItem>
-                </MudSelect>
+                </select>
+                <select class="status-filter" @bind="_statusFilter">
+                    <option value="@("All")">All Status</option>
+                    <option value="@("Available")">Available</option>
+                    <option value="@("In Use")">In Use</option>
+                    <option value="@("Maintenance")">Maintenance</option>
+                    <option value="@("Damaged")">Damaged</option>
+                    <option value="@("Retired")">Retired</option>
+                </select>
             </div>
             <div class="table-wrapper">
                 <MudTable Items="@FilteredEquipment" Hover="true" Breakpoint="Breakpoint.None" Elevation="0" Class="equipment-table">
@@ -186,9 +164,9 @@
                             </span>
                         </MudTd>
                         <MudTd>
-                            <MudChip T="string"  Size="Size.Small" Variant="Variant.Filled" Class="@GetStatusClass(equipment.Status)">
+                            <span class="status-badge @GetStatusClass(equipment.Status)">
                                 @equipment.Status
-                            </MudChip>
+                            </span>
                         </MudTd>
                         <MudTd>
                             <div class="brand-model">
@@ -333,5 +311,9 @@
     {
         _openEquipmentMenuId = null;
         Navigation.NavigateTo($"/equipment/{id}/history");
+    }
+    private void NewEquipment()
+    {
+        Navigation.NavigateTo("/equipment/new");
     }
 }

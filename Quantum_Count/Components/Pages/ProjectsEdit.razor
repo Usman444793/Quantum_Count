@@ -1,0 +1,175 @@
+﻿@page "/projects/edit/{Id:int}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Edit Project | Quantum Count</PageTitle>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading project...</p>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="error-container">
+        <h3>Unable to load project</h3>
+        <p>@errorMessage</p>
+        <button class="secondary-button"@onclick="GoBack">
+            Back to Projects
+        </button>
+    </div>
+}
+else if (project != null)
+{
+    <div class="project-form-page">
+        <div class="project-form-header">
+            <div>
+                <div class="page-breadcrumb">
+                    Projects
+                    <span>/</span>
+                    @project.ProjectCode
+                    <span>/</span>
+                    Edit
+                </div>
+                <h1>Edit Project</h1>
+                <p> Update project information and operational details. </p>
+            </div>
+            <button class="secondary-button"@onclick="GoBack">
+                Cancel
+            </button>
+        </div>
+        <div class="form-card">
+            <EditForm Model="@project" OnValidSubmit="UpdateProject">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-section">
+                    <h3>Project Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Project Code *</label>
+                            <InputText class="form-control" @bind-Value="project.ProjectCode" />
+                            <ValidationMessage For="@(() => project.ProjectCode)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Project Name *</label>
+                            <InputText class="form-control" @bind-Value="project.Name" />
+                            <ValidationMessage For="@(() => project.Name)" />
+                        </div>
+                        <div class="form-group">
+                            <label>Client / Department</label>
+                            <InputText class="form-control"  @bind-Value="project.ClientOrDepartment" />
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <InputSelect class="form-control"@bind-Value="project.Status">
+                                <option value="Planning">Planning</option>
+                                <option value="Active">Active</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </InputSelect>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <InputDate class="form-control" @bind-Value="project.StartDate" />
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <InputDate class="form-control" @bind-Value="project.EndDate" />
+                        </div>
+                        <div class="form-group">
+                            <label>Budget</label>
+                            <InputNumber class="form-control" @bind-Value="project.Budget" />
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <InputTextArea class="form-control textarea" @bind-Value="project.Description" />
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    <div class="form-error">
+                        @errorMessage
+                    </div>
+                }
+                <div class="form-actions">
+                    <button type="button" class="secondary-button"  @onclick="GoBack">
+                        Cancel
+                    </button>
+                    <button type="submit" class="primary-button" disabled="@isSaving">
+                        @(isSaving ? "Saving..." : "Save Changes")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Project? project;
+    private bool isLoading = true;
+    private bool isSaving;
+    private string errorMessage = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+    private async Task LoadProject()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            project = await InventoryService.GetProjectAsync(Id);
+
+            if (project == null)
+            {
+                errorMessage = "Project not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async Task UpdateProject()
+    {
+        if (project == null || isSaving)
+            return;
+        try
+        {
+            isSaving = true;
+            errorMessage = string.Empty;
+            var result = await InventoryService.UpdateProjectAsync(project);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            Navigation.NavigateTo($"/projects/{project.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/projects");
+    }
+
+}

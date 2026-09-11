@@ -133,20 +133,23 @@
 .search-box {
     flex: 1;
     min-width: 260px;
+    height: 40px;
 }
 .category-filter {
     width: 190px;
+    height: 40px;
 }
 .status-filter {
     width: 175px;
+    height:40px
 }
-::deep .mud-input-control {
+::deep .input-control {
     margin-top: 0;
 }
-::deep .mud-input-outlined-border {
-    border-color: #dedede;
+::deep .input-outlined-border {
+    border-color: teal;
 }
-::deep .mud-input-label {
+::deep .input-label {
     font-size: 13px;
 }
 .table-wrapper {

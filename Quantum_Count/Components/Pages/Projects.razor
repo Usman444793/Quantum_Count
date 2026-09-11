@@ -1,7 +1,192 @@
 ﻿@page "/projects"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-<h2>This is a projects page in inventory management System</h2>
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Projects | Quantum Count</PageTitle>
+<div class="projects-page">
+    <div class="projects-header">
+        <div>
+            <div class="page-breadcrumb">
+                Operations <span>/</span> Projects
+            </div>
+            <h1>Projects</h1>
+            <p>Manage Projects, resources, equipment and operational progress.</p>
+        </div>
+        <button class="primary-button" @onclick="CreateProject">
+            <span>+ &nbsp;&nbsp;</span> New Project
+        </button>
+    </div>
+    <div class="projects-toolbar">
+        <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input type="text" placeholder="Search projects..." @bind="searchText" @bind:event="oninput" />
+        </div>
+        <select class="status-filter" @bind="selectedStatus">
+            <option value="All">All Status</option>
+            <option value="Planning">Planning</option>
+            <option value="Active">Active</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+    </div>
+@if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <span>LoadingfProjects</span>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="error-container">
+            <strong>Unable to Load Projects</strong>
+            <p>@errorMessage</p>
+            <button class="secondary-button" @onclick="LoadProjects">Retry</button>
+        </div>
+    }
+    else if (!FilteredProjects.Any())
+    {
+        <div class="empty-container">
+            <div class="empty-icon">▢</div>
+            <h3>No Projects Found</h3>
+            <p>@(string.IsNullOrWhiteSpace(searchText)?"Create your first project to get started.":"Try changing your search or status filter.")</p>
+            @if (string.IsNullOrWhiteSpace(searchText))
+            {
+                <button class="secondary-button" @onclick="CreateProject">+ New Project</button>
+            }
+        </div>
+    }
+    else
+    {
+      <div class="project-grid">
+            @foreach (var project in FilteredProjects)
+            {
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <div class="project-code">@project.ProjectCode</div>
+                        <span class="@GetStatusClass(project.Status)">@project.Status</span>
+                    </div>
+                    <div class="project-info">
+                        <h2>@project.Name</h2>
+                        @if (!string.IsNullOrWhiteSpace(project.Description))
+                        {
+                            <p class="project-description">@project.Description</p>
+                        }
+                        else
+                        {
+                            <p class="project-description muted">No description provided.</p>
+                        }
+                    </div>
+                    <div class="project-meta">
+                        <div>
+                            <span>Start Date</span>
+                            <strong>@project.StartDate</strong>
+                        </div>
+                        <div>
+                            <span>Budget</span>
+                            <strong>@project.Budget</strong>
+                        </div>
+                    </div>
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progress</span>
+                            <strong>@GetProgress(project) %</strong>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill"
+                                 style="width:@GetProgress(project)%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="resource-summary">
+                        <div class="resource-item">
+                            <span class="resource-number">@project.Materials.Count</span>
+                            <span>Materials</span>
+                        </div>
+                        <div class="resource-item">
+                            <span class="resource-number">@project.Equipment.Count</span>
+                            <span>Equipment</span>
+                        </div>
+                        <div class="resource-item">
+                            <span class="resource-number">@project.Tasks.Count</span>
+                            <span>Tasks</span>
+                        </div>
+                    </div>
+                    <div class="project-actions">
+                        <button class="view-button" @onclick="() => ViewProject(project.Id)"> View Project</button>
+                        <button class="edit-button" @onclick="() => EditProject(project.Id)"> Edit </button>
+                    </div>
+                </div>
+            }
+      </div>
+    }
+</div>
 @code {
-
+    private List<Project> projects = new();
+    private string searchText = string.Empty;
+    private string selectedStatus = "All";
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    private IEnumerable<Project> FilteredProjects =>
+    projects.Where(p => p.isActive).Where(p => string.IsNullOrWhiteSpace(searchText)
+         || p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+         || p.ProjectCode.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+         || (p.ClientOrDepartment?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+         .Where(p => selectedStatus == "All"
+         || p.Status.Equals(selectedStatus,StringComparison.OrdinalIgnoreCase));
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+    private async Task LoadProjects()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            projects = await InventoryService.GetProjectsAsync();
+        }
+        catch(Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private int GetProgress(Project project)
+    {
+        if (project.Tasks == null || !project.Tasks.Any())
+            return 0;
+        return (int)Math.Round(project.Tasks.Where(t => t.IsActive).Select(t => t.Progress).DefaultIfEmpty(0).Average());
+    }
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Planning" => "status planning",
+            "Active" => "status active",
+            "On Hold" => "status on-hold",
+            "Completed" => "status completed",
+            "Cancelled" => "status cancelled",
+            _ => "status"
+        };
+    }
+    private void CreateProject()
+    {
+        Navigation.NavigateTo("/projects/new");
+    }
+    private void ViewProject(int id)
+    {
+        Navigation.NavigateTo($"/projects/{id}");
+    }
+    private void EditProject(int id)
+    {
+        Navigation.NavigateTo($"/projects/edit/{id}");
+    }
 }

@@ -18,7 +18,7 @@ public class EquipmentController : ControllerBase
     public async Task<ActionResult<IEnumerable<Equipment>>> GetEquipment()
     {
         var equipment = await _context.Equipment.Include(e => e.Category).Where(e => e.isActive)
-            .AsNoTracking().OrderBy(e => e.Name).ToListAsync();
+                                                    .AsNoTracking().OrderBy(e => e.Name).ToListAsync();
         return Ok(equipment);
     }
     [HttpGet("{id:int}")]

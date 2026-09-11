@@ -1,0 +1,262 @@
+.project-operation-page {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 30px 32px 50px;
+}
+
+.operation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+    .operation-header h1 {
+        margin: 8px 0 6px;
+        font-size: 30px;
+        font-weight: 700;
+    }
+
+    .operation-header p {
+        margin: 0;
+        color: #777;
+        font-size: 13px;
+    }
+
+.page-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+    font-size: 12px;
+}
+
+    .page-breadcrumb span {
+        color: #bbb;
+    }
+
+/* Sections */
+
+.details-section {
+    margin-bottom: 20px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
+}
+
+    .details-section h2 {
+        margin: 0 0 20px;
+        font-size: 18px;
+        font-weight: 650;
+    }
+
+/* Forms */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label,
+    .return-box label {
+        color: #444;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+.form-control {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 9px;
+    background: #fff;
+    color: #222;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+    .form-control:hover {
+        border-color: #9ca3af;
+    }
+
+    .form-control:focus {
+        border-color: #159570;
+        box-shadow: 0 0 0 3px rgba(21, 149, 112, 0.12);
+        outline: none;
+    }
+
+.textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.primary-button,
+.secondary-button {
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-button {
+    border: 1px solid #159570;
+    background: #159570;
+    color: #fff;
+}
+
+    .primary-button:hover {
+        background: #117d5e;
+    }
+
+    .primary-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+.secondary-button {
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #444;
+}
+
+    .secondary-button:hover {
+        border-color: #159570;
+        color: #159570;
+    }
+
+/* List */
+
+.operation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.operation-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+    border: 1px solid #eeeeee;
+    border-radius: 10px;
+    background: #fcfcfc;
+}
+
+    .operation-row > div {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 13px;
+    }
+
+    .operation-row strong {
+        color: #222;
+        font-size: 13px;
+    }
+
+    .operation-row span {
+        color: #888;
+        font-size: 11px;
+    }
+
+/* Return */
+
+.return-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin: -2px 0 6px;
+    padding: 15px;
+    border: 1px solid #dceee8;
+    border-radius: 10px;
+    background: #f6fbf9;
+}
+
+    .return-box label {
+        display: block;
+    }
+
+    .return-box .form-control {
+        width: 150px;
+    }
+
+.section-empty {
+    padding: 30px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 10px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+}
+
+.form-error {
+    margin-top: 15px;
+    padding: 12px 14px;
+    border: 1px solid #f1caca;
+    border-radius: 8px;
+    background: #fff3f3;
+    color: #b33f3f;
+    font-size: 13px;
+}
+
+.loading-container,
+.error-container {
+    padding: 70px 20px;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .project-operation-page {
+        padding: 20px 16px 40px;
+    }
+
+    .operation-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .operation-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .return-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .return-box .form-control {
+            width: 100%;
+        }
+}

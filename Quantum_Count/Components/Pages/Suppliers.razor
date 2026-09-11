@@ -1,0 +1,197 @@
+﻿@page "/suppliers"
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@attribute [Authorize]
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Suppliers | Quantum Count</PageTitle>
+<div class="supplier-page">
+    <div class="page-header">
+        <div>
+            <h1>Suppliers</h1>
+            <p>Manage suppliers and vendor information.</p>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/suppliers/new"))">
+            New Supplier
+        </MudButton>
+    </div>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">
+            @errorMessage
+        </MudAlert>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-4">
+            @successMessage
+        </MudAlert>
+    }
+
+    <div class="supplier-toolbar">
+        <MudTextField @bind-Value="searchText"
+                      Placeholder="Search suppliers..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      Class="supplier-search" />
+        <MudText Typo="Typo.body2" Class="supplier-count">
+            @FilteredSuppliers.Count supplier(s)
+        </MudText>
+    </div>
+    @if (isLoading)
+    {
+        <div class="supplier-loading">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            <MudText>Loading suppliers...</MudText>
+        </div>
+    }
+    else if (FilteredSuppliers.Count == 0)
+    {
+        <MudPaper Class="supplier-empty" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Filled.Business"
+                     Size="Size.Large" />
+            <MudText Typo="Typo.h6">
+                No suppliers found
+            </MudText>
+            <MudText Typo="Typo.body2">
+                Add your first supplier to start managing procurement.
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => Navigation.NavigateTo("/suppliers/new"))">
+                Add Supplier
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="supplier-table-wrapper" Elevation="1">
+            <MudTable Items="@FilteredSuppliers"
+                      Hover="true"
+                      Striped="true"
+                      Dense="true"
+                      Class="supplier-table">
+                <HeaderContent>
+                    <MudTh>Code</MudTh>
+                    <MudTh>Company</MudTh>
+                    <MudTh>Contact Person</MudTh>
+                    <MudTh>Phone</MudTh>
+                    <MudTh>Email</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh Align="Align.Right">Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Code">
+                        <strong>@context.SupplierCode</strong>
+                    </MudTd>
+                    <MudTd DataLabel="Company">
+                        @context.CompanyName
+                    </MudTd>
+                    <MudTd DataLabel="Contact Person">
+                        @(string.IsNullOrWhiteSpace(context.ContactPerson) ? "-" : context.ContactPerson)
+                    </MudTd>
+                    <MudTd DataLabel="Phone">
+                        @(string.IsNullOrWhiteSpace(context.Phone)  ? "-" : context.Phone)
+                    </MudTd>
+                    <MudTd DataLabel="Email">
+                        @(string.IsNullOrWhiteSpace(context.Email) ? "-" : context.Email)
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        @if (context.IsActive)
+                        {
+                            <span class="status-badge status-active">
+                                Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-inactive">
+                                Inactive
+                            </span>
+                        }
+                    </MudTd>
+                    <MudTd Align="Align.Right">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Title="Edit"
+                                       OnClick="@(() => Navigation.NavigateTo($"/suppliers/edit/{context.Id}"))" />
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Deactivate"
+                                       OnClick="@(() => DeactivateSupplier(context.Id))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</div>
+@code {
+    private List<Supplier> suppliers = new();
+    private string searchText = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? successMessage;
+    private List<Supplier> FilteredSuppliers =>
+        suppliers
+            .Where(s =>
+                string.IsNullOrWhiteSpace(searchText) ||
+                s.SupplierCode.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                s.CompanyName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                (s.ContactPerson?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (s.Email?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (s.Phone?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSuppliers();
+    }
+    private async Task LoadSuppliers()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            suppliers = await InventoryService.GetSuppliersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async Task DeactivateSupplier(int id)
+    {
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+            var result = await InventoryService.DeleteSupplierAsync(id);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            successMessage = "Supplier deactivated successfully.";
+            await LoadSuppliers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

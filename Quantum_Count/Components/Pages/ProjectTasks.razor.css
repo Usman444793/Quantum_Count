@@ -1,0 +1,379 @@
+/* ================================
+   PROJECT TASKS
+   ================================ */
+
+.project-operation-page {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 30px 32px 50px;
+}
+
+.operation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+    .operation-header h1 {
+        margin: 8px 0 6px;
+        font-size: 30px;
+        font-weight: 700;
+    }
+
+    .operation-header p {
+        margin: 0;
+        color: #777;
+        font-size: 13px;
+    }
+
+.page-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+    font-size: 12px;
+}
+
+    .page-breadcrumb span {
+        color: #bbb;
+    }
+
+/* Sections */
+
+.details-section {
+    margin-bottom: 20px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
+}
+
+    .details-section h2 {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 650;
+    }
+
+/* Form */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        color: #444;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+.form-control {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 9px;
+    background: #fff;
+    color: #222;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+    .form-control:hover {
+        border-color: #9ca3af;
+    }
+
+    .form-control:focus {
+        border-color: #159570;
+        box-shadow: 0 0 0 3px rgba(21, 149, 112, 0.12);
+        outline: none;
+    }
+
+.textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+/* Buttons */
+
+.primary-button,
+.secondary-button {
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.primary-button {
+    border: 1px solid #159570;
+    background: #159570;
+    color: white;
+}
+
+    .primary-button:hover {
+        background: #117d5e;
+    }
+
+    .primary-button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+.secondary-button {
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #444;
+}
+
+    .secondary-button:hover {
+        border-color: #159570;
+        color: #159570;
+    }
+
+/* Progress */
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+    .section-header p {
+        margin: 4px 0 0;
+        color: #888;
+        font-size: 12px;
+    }
+
+.large-progress {
+    color: #009b72;
+    font-size: 26px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 9px;
+    background: #eeeeee;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #159570;
+    border-radius: inherit;
+    transition: width 0.3s ease;
+}
+
+/* Tasks */
+
+.operation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-management-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    padding: 18px;
+    border: 1px solid #eeeeee;
+    border-radius: 11px;
+    background: #fcfcfc;
+}
+
+.task-information {
+    min-width: 230px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+    .task-information strong {
+        color: #222;
+        font-size: 14px;
+        font-weight: 650;
+    }
+
+    .task-information span {
+        color: #666;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .task-information small {
+        color: #999;
+        font-size: 11px;
+    }
+
+.task-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.task-status {
+    width: 145px;
+}
+
+.task-progress-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 220px;
+}
+
+    .task-progress-control input[type="range"] {
+        flex: 1;
+        accent-color: #009b72;
+        cursor: pointer;
+    }
+
+    .task-progress-control strong {
+        min-width: 38px;
+        text-align: right;
+        color: #008f6a;
+        font-size: 12px;
+    }
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+    .status.completed {
+        background: #e8f6ed;
+        color: #26834f;
+    }
+
+/* Empty/Error */
+
+.section-empty {
+    padding: 30px;
+    border: 1px dashed #d9d9d9;
+    border-radius: 10px;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+}
+
+.form-error {
+    margin-top: 15px;
+    padding: 12px 14px;
+    border: 1px solid #f1caca;
+    border-radius: 8px;
+    background: #fff3f3;
+    color: #b33f3f;
+    font-size: 13px;
+}
+
+.loading-container,
+.error-container {
+    padding: 70px 20px;
+    text-align: center;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e5e5e5;
+    border-top-color: #009b72;
+    border-radius: 50%;
+    animation: tasks-spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes tasks-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+
+@media (max-width: 950px) {
+    .task-management-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .task-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .task-progress-control {
+        flex: 1;
+    }
+}
+
+@media (max-width: 700px) {
+    .project-operation-page {
+        padding: 20px 16px 40px;
+    }
+
+    .operation-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.full-width {
+        grid-column: auto;
+    }
+
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .task-controls {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .task-status,
+    .task-progress-control {
+        width: 100%;
+    }
+}

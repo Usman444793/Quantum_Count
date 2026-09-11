@@ -1,0 +1,663 @@
+﻿@page "/procurement/{Id:int}"
+
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@using System.Security.Claims
+
+@attribute [Authorize]
+
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Purchase Order | Quantum Count</PageTitle>
+
+<div class="purchase-order-details">
+
+    @if (isLoading)
+    {
+        <div class="procurement-loading">
+
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary" />
+
+            <MudText>
+                Loading purchase order...
+            </MudText>
+
+        </div>
+    }
+    else if (purchaseOrder == null)
+    {
+        <MudAlert Severity="Severity.Warning"
+                  Variant="Variant.Outlined">
+
+            Purchase order not found.
+
+        </MudAlert>
+    }
+    else
+    {
+        <div class="page-header">
+
+            <div>
+
+                <div class="po-heading-row">
+
+                    <h1>@purchaseOrder.PONumber</h1>
+
+                    <span class="@GetStatusClass(purchaseOrder.Status)">
+                        @purchaseOrder.Status
+                    </span>
+
+                </div>
+
+                <p>
+                    Purchase order details and receiving management.
+                </p>
+
+            </div>
+
+            <div class="po-header-actions">
+
+                @if (purchaseOrder.Status == "Draft")
+                {
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Edit"
+                               OnClick="@(() =>
+                                                           Navigation.NavigateTo($"/procurement/edit/{Id}"))">
+                        Edit
+                    </MudButton>
+                }
+
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="@(() =>
+                                                   Navigation.NavigateTo("/procurement"))">
+                    Back
+                </MudButton>
+
+            </div>
+
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="Severity.Error"
+                      Variant="Variant.Outlined"
+                      Class="mb-4">
+                @errorMessage
+            </MudAlert>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <MudAlert Severity="Severity.Success"
+                      Variant="Variant.Outlined"
+                      Class="mb-4">
+                @successMessage
+            </MudAlert>
+        }
+
+        <div class="po-overview-grid">
+
+            <MudPaper Class="po-overview-card" Elevation="1">
+
+                <span>Supplier</span>
+
+                <strong>
+                    @(purchaseOrder.Supplier?.CompanyName ?? "Unknown")
+                </strong>
+
+                <small>
+                    @(purchaseOrder.Supplier?.SupplierCode ?? "-")
+                </small>
+
+            </MudPaper>
+
+            <MudPaper Class="po-overview-card" Elevation="1">
+
+                <span>Order Date</span>
+
+                <strong>
+                    @purchaseOrder.OrderDate.ToLocalTime().ToString("dd MMM yyyy")
+                </strong>
+
+            </MudPaper>
+
+            <MudPaper Class="po-overview-card" Elevation="1">
+
+                <span>Expected Delivery</span>
+
+                <strong>
+                    @(purchaseOrder.ExpectedDeliveryDate.HasValue
+                        ? purchaseOrder.ExpectedDeliveryDate.Value.ToLocalTime().ToString("dd MMM yyyy")
+                        : "-")
+                </strong>
+
+            </MudPaper>
+
+            <MudPaper Class="po-overview-card" Elevation="1">
+
+                <span>Total Amount</span>
+
+                <strong>
+                    @purchaseOrder.TotalAmount.ToString("N2")
+                </strong>
+
+            </MudPaper>
+
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(purchaseOrder.Notes))
+        {
+            <MudPaper Class="po-notes" Elevation="1">
+
+                <strong>Notes</strong>
+
+                <p>
+                    @purchaseOrder.Notes
+                </p>
+
+            </MudPaper>
+        }
+
+        <div class="po-section-header">
+
+            <div>
+                <h2>Purchase Order Items</h2>
+                <p>
+                    Materials included in this purchase order.
+                </p>
+            </div>
+
+        </div>
+
+        @if (purchaseOrder.Status == "Draft")
+        {
+            <MudPaper Class="add-item-card" Elevation="1">
+
+                <h3>Add Material</h3>
+
+                @if (!string.IsNullOrEmpty(itemErrorMessage))
+                {
+                    <MudAlert Severity="Severity.Error"
+                              Variant="Variant.Outlined"
+                              Class="mb-3">
+
+                        @itemErrorMessage
+
+                    </MudAlert>
+                }
+
+                <div class="add-item-grid">
+
+                    <MudSelect T="int"
+                               @bind-Value="newItem.MaterialId"
+                               Label="Material"
+                               Variant="Variant.Outlined">
+
+                        <MudSelectItem Value="0">
+                            Select Material
+                        </MudSelectItem>
+
+                        @foreach (var material in materials)
+                        {
+                            <MudSelectItem Value="@material.Id">
+                                @material.MaterialCode -
+                                @material.Name
+                            </MudSelectItem>
+                        }
+
+                    </MudSelect>
+
+                    <MudNumericField T="decimal"
+                                     @bind-Value="newItem.QuantityOrdered"
+                                     Label="Quantity"
+                                     Variant="Variant.Outlined"
+                                     Min="0.01m"
+                                     Step="0.01m" />
+
+                    <MudNumericField T="decimal"
+                                     @bind-Value="newItem.UnitPrice"
+                                     Label="Unit Price"
+                                     Variant="Variant.Outlined"
+                                     Min="0m"
+                                     Step="0.01m" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Disabled="@isAddingItem"
+                               OnClick="@AddItem">
+
+                        @(isAddingItem ? "Adding..." : "Add Item")
+
+                    </MudButton>
+
+                </div>
+
+            </MudPaper>
+        }
+
+        <MudPaper Class="po-items-wrapper" Elevation="1">
+
+            @if (purchaseOrder.Items == null ||
+                 !purchaseOrder.Items.Any(i => i.IsActive))
+            {
+                <div class="po-empty-items">
+
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2"
+                             Size="Size.Large" />
+
+                    <MudText>
+                        No materials have been added to this purchase order.
+                    </MudText>
+
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@ActiveItems"
+                          Hover="true"
+                          Striped="true"
+                          Dense="true"
+                          Class="procurement-table">
+
+                    <HeaderContent>
+
+                        <MudTh>Material</MudTh>
+                        <MudTh>Ordered</MudTh>
+                        <MudTh>Received</MudTh>
+                        <MudTh>Remaining</MudTh>
+                        <MudTh>Unit Price</MudTh>
+                        <MudTh>Total</MudTh>
+                        <MudTh>Action</MudTh>
+
+                    </HeaderContent>
+
+                    <RowTemplate>
+
+                        <MudTd DataLabel="Material">
+
+                            <strong>
+                                @context.Material?.Name
+                            </strong>
+
+                            <small class="material-code">
+                                @context.Material?.MaterialCode
+                            </small>
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Ordered">
+
+                            @context.QuantityOrdered
+                            @(context.Material?.Unit ?? "")
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Received">
+
+                            @context.QuantityReceived
+                            @(context.Material?.Unit ?? "")
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Remaining">
+
+                            @{
+                                var remaining =
+                                    context.QuantityOrdered -
+                                    context.QuantityReceived;
+                            }
+
+                            <strong>
+                                @remaining
+                                @(context.Material?.Unit ?? "")
+                            </strong>
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Unit Price">
+
+                            @context.UnitPrice.ToString("N2")
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Total">
+
+                            @context.TotalPrice.ToString("N2")
+
+                        </MudTd>
+
+                        <MudTd DataLabel="Action">
+
+                            @if (purchaseOrder.Status != "Cancelled")
+                            {
+                                var remaining =
+                                    context.QuantityOrdered -
+                                    context.QuantityReceived;
+
+                                @if (remaining > 0)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.MoveToInbox"
+                                               OnClick="@(() =>
+                                                                                           OpenReceiveForm(context))">
+                                        Receive
+                                    </MudButton>
+                                }
+                            }
+
+                            @if (purchaseOrder.Status == "Draft")
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               Title="Remove"
+                                               OnClick="@(() =>
+                                                                                   RemoveItem(context.Id))" />
+                            }
+
+                        </MudTd>
+
+                    </RowTemplate>
+
+                </MudTable>
+            }
+
+        </MudPaper>
+
+        @if (receivingItem != null)
+        {
+            <MudPaper Class="receive-card" Elevation="1">
+
+                <div class="receive-header">
+
+                    <div>
+
+                        <h3>Receive Material</h3>
+
+                        <p>
+                            @receivingItem.Material?.Name
+                        </p>
+
+                    </div>
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                   OnClick="@CloseReceiveForm" />
+
+                </div>
+
+                @{
+                    var availableToReceive =
+                        receivingItem.QuantityOrdered -
+                        receivingItem.QuantityReceived;
+                }
+
+                <div class="receive-info">
+
+                    <div>
+                        <span>Ordered</span>
+                        <strong>
+                            @receivingItem.QuantityOrdered
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Already Received</span>
+                        <strong>
+                            @receivingItem.QuantityReceived
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Remaining</span>
+                        <strong>
+                            @availableToReceive
+                        </strong>
+                    </div>
+
+                </div>
+
+                @if (!string.IsNullOrEmpty(receiveErrorMessage))
+                {
+                    <MudAlert Severity="Severity.Error"
+                              Variant="Variant.Outlined"
+                              Class="mb-3">
+
+                        @receiveErrorMessage
+
+                    </MudAlert>
+                }
+
+                <div class="receive-form">
+
+                    <MudNumericField T="decimal"
+                                     @bind-Value="receiveQuantity"
+                                     Label="Quantity to Receive"
+                                     Variant="Variant.Outlined"
+                                     Min="0.01m"
+                                     Max="@availableToReceive"
+                                     Step="0.01m" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Check"
+                               Disabled="@isReceiving"
+                               OnClick="@ReceiveItem">
+
+                        @(isReceiving ? "Receiving..." : "Confirm Receipt")
+
+                    </MudButton>
+
+                </div>
+
+            </MudPaper>
+        }
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private PurchaseOrder? purchaseOrder;
+
+    private List<Material> materials = new();
+
+    private PurchaseOrderItem newItem = new();
+
+    private PurchaseOrderItem? receivingItem;
+
+    private decimal receiveQuantity;
+
+    private bool isLoading;
+    private bool isAddingItem;
+    private bool isReceiving;
+
+    private string? errorMessage;
+    private string? successMessage;
+    private string? itemErrorMessage;
+    private string? receiveErrorMessage;
+
+    private IEnumerable<PurchaseOrderItem> ActiveItems =>
+        purchaseOrder?.Items?
+            .Where(i => i.IsActive)
+            ?? Enumerable.Empty<PurchaseOrderItem>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            purchaseOrder =
+                await InventoryService.GetPurchaseOrderAsync(Id);
+
+            materials =
+                await InventoryService.GetMaterialsAsync();
+
+            if (purchaseOrder == null)
+            {
+                errorMessage = "Purchase order not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task AddItem()
+    {
+        if (purchaseOrder == null)
+            return;
+
+        try
+        {
+            isAddingItem = true;
+            itemErrorMessage = null;
+            successMessage = null;
+
+            newItem.PurchaseOrderId = purchaseOrder.Id;
+
+            var result =
+                await InventoryService.AddPurchaseOrderItem(newItem);
+
+            if (!result.success)
+            {
+                itemErrorMessage = result.message;
+                return;
+            }
+
+            successMessage = result.message;
+
+            newItem = new PurchaseOrderItem();
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            itemErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isAddingItem = false;
+        }
+    }
+
+    private async Task RemoveItem(int itemId)
+    {
+        try
+        {
+            itemErrorMessage = null;
+            successMessage = null;
+
+            var result =
+                await InventoryService.RemovePurchaseOrderItemAsync(
+                    itemId);
+
+            if (!result.success)
+            {
+                itemErrorMessage = result.message;
+                return;
+            }
+
+            successMessage = result.message;
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            itemErrorMessage = ex.Message;
+        }
+    }
+
+    private void OpenReceiveForm(PurchaseOrderItem item)
+    {
+        receivingItem = item;
+
+        receiveQuantity =
+            item.QuantityOrdered -
+            item.QuantityReceived;
+
+        receiveErrorMessage = null;
+    }
+
+    private void CloseReceiveForm()
+    {
+        receivingItem = null;
+        receiveQuantity = 0;
+        receiveErrorMessage = null;
+    }
+
+    private async Task ReceiveItem()
+    {
+        if (receivingItem == null)
+            return;
+
+        try
+        {
+            isReceiving = true;
+            receiveErrorMessage = null;
+            successMessage = null;
+
+            var result =
+                await InventoryService.ReceivePurchaseOrderItemAsync(
+                    receivingItem.Id,
+                    receiveQuantity,
+                    HttpContextAccessor.HttpContext?.User?.Identity?.Name);
+
+            if (!result.success)
+            {
+                receiveErrorMessage = result.message;
+                return;
+            }
+
+            successMessage = result.message;
+
+            receivingItem = null;
+            receiveQuantity = 0;
+
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            receiveErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isReceiving = false;
+        }
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Draft" => "po-status po-draft",
+            "Ordered" => "po-status po-ordered",
+            "Partially Received" => "po-status po-partial",
+            "Received" => "po-status po-received",
+            "Cancelled" => "po-status po-cancelled",
+            _ => "po-status"
+        };
+    }
+}

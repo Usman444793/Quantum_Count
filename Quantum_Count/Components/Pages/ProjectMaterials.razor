@@ -1,0 +1,285 @@
+﻿@page "/projects/{Id:int}/materials"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Project Materials | Quantum Count</PageTitle>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading materials...</p>
+    </div>
+}
+else if (project == null)
+{
+    <div class="error-container">
+        <h3>Project not found</h3>
+        <button class="secondary-button"  @onclick="GoBack">
+            Back
+        </button>
+    </div>
+}
+else
+{
+    <div class="project-operation-page">
+        <div class="operation-header">
+            <div>
+                <div class="page-breadcrumb">
+                    Projects
+                    <span>/</span>
+                    @project.ProjectCode
+                    <span>/</span>
+                    Materials
+                </div>
+                <h1>Project Materials</h1>
+                <p>
+                    Issue and return inventory materials for this project.
+                </p>
+            </div>
+            <button class="secondary-button"  @onclick="GoBack">
+                Back to Project
+            </button>
+        </div>
+        <div class="details-section">
+            <h2>Issue Material</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material</label>
+                    <select class="form-control"  @bind="selectedMaterialId">
+                        <option value="0">
+                            Select material
+                        </option>
+                        @foreach (var material in materials)
+                        {
+                            <option value="@material.Id">
+                                @material.MaterialCode -
+                                @material.Name
+                                (@material.Quantity @material.Unit available)
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input class="form-control"
+                           type="number"
+                           step="0.01"
+                           min="0.01"
+                           @bind="quantityToIssue" />
+                </div>
+                <div class="form-group full-width">
+                    <label>Notes</label>
+                    <textarea class="form-control textarea" @bind="issueNotes"></textarea>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(issueError))
+            {
+                <div class="form-error">
+                    @issueError
+                </div>
+            }
+            <div class="form-actions">
+                <button class="primary-button" @onclick="IssueMaterial" disabled="@isProcessing">
+                    @(isProcessing ? "Processing..." : "Issue Material")
+                </button>
+            </div>
+        </div>
+        <div class="details-section">
+            <div class="section-header">
+                <div>
+                    <h2>Allocated Materials</h2>
+                    <p>
+                        Materials currently assigned to this project.
+                    </p>
+                </div>
+            </div>
+            @if (!projectMaterials.Any())
+            {
+                <div class="section-empty">
+                    No materials have been issued to this project.
+                </div>
+            }
+            else
+            {
+                <div class="operation-list">
+                    @foreach (var item in projectMaterials)
+                    {
+                        <div class="operation-row">
+                            <div>
+                                <strong>
+                                    @(item.Material?.Name ?? "Unknown")
+                                </strong>
+                                <span>
+                                    Issued: @item.QuantityIssued
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                    Used: @item.QuantityUsed
+                                </span>
+                                <span>
+                                    Returned: @item.QuantityReturned
+                                </span>
+                                @if (item.isActive)
+                                {
+                                    <button class="secondary-button"   @onclick="() => PrepareReturn(item)">
+                                        Return
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        @if (returningMaterialId == item.Id)
+                        {
+                            <div class="return-box">
+                                <label>
+                                    Return quantity
+                                </label>
+                                <input class="form-control"
+                                       type="number"
+                                       min="0.01"
+                                       step="0.01"
+                                       @bind="returnQuantity" />
+                                <button class="primary-button"
+                                        @onclick="() => ReturnMaterial(item.Id)">
+                                    Confirm Return
+                                </button>
+                                <button class="secondary-button" @onclick="CancelReturn">
+                                    Cancel
+                                </button>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Project? project;
+    private List<Material> materials = new();
+    private List<ProjectMaterial> projectMaterials = new();
+    private int selectedMaterialId;
+    private decimal quantityToIssue;
+    private decimal returnQuantity;
+    private int returningMaterialId;
+    private string issueNotes = string.Empty;
+    private string issueError = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            project = await InventoryService.GetProjectAsync(Id);
+            if (project == null)
+                return;
+            materials = await InventoryService.GetMaterialsAsync();
+            projectMaterials = await InventoryService.GetProjectMaterialsAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            issueError = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async Task IssueMaterial()
+    {
+        issueError = string.Empty;
+        if (selectedMaterialId <= 0)
+        {
+            issueError = "Please select a material.";
+            return;
+        }
+        if (quantityToIssue <= 0)
+        {
+            issueError = "Quantity must be greater than zero.";
+            return;
+        }
+        try
+        {
+            isProcessing = true;
+            var request = new ProjectMaterial
+            {
+                ProjectId = Id,
+                MaterialId = selectedMaterialId,
+                QuantityIssued = quantityToIssue,
+                Notes = issueNotes
+            };
+            var result = await InventoryService.AddProjectMaterialAsync(request);
+            if (!result.success)
+            {
+                issueError = result.message;
+                return;
+            }
+            selectedMaterialId = 0;
+            quantityToIssue = 0;
+            issueNotes = string.Empty;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            issueError = ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    private void PrepareReturn(ProjectMaterial item)
+    {
+        returningMaterialId = item.Id;
+        returnQuantity = item.QuantityIssued - item.QuantityReturned;
+    }
+    private void CancelReturn()
+    {
+        returningMaterialId = 0;
+        returnQuantity = 0;
+    }
+    private async Task ReturnMaterial(int projectMaterialId)
+    {
+        issueError = string.Empty;
+        if (returnQuantity <= 0)
+        {
+            issueError = "Return quantity must be greater than zero.";
+            return;
+        }
+        try
+        {
+            isProcessing = true;
+            var result = await InventoryService.ReturnProjectMaterialAsync( projectMaterialId, returnQuantity);
+            if (!result.success)
+            {
+                issueError = result.message;
+                return;
+            }
+            returningMaterialId = 0;
+            returnQuantity = 0;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            issueError = ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"/projects/{Id}");
+    }
+}

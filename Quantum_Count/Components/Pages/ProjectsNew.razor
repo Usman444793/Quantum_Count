@@ -1,0 +1,127 @@
+﻿@page "/projects/new"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>New Project | Quantum Count</PageTitle>
+<div class="project-form-page">
+    <div class="project-form-header">
+        <div>
+            <div class="page-breadcrumb">
+                Projects <span>/</span> New Project
+            </div>
+            <h1>New Project</h1>
+            <p>Create a new operational project.</p>
+        </div>
+        <button class="secondary-button" @onclick="GoBack">
+            Cancel
+        </button>
+    </div>
+    <div class="form-card">
+        <EditForm Model="@project" OnValidSubmit="CreateProject">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-section">
+                <h3>Project Information</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Project Code *</label>
+                        <InputText class="form-control" @bind-Value="project.ProjectCode" />
+                        <ValidationMessage For="@(() => project.ProjectCode)" />
+                    </div>
+                    <div class="form-group">
+                        <label>Project Name *</label>
+                        <InputText class="form-control" @bind-Value="project.Name" />
+                        <ValidationMessage For="@(() => project.Name)" />
+                    </div>
+                    <div class="form-group">
+                        <label>Client / Department</label>
+                        <InputText class="form-control" @bind-Value="project.ClientOrDepartment" />
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <InputSelect class="form-control"  @bind-Value="project.Status">
+                            <option value="Planning">Planning</option>
+                            <option value="Active">Active</option>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <InputDate class="form-control" @bind-Value="project.StartDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <InputDate class="form-control" @bind-Value="project.EndDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Budget</label>
+                        <InputNumber class="form-control" @bind-Value="project.Budget" />
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <InputTextArea class="form-control textarea" @bind-Value="project.Description" />
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="form-error">
+                    @errorMessage
+                </div>
+            }
+            <div class="form-actions">
+                <button type="button" class="secondary-button" @onclick="GoBack">
+                    Cancel
+                </button>
+                <button type="submit" class="primary-button" disabled="@isSaving">
+                    @(isSaving ? "Creating..." : "Create Project")
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+@code {
+    private Project project = new()
+    {
+        StartDate = DateTime.Today,
+        Status = "Planning",
+        Budget = 0
+    };
+    private bool isSaving;
+    private string errorMessage = string.Empty;
+    private async Task CreateProject()
+    {
+        if (isSaving)
+            return;
+        try
+        {
+            isSaving = true;
+            errorMessage = string.Empty;
+            var result = await InventoryService.CreateProjectAsync(project);
+
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            Navigation.NavigateTo("/projects");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/projects");
+    }
+}

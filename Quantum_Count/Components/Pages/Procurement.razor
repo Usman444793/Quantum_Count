@@ -1,7 +1,345 @@
 ﻿@page "/procurement"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
-<h2>Procurement Page</h2>
-@code {
 
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+
+@attribute [Authorize]
+
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Procurement | Quantum Count</PageTitle>
+
+<div class="procurement-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Purchase Orders</h1>
+            <p>Manage procurement, purchase orders and incoming inventory.</p>
+        </div>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Business"
+                   Href="/suppliers"
+                   Class="supplier-button">
+            Manage Suppliers
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/procurement/new"))">
+            New Purchase Order
+        </MudButton>
+
+    </div>
+
+    <div class="procurement-summary">
+
+        <div class="procurement-stat">
+            <span>Total Orders</span>
+            <strong>@purchaseOrders.Count</strong>
+        </div>
+
+        <div class="procurement-stat">
+            <span>Draft</span>
+            <strong>@CountStatus("Draft")</strong>
+        </div>
+
+        <div class="procurement-stat">
+            <span>Ordered</span>
+            <strong>@CountStatus("Ordered")</strong>
+        </div>
+
+        <div class="procurement-stat">
+            <span>Partially Received</span>
+            <strong>@CountStatus("Partially Received")</strong>
+        </div>
+
+        <div class="procurement-stat">
+            <span>Received</span>
+            <strong>@CountStatus("Received")</strong>
+        </div>
+
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudAlert Severity="Severity.Error"
+                  Variant="Variant.Outlined"
+                  Class="mb-4">
+            @errorMessage
+        </MudAlert>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <MudAlert Severity="Severity.Success"
+                  Variant="Variant.Outlined"
+                  Class="mb-4">
+            @successMessage
+        </MudAlert>
+    }
+
+    <div class="procurement-toolbar">
+
+        <MudTextField @bind-Value="searchText"
+                      Placeholder="Search purchase orders..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      Class="procurement-search" />
+
+        <MudSelect T="string"
+                   @bind-Value="statusFilter"
+                   Label="Status"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="status-filter">
+
+            <MudSelectItem Value="@("All")">
+                All Statuses
+            </MudSelectItem>
+
+            <MudSelectItem Value="@("Draft")">
+                Draft
+            </MudSelectItem>
+
+            <MudSelectItem Value="@("Ordered")">
+                Ordered
+            </MudSelectItem>
+
+            <MudSelectItem Value="@("Partially Received")">
+                Partially Received
+            </MudSelectItem>
+
+            <MudSelectItem Value="@("Received")">
+                Received
+            </MudSelectItem>
+
+            <MudSelectItem Value="@("Cancelled")">
+                Cancelled
+            </MudSelectItem>
+
+        </MudSelect>
+
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="procurement-loading">
+
+            <MudProgressCircular Indeterminate="true"
+                                 Color="Color.Primary" />
+
+            <MudText>
+                Loading purchase orders...
+            </MudText>
+
+        </div>
+    }
+    else if (FilteredOrders.Count == 0)
+    {
+        <MudPaper Class="procurement-empty" Elevation="1">
+
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart"
+                     Size="Size.Large" />
+
+            <MudText Typo="Typo.h6">
+                No purchase orders found
+            </MudText>
+
+            <MudText Typo="Typo.body2">
+                Create a purchase order to begin procurement.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="@(() => Navigation.NavigateTo("/procurement/new"))">
+                Create Purchase Order
+            </MudButton>
+
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Class="procurement-table-wrapper" Elevation="1">
+
+            <MudTable Items="@FilteredOrders"
+                      Hover="true"
+                      Striped="true"
+                      Dense="true"
+                      Class="procurement-table">
+
+                <HeaderContent>
+
+                    <MudTh>PO Number</MudTh>
+                    <MudTh>Supplier</MudTh>
+                    <MudTh>Order Date</MudTh>
+                    <MudTh>Expected Delivery</MudTh>
+                    <MudTh>Items</MudTh>
+                    <MudTh>Total</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="PO Number">
+
+                        <strong>@context.PONumber</strong>
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Supplier">
+
+                        @(context.Supplier?.CompanyName ?? "Unknown")
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Order Date">
+
+                        @context.OrderDate.ToLocalTime().ToString("dd MMM yyyy")
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Expected Delivery">
+
+                        @if (context.ExpectedDeliveryDate.HasValue)
+                        {
+                            @context.ExpectedDeliveryDate.Value.ToString("dd MMM yyyy")
+                        }
+                        else
+                        {
+                            <span>Not specified</span>
+                        }
+                    </MudTd>
+
+                    <MudTd DataLabel="Items">
+
+                        @(context.Items?.Count(i => i.IsActive) ?? 0)
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Total">
+
+                        <strong>
+                            @context.TotalAmount.ToString("N2")
+                        </strong>
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Status">
+
+                        <span class="@GetStatusClass(context.Status)">
+                            @context.Status
+                        </span>
+                    </MudTd>
+                    <MudTd Align="Align.Right">
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                       Color="Color.Default"
+                                       Size="Size.Small"
+                                       Title="View"
+                                       OnClick="@(() =>  Navigation.NavigateTo($"/procurement/{context.Id}"))" />
+                        @if (context.Status == "Draft")
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Title="Edit"
+                                           OnClick="@(() => Navigation.NavigateTo($"/procurement/edit/{context.Id}"))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Title="Cancel"
+                                           OnClick="@(() => CancelPurchaseOrder(context.Id))" />
+                        }
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+    }
+</div>
+@code {
+    private List<PurchaseOrder> purchaseOrders = new();
+    private string searchText = string.Empty;
+    private string statusFilter = "All";
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? successMessage;
+    private List<PurchaseOrder> FilteredOrders =>
+        purchaseOrders
+            .Where(p =>
+                (string.IsNullOrWhiteSpace(searchText) ||
+                 p.PONumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                 (p.Supplier?.CompanyName?.Contains(
+                     searchText,
+                     StringComparison.OrdinalIgnoreCase) ?? false))
+                &&
+                (statusFilter == "All" ||
+                 p.Status.Equals(
+                     statusFilter,
+                     StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPurchaseOrders();
+    }
+    private async Task LoadPurchaseOrders()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            purchaseOrders = await InventoryService.GetPurchaseOrdersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private int CountStatus(string status)
+    {
+        return purchaseOrders.Count(p =>
+            p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+    }
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Draft" => "po-status po-draft",
+            "Ordered" => "po-status po-ordered",
+            "Partially Received" => "po-status po-partial",
+            "Received" => "po-status po-received",
+            "Cancelled" => "po-status po-cancelled",
+            _ => "po-status"
+        };
+    }
+    private async Task CancelPurchaseOrder(int id)
+    {
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+            var result = await InventoryService.DeletePurchaseOrderAsync(id);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            successMessage = result.message;
+
+            await LoadPurchaseOrders();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
 }

@@ -1,0 +1,24 @@
+$kind: http-request
+name: Login
+order: 1000
+url: 'https://localhost:7174/api/auth/login'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{email}}",
+      "password": "{{password}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      if (pm.response.code === 200) {
+          const json = pm.response.json();
+          pm.globals.set("jwt_token", json.token);
+          console.log("JWT token saved to globals: jwt_token");
+      }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Quantum_Count.Models;
 using Quantum_Count.Services;
-
 namespace Quantum_Count.Controllers;
 
 [ApiController]
@@ -16,14 +15,12 @@ public class EquipmentHistoryController : ControllerBase
     {
         _inventoryService = inventoryService;
     }
-
     [HttpGet("equipment/{equipmentId:int}")]
     public async Task<IActionResult> GetEquipmentHistory(int equipmentId)
     {
         var history = await _inventoryService.GetEquipmentHistoryAsync(equipmentId);
         return Ok(history);
     }
-
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetEquipmentHistoryById(int id)
     {
@@ -34,7 +31,6 @@ public class EquipmentHistoryController : ControllerBase
         }
         return Ok(history);
     }
-
     [HttpPost]
     public async Task<IActionResult> CreateEquipmentHistory([FromBody] EquipmentHistory history)
     {

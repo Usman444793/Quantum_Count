@@ -1,0 +1,338 @@
+﻿@page "/projects/{Id:int}/tasks"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Project Tasks | Quantum Count</PageTitle>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading tasks...</p>
+
+    </div>
+}
+else if (project == null)
+{
+    <div class="error-container">
+        <h3>Project not found</h3>
+        <button class="secondary-button"@onclick="GoBack">
+            Back
+        </button>
+    </div>
+}
+else
+{
+    <div class="project-operation-page">
+        <div class="operation-header">
+            <div>
+                <div class="page-breadcrumb">
+                    Projects
+                    <span>/</span>
+                    @project.ProjectCode
+                    <span>/</span>
+                    Tasks
+                </div>
+                <h1>Project Tasks</h1>
+                <p>
+                    Manage tasks and track project progress.
+                </p>
+            </div>
+            <button class="secondary-button" @onclick="GoBack">
+                Back to Project
+            </button>
+        </div>
+        <div class="details-section">
+            <h2>Add Task</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Task Title</label>
+                    <input class="form-control"
+                           @bind="newTask.Title" />
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select class="form-control"
+                            @bind="newTask.Status">
+                        <option value="Not Started">
+                            Not Started
+                        </option>
+                        <option value="In Progress">
+                            In Progress
+                        </option>
+                        <option value="Blocked">
+                            Blocked
+                        </option>
+                        <option value="Completed">
+                            Completed
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <InputDate class="form-control" @bind-Value="newTask.StartDate" />
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <InputDate class="form-control" @bind-Value="newTask.DueDate" />
+                </div>
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea class="form-control textarea" @bind="newTask.Description"></textarea>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="form-error">
+                    @errorMessage
+                </div>
+            }
+            <div class="form-actions">
+                <button class="primary-button" @onclick="CreateTask" disabled="@isProcessing">
+                    @(isProcessing ? "Creating..." : "Create Task")
+                </button>
+            </div>
+        </div>
+        <div class="details-section">
+            <div class="section-header">
+                <div>
+                    <h2>Overall Progress</h2>
+                    <p>
+                        Calculated from active project tasks.
+                    </p>
+                </div>
+                <strong class="large-progress">
+                    @projectProgress%
+                </strong>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill"
+                     style="width:@projectProgress%">
+                </div>
+            </div>
+        </div>
+        <div class="details-section">
+            <h2>Tasks</h2>
+            @if (!tasks.Any())
+            {
+                <div class="section-empty">
+                    No tasks have been created.
+                </div>
+            }
+            else
+            {
+                <div class="operation-list">
+                    @foreach (var task in tasks.Where(t => t.IsActive))
+                    {
+                        <div class="task-management-row">
+                            <div class="task-information">
+                                <strong>
+                                    @task.Title
+                                </strong>
+                                @if (!string.IsNullOrWhiteSpace(task.Description))
+                                {
+                                    <span>
+                                        @task.Description
+                                    </span>
+                                }
+                                <small>
+                                    Due: @(task.DueDate?.ToString("dd MMM yyyy") ?? "No due date")
+                                </small>
+                            </div>
+                            <div class="task-controls">
+                                <select class="form-control task-status"
+                                        value="@task.Status"
+                                        @onchange="e => ChangeStatus(task, e.Value?.ToString())">
+                                    <option value="Not Started">
+                                        Not Started
+                                    </option>
+                                    <option value="In Progress">
+                                        In Progress
+                                    </option>
+                                    <option value="Blocked">
+                                        Blocked
+                                    </option>
+                                    <option value="Completed">
+                                        Completed
+                                    </option>
+                                </select>
+                                <div class="task-progress-control">
+                                    <input type="range"
+                                           min="0"
+                                           max="100"
+                                           value="@task.Progress"
+                                           @oninput="e => ChangeProgress(task, e.Value)" />
+                                    <strong>
+                                        @task.Progress%
+                                    </strong>
+                                </div>
+                                @if (task.Progress < 100)
+                                {
+                                    <button class="primary-button" @onclick="() => CompleteTask(task)">
+                                        Complete
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="status completed">
+                                        Completed
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+    private Project? project;
+    private List<ProjectTask> tasks = new();
+    private ProjectTask newTask = new()
+    {
+        Status = "Not Started",
+        Progress = 0
+    };
+    private int projectProgress;
+    private bool isLoading = true;
+    private bool isProcessing;
+    private string errorMessage = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            project = await InventoryService.GetProjectAsync(Id);
+            if (project == null)
+                return;
+            tasks = await InventoryService.GetProjectTasksAsync(Id);
+            projectProgress = await InventoryService.GetTaskProgressAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async Task CreateTask()
+    {
+        errorMessage = string.Empty;
+        if (string.IsNullOrWhiteSpace(newTask.Title))
+        {
+            errorMessage = "Task title is required.";
+            return;
+        }
+        try
+        {
+            isProcessing = true;
+            newTask.ProjectId = Id;
+            var result = await InventoryService.CreateProjectTaskAsync(newTask);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            newTask = new ProjectTask
+            {
+                Status = "Not Started",
+                Progress = 0
+            };
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    private async Task ChangeProgress(ProjectTask task, object? value)
+    {
+        if (!int.TryParse(value?.ToString(), out var progress))
+            return;
+        progress = Math.Clamp(progress, 0, 100);
+        task.Progress = progress;
+        if (progress == 100)
+        {
+            task.Status = "Completed";
+            task.CompletedAt = DateTime.UtcNow;
+        }
+        else if (progress > 0 &&
+                 task.Status != "Blocked")
+        {
+            task.Status = "In Progress";
+            task.CompletedAt = null;
+        }
+        else if (progress == 0 &&
+                 task.Status != "Blocked")
+        {
+            task.Status = "Not Started";
+            task.CompletedAt = null;
+        }
+        await SaveTask(task);
+    }
+    private async Task ChangeStatus(ProjectTask task, string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return;
+        task.Status = status;
+        if (status == "Completed")
+        {
+            task.Progress = 100;
+            task.CompletedAt = DateTime.UtcNow;
+        }
+        else if (status == "Not Started")
+        {
+            task.Progress = 0;
+            task.CompletedAt = null;
+        }
+        else
+        {
+            task.CompletedAt = null;
+        }
+        await SaveTask(task);
+    }
+    private async Task CompleteTask(ProjectTask task)
+    {
+        task.Progress = 100;
+        task.Status = "Completed";
+        task.CompletedAt = DateTime.UtcNow;
+        await SaveTask(task);
+    }
+    private async Task SaveTask(ProjectTask task)
+    {
+        try
+        {
+            var result = await InventoryService.UpdateProjectTaskAsync(task);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"/projects/{Id}");
+    }
+}

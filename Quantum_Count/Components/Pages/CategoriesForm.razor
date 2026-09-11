@@ -1,18 +1,14 @@
 ﻿@page "/categories/new"
 @page "/categories/edit/{Id:int}"
-
 @attribute [Authorize]
-
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
-
 <PageTitle>
     @(_isEdit ? "Edit Category" : "New Category") | Quantum Count
 </PageTitle>

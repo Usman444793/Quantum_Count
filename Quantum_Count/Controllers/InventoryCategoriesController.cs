@@ -10,7 +10,6 @@ namespace Quantum_Count.Controllers;
 public class InventoryCategoriesController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-
     public InventoryCategoriesController(ApplicationDbContext context)
     {
         _context = context;

@@ -34,12 +34,10 @@
 
     </div>
 }
-else if (HasError)
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
     <div class="equipment-transaction-page">
-
         <div class="error-state">
-
             <MudIcon Icon="@Icons.Material.Filled.ErrorOutline"
                      Size="Size.Large" />
 

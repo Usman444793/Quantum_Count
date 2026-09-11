@@ -16,7 +16,10 @@
             <h1>Materials</h1>
             <p>Manage your inventory, stock levels and material costs.</p>
         </div>
-        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Class="new-inventory-button" Href="/materials/new">New Material</MudButton>
+        <button class="new-inventory-button" @onclick="NewMaterial">
+            <span class="button-icon"> + &nbsp;&nbsp; </span>
+             New Material
+        </button>
     </div>
     @if (_loading)
     {
@@ -91,59 +94,23 @@
                 </div>
             </div>
             <div class="filter-bar">
-                <MudTextField T="string"
-                              @bind-Value="_searchText"
-                              Placeholder="Search by name, code or category..."
-                              Variant="Variant.Outlined"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Search"
-                              Immediate="true"
-                              Clearable="true"
-                              Class="search-box" />
-                <MudSelect T="int?"
-                           Value="_selectedCategory"
-                           ValueChanged="OnCategoryChanged"
-                           Label="Category"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           Clearable="true"
-                           Class="category-filter">
-                    <MudSelectItem T="int?"
-                                   Value="@((int?)null)">
-                        All Categories
-                    </MudSelectItem>
+                <input type="text" 
+                       class="search-box" 
+                       @bind="_searchText"
+                       placeholder="Search by name, code or category..." />
+                <select class="category-filter" @bind="_selectedCategory">
+                    <option value="@((int?)null)">Simple Selection Cat</option>
                     @foreach (var category in _categories)
                     {
-                        <MudSelectItem T="int?"
-                                       Value="@((int?)category.Id)">
-                            @category.Name
-                        </MudSelectItem>
+                        <option value="@category.Id">@category.Name</option>
                     }
-                </MudSelect>
-                <MudSelect T="string"
-                           @bind-Value="_stockFilter"
-                           Label="Stock Status"
-                           Variant="Variant.Outlined"
-                           Dense="true"
-                           Clearable="false"
-                           Class="status-filter">
-                    <MudSelectItem T="string"
-                                   Value="@("All")">
-                        All Stock
-                    </MudSelectItem>
-                    <MudSelectItem T="string"
-                                   Value="@("In Stock")">
-                        In Stock
-                    </MudSelectItem>
-                    <MudSelectItem T="string"
-                                   Value="@("Low Stock")">
-                        Low Stock
-                    </MudSelectItem>
-                    <MudSelectItem T="string"
-                                   Value="@("Out of Stock")">
-                        Out of Stock
-                    </MudSelectItem>
-                </MudSelect>
+                </select>
+                <select class="status-filter" @bind="_stockFilter">
+                    <option value="@("All")">Simple Stock Cat</option>
+                    <option value="@("In Stock")">In Stock</option>
+                    <option value="@("Low Stock")">Low Stock</option>
+                    <option value="@("Out of Stock")">Out of Stock</option>
+                </select>
             </div>
             <div class="table-wrapper">
                 <MudTable Items="@FilteredMaterials"
@@ -363,13 +330,24 @@
             Snackbar.Add("Unable to delete material.",Severity.Error);
         }
     }
-    private void OnCategoryChanged(int? value)
+    private void OnCategoryChanged(ChangeEventArgs e)
     {
-        _selectedCategory = value;
+        if (int.TryParse(e.Value?.ToString(), out int value))
+        {
+            _selectedCategory = value;
+        }
+        else
+        {
+            _selectedCategory = null;
+        }
     }
     private void ViewTransactions(int materialId)
     {
         _openMaterialMenuId = null;
         Navigation.NavigateTo($"/materials/{materialId}/transactions");
+    }
+    private void NewMaterial()
+    {
+        Navigation.NavigateTo("/materials/new");
     }
 }

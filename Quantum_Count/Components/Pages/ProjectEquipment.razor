@@ -1,0 +1,233 @@
+﻿@page "/projects/{Id:int}/equipment"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+@using ProjectEquipmentModel = Quantum_Count.Models.ProjectEquipment
+@inject InventoryService InventoryService
+@inject NavigationManager Navigation
+<PageTitle>Project Equipment | Quantum Count</PageTitle>
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading equipment...</p>
+    </div>
+}
+else if (project == null)
+{
+    <div class="error-container">
+        <h3>Project not found</h3>
+        <button class="secondary-button"
+                @onclick="GoBack">
+            Back
+        </button>
+    </div>
+}
+else
+{
+    <div class="project-operation-page">
+        <div class="operation-header">
+            <div>
+                <div class="page-breadcrumb">
+                    Projects
+                    <span>/</span>
+                    @project.ProjectCode
+                    <span>/</span>
+                    Equipment
+                </div>
+                <h1>Project Equipment</h1>
+                <p>
+                    Assign and return equipment used by this project.
+                </p>
+            </div>
+            <button class="secondary-button"@onclick="GoBack">
+                Back to Project
+            </button>
+        </div>
+        <div class="details-section">
+            <h2>Assign Equipment</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Equipment</label>
+                    <select class="form-control" @bind="selectedEquipmentId">
+                        <option value="0">
+                            Select equipment
+                        </option>
+                        @foreach (var equipment in availableEquipment)
+                        {
+                            <option value="@equipment.Id">
+                                @equipment.EquipmentCode -
+                                @equipment.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input class="form-control" @bind="assignmentNotes" />
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="form-error">
+                    @errorMessage
+                </div>
+            }
+            <div class="form-actions">
+                <button class="primary-button" @onclick="AssignEquipment" disabled="@isProcessing">
+                    @(isProcessing ? "Assigning..." : "Assign Equipment")
+                </button>
+            </div>
+        </div>
+        <div class="details-section">
+            <h2>Project Equipment</h2>
+            @if (!projectEquipment.Any())
+            {
+                <div class="section-empty">
+                    No equipment has been assigned to this project.
+                </div>
+            }
+            else
+            {
+                <div class="operation-list">
+                    @foreach (var item in projectEquipment)
+                    {
+                        <div class="operation-row">
+                            <div>
+                                <strong>
+                                    @(item.Equipment?.Name ?? "Unknown")
+                                </strong>
+                                <span>
+                                    @(item.Equipment?.EquipmentCode ?? "")
+                                </span>
+                            </div>
+                            <div>
+                                <span>
+                                    Assigned:
+                                    @item.AssignedAt.ToString("dd MMM yyyy")
+                                </span>
+                                @if (item.IsActive)
+                                {
+                                    <button class="secondary-button"
+                                            @onclick="() => ReturnEquipment(item.Id)">
+                                        Return
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span>
+                                        Returned:
+                                        @(item.ReturnedAt?.ToString("dd MMM yyyy")
+                                            ?? "-")
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Project? project;
+    private List<Equipment> availableEquipment = new();
+    private List<ProjectEquipmentModel> projectEquipment = new();
+    private int selectedEquipmentId;
+    private string assignmentNotes = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            project = await InventoryService.GetProjectAsync(Id);
+            if (project == null)
+                return;
+            var allEquipment = await InventoryService.GetEquipmentAsync();
+            availableEquipment = allEquipment.Where(e => e.isActive && e.Status == "Available").ToList();
+            projectEquipment = await InventoryService.GetProjectEquipmentAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private async Task AssignEquipment()
+    {
+        errorMessage = string.Empty;
+        if (selectedEquipmentId <= 0)
+        {
+            errorMessage = "Please select equipment.";
+            return;
+        }
+        try
+        {
+            isProcessing = true;
+            var request = new ProjectEquipmentModel
+            {
+                ProjectId = Id,
+                EquipmentId = selectedEquipmentId,
+                Notes = assignmentNotes
+            };
+            var result =await InventoryService.AssignEquipmentToProjectAsync(request);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            selectedEquipmentId = 0;
+            assignmentNotes = string.Empty;
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    private async Task ReturnEquipment(int projectEquipmentId)
+    {
+        errorMessage = string.Empty;
+
+        try
+        {
+            isProcessing = true;
+            var result =await InventoryService.ReturnEquipmentFromProjectAsync(projectEquipmentId);
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"/projects/{Id}");
+    }
+}

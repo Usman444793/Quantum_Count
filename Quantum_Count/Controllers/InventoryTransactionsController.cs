@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Quantum_Count.Models;
 using Quantum_Count.Services;
 namespace Quantum_Count.Controllers;
-
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]

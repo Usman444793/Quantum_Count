@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get Materials
+order: 2000
+url: 'https://localhost:7174/api/materials'
+method: GET
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{jwt_token}}'
