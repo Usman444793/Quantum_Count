@@ -9,8 +9,10 @@ using Quantum_Count.Components;
 using Quantum_Count.Data;
 using Quantum_Count.Models;
 using Quantum_Count.Services;
+using QuestPDF.Infrastructure;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddMudServices();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents().AddInteractiveWebAssemblyComponents();
@@ -29,6 +31,7 @@ builder.Services.AddIdentity<ApplicationUsers, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders()
+.AddRoles<IdentityRole>()
 .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 builder.Services.AddAuthentication(options =>
@@ -67,7 +70,15 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped(sp =>
+    new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7174/")
+    });
 builder.Services.AddScoped<ReportsService>();
+builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<SettingsService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
@@ -108,4 +119,17 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode().AddInteractiveWebAssemblyRenderMode()
  .AddAdditionalAssemblies(typeof(Quantum_Count.Client._Imports).Assembly);
 app.MapControllers();
+
+// Seed roles on startup
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roles = ["Admin", "Viewer", "Inventory Staff", "Procurement Staff"];
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+}
+
 app.Run();

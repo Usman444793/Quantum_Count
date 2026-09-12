@@ -1,7 +1,727 @@
 ﻿@page "/staff"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-<h2>Staff and Roles Management</h2>
+@using Quantum_Count.DTO.Staff
+@inject HttpClient Http
+<PageTitle>Staff & Roles | Quantum Count</PageTitle>
+<div class="staff-page">
+
+    <!-- HEADER -->
+
+    <div class="staff-header">
+
+        <div>
+            <h1>Staff & Roles</h1>
+            <p>Manage staff members, roles and account access.</p>
+        </div>
+
+        <button class="add-staff-btn"
+                @onclick="OpenCreateModal">
+
+            <span>+</span>
+            Add Staff
+
+        </button>
+
+    </div>
+
+
+    <!-- SEARCH -->
+
+    <div class="staff-toolbar">
+
+        <div class="search-box">
+
+            <span>⌕</span>
+
+            <input @bind="searchText"
+                   @bind:event="oninput"
+                   placeholder="Search staff..." />
+
+        </div>
+
+        <div class="staff-count">
+            @FilteredStaff  staff members
+        </div>
+
+    </div>
+
+
+    @if (isLoading)
+    {
+        <div class="staff-loading">
+
+            <div class="spinner"></div>
+
+            <p>Loading staff...</p>
+
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="staff-error">
+
+            <strong>Unable to load staff</strong>
+
+            <p>@errorMessage</p>
+
+            <button @onclick="LoadStaff">
+                Try Again
+            </button>
+
+        </div>
+    }
+    else
+    {
+
+        <!-- STAFF TABLE -->
+
+        <div class="staff-table-card">
+
+            <div class="table-container">
+
+                <table class="staff-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Staff Member</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var staff in FilteredStaff)
+                        {
+                            <tr>
+
+                                <!-- USER -->
+
+                                <td>
+
+                                    <div class="staff-user">
+
+                                        <div class="avatar">
+                                            @GetInitials(staff.FullName)
+                                        </div>
+
+                                        <div>
+                                            <strong>
+                                                @staff.FullName
+                                            </strong>
+
+                                            <span>
+                                                Staff ID:
+                                                @ShortId(staff.Id)
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- EMAIL -->
+
+                                <td>
+                                    @staff.Email
+                                </td>
+
+
+                                <!-- ROLE -->
+
+                                <td>
+
+                                    @if (editingRoleId == staff.Id)
+                                    {
+                                        <select class="role-select"
+                                                @bind="selectedRole">
+
+                                            @foreach (var role in roles)
+                                            {
+                                                <option value="@role">
+                                                    @role
+                                                </option>
+                                            }
+
+                                        </select>
+
+                                        <div class="role-actions">
+
+                                            <button class="save-role-btn"
+                                                    @onclick="() => SaveRole(staff)">
+                                                ✓
+                                            </button>
+
+                                            <button class="cancel-role-btn"
+                                                    @onclick="CancelRoleEdit">
+                                                ×
+                                            </button>
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="role-cell">
+
+                                            <span class="role-badge">
+                                                @(staff.Roles.FirstOrDefault()
+                                                    ?? "No Role")
+                                            </span>
+
+                                            <button class="edit-role-btn"
+                                                    @onclick="() => StartRoleEdit(staff)">
+                                                ✎
+                                            </button>
+
+                                        </div>
+                                    }
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    @if (staff.IsActive)
+                                    {
+                                        <span class="status-badge active">
+                                            <span></span>
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge inactive">
+                                            <span></span>
+                                            Inactive
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- DATE -->
+
+                                <td>
+                                    @staff.CreatedAt.ToLocalTime()
+                                </td>
+
+
+                                <!-- ACTIONS -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        @if (staff.IsActive)
+                                        {
+                                            <button class="deactivate-btn"
+                                                    title="Deactivate"
+                                                    @onclick="() => DeactivateStaff(staff)">
+                                                ⏸
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="activate-btn"
+                                                    title="Activate"
+                                                    @onclick="() => ActivateStaff(staff)">
+                                                ▶
+                                            </button>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+
+                @if (!FilteredStaff.Any())
+                {
+                    <div class="no-results">
+                        No staff members found.
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    }
+
+</div>
+
+
+<!-- CREATE STAFF MODAL -->
+@if (showCreateModal)
+{
+    <div class="modal-overlay"
+         @onclick="CloseCreateModal">
+
+        <div class="staff-modal"
+             @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Add Staff Member</h2>
+                    <p>Create a new Quantum Count user.</p>
+                </div>
+
+                <button class="close-modal"
+                        @onclick="CloseCreateModal">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                @if (!string.IsNullOrEmpty(formError))
+                {
+                    <div class="form-error">
+                        @formError
+                    </div>
+                }
+
+
+                <div class="form-group">
+
+                    <label>Full Name</label>
+
+                    <input @bind="newStaff.FullName"
+                           placeholder="Enter full name" />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Email</label>
+
+                    <input type="email"
+                           @bind="newStaff.Email"
+                           placeholder="Enter email address" />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Password</label>
+
+                    <input type="password"
+                           @bind="newStaff.Password"
+                           placeholder="Enter password" />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Role</label>
+
+                    <select @bind="newStaff.Role">
+
+                        @foreach (var role in roles)
+                        {
+                            <option value="@role">
+                                @role
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button class="cancel-btn"
+                        @onclick="CloseCreateModal">
+                    Cancel
+                </button>
+
+                <button class="create-btn"
+                        disabled="@creatingStaff"
+                        @onclick="CreateStaff">
+
+                    @if (creatingStaff)
+                    {
+                        <span>Creating...</span>
+                    }
+                    else
+                    {
+                        <span>Create Staff</span>
+                    }
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="toast-success">
+        ✓ @successMessage
+    </div>
+}
+
+
 @code {
+
+    private List<StaffDto> staff = new();
+
+    private List<string> roles = new();
+
+    private string searchText = "";
+
+    private bool isLoading = true;
+
+    private bool showCreateModal;
+
+    private bool creatingStaff;
+
+    private string? errorMessage;
+
+    private string? formError;
+
+    private string? successMessage;
+
+
+    private CreateStaffRequest newStaff = new()
+    {
+        Role = "Viewer"
+    };
+
+
+    private string? editingRoleId;
+
+    private string selectedRole = "";
+
+
+    private IEnumerable<StaffDto> FilteredStaff =>
+        string.IsNullOrWhiteSpace(searchText)
+            ? staff
+            : staff.Where(x =>
+                x.FullName.Contains(
+                    searchText,
+                    StringComparison.OrdinalIgnoreCase)
+                ||
+                x.Email.Contains(
+                    searchText,
+                    StringComparison.OrdinalIgnoreCase)
+                ||
+                x.Roles.Any(r =>
+                    r.Contains(
+                        searchText,
+                        StringComparison.OrdinalIgnoreCase)));
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStaff();
+        await LoadRoles();
+    }
+
+
+    private async Task LoadStaff()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            staff =
+                await Http.GetFromJsonAsync<List<StaffDto>>(
+                    "api/staff")
+                ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    private async Task LoadRoles()
+    {
+        try
+        {
+            roles =
+                await Http.GetFromJsonAsync<List<string>>(
+                    "api/staff/roles")
+                ?? new();
+        }
+        catch
+        {
+            roles = new();
+        }
+    }
+
+
+    private void OpenCreateModal()
+    {
+        newStaff = new CreateStaffRequest
+        {
+            Role = roles.FirstOrDefault()
+                ?? "Viewer"
+        };
+
+        formError = null;
+
+        showCreateModal = true;
+    }
+
+
+    private void CloseCreateModal()
+    {
+        showCreateModal = false;
+        formError = null;
+    }
+
+
+    private async Task CreateStaff()
+    {
+        try
+        {
+            creatingStaff = true;
+            formError = null;
+
+            var response =
+                await Http.PostAsJsonAsync(
+                    "api/staff",
+                    newStaff);
+
+            if (response.IsSuccessStatusCode)
+            {
+                CloseCreateModal();
+
+                await LoadStaff();
+
+                ShowSuccess(
+                    "Staff member created successfully.");
+            }
+            else
+            {
+                var result =
+                    await response.Content
+                        .ReadFromJsonAsync<ApiMessage>();
+
+                formError =
+                    result?.Message
+                    ?? "Unable to create staff member.";
+            }
+        }
+        catch (Exception ex)
+        {
+            formError = ex.Message;
+        }
+        finally
+        {
+            creatingStaff = false;
+        }
+    }
+
+
+    private void StartRoleEdit(StaffDto member)
+    {
+        editingRoleId = member.Id;
+
+        selectedRole =
+            member.Roles.FirstOrDefault()
+            ?? roles.FirstOrDefault()
+            ?? "Viewer";
+    }
+
+
+    private void CancelRoleEdit()
+    {
+        editingRoleId = null;
+    }
+
+
+    private async Task SaveRole(StaffDto member)
+    {
+        try
+        {
+            var request = new UpdateStaffRoleRequest
+            {
+                Role = selectedRole
+            };
+
+            var response =
+                await Http.PutAsJsonAsync(
+                    $"api/staff/{member.Id}/role",
+                    request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                editingRoleId = null;
+
+                await LoadStaff();
+
+                ShowSuccess(
+                    "Staff role updated successfully.");
+            }
+            else
+            {
+                await SetErrorFromResponse(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+
+    private async Task DeactivateStaff(StaffDto member)
+    {
+        try
+        {
+            var response =
+                await Http.PutAsync(
+                    $"api/staff/{member.Id}/deactivate",
+                    null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadStaff();
+
+                ShowSuccess(
+                    $"{member.FullName} has been deactivated.");
+            }
+            else
+            {
+                await SetErrorFromResponse(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+
+    private async Task ActivateStaff(StaffDto member)
+    {
+        try
+        {
+            var response =
+                await Http.PutAsync(
+                    $"api/staff/{member.Id}/activate",
+                    null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadStaff();
+
+                ShowSuccess(
+                    $"{member.FullName} has been activated.");
+            }
+            else
+            {
+                await SetErrorFromResponse(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+
+    private async Task SetErrorFromResponse(
+        HttpResponseMessage response)
+    {
+        var result =
+            await response.Content
+                .ReadFromJsonAsync<ApiMessage>();
+
+        errorMessage =
+            result?.Message
+            ?? "The requested operation failed.";
+    }
+
+
+    private void ShowSuccess(string message)
+    {
+        successMessage = message;
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+
+            await InvokeAsync(() =>
+            {
+                successMessage = null;
+                StateHasChanged();
+            });
+        });
+    }
+
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+
+        var parts =
+            name.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpper();
+
+        return (
+            parts[0][0].ToString() +
+            parts[^1][0].ToString()
+        ).ToUpper();
+    }
+
+
+    private string ShortId(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+            return "";
+
+        return id.Length > 8
+            ? id[..8]
+            : id;
+    }
+
+
+    private class ApiMessage
+    {
+        public string Message { get; set; } = "";
+    }
 
 }

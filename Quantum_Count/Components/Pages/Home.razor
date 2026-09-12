@@ -1,24 +1,278 @@
 ﻿@page "/dashboard"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
-<PageTitle>Home</PageTitle>
-<div class="container">
-<h1>Welcome to Quantum Count </h1>
-    <h3>
-    Manage your inventory, projects, and resources from one place.
-    </h3>
-</div>
-<style>
-    .container{
-        width:100%;
-        margin-bottom: 20px;
-        text-align: center;
+@using Quantum_Count.DTO.Dashboard
+@inject HttpClient Http
+<PageTitle>Dashboard | Quantum Count</PageTitle>
+<div class="dashboard-page">
+    <div class="dashboard-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Overview of your inventory operations and activities.</p>
+        </div>
+        <button class="refresh-btn" @onclick="LoadDashboard">
+            <span>↻</span> Refresh
+        </button>
+    </div>
+    @if (isLoading)
+    {
+        <div class="dashboard-loading">
+            <div class="spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
     }
-h1{
-       font-size: 40px;
-       font-weight: 800;
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="dashboard-error">
+            <strong>Unable to load dashboard</strong>
+            <p>@errorMessage</p>
+            <button @onclick="LoadDashboard">
+                Try Again
+            </button>
+        </div>
+    }
+    else if (dashboard is not null)
+    {
+        <div class="dashboard-cards">
+            <div class="dashboard-card">
+                <div class="card-icon material-icon">
+                    📦
+                </div>
+                <div class="card-content">
+                    <span>Total Materials</span>
+                    <strong>@dashboard.TotalMaterials</strong>
+                </div>
+            </div>
+            <div class="dashboard-card warning-card">
+                <div class="card-icon warning-icon">
+                    ⚠
+                </div>
+                <div class="card-content">
+                    <span>Low Stock</span>
+                    <strong>@dashboard.LowStockItems</strong>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon equipment-icon">
+                    🛠
+                </div>
+                <div class="card-content">
+                    <span>Equipment</span>
+                    <strong>@dashboard.TotalEquipment</strong>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon project-icon">
+                    📋
+                </div>
+                <div class="card-content">
+                    <span>Active Projects</span>
+                    <strong>@dashboard.ActiveProjects</strong>
+                </div>
+            </div>
+        </div>
+        <div class="secondary-stats">
+            <div class="stat-box">
+                <span>Available Equipment</span>
+                <strong>@dashboard.AvailableEquipment</strong>
+            </div>
+            <div class="stat-box">
+                <span>Equipment In Use</span>
+                <strong>@dashboard.EquipmentInUse</strong>
+            </div>
+            <div class="stat-box">
+                <span>Purchase Orders</span>
+                <strong>@dashboard.TotalPurchaseOrders</strong>
+            </div>
+            <div class="stat-box">
+                <span>Pending Orders</span>
+                <strong>@dashboard.PendingPurchaseOrders</strong>
+            </div>
+            <div class="stat-box wide-stat">
+                <span>Total Inventory Value</span>
+                <strong>
+                    @dashboard.TotalInventoryValue.ToString("N2")
+                </strong>
+            </div>
+            <div class="stat-box wide-stat">
+                <span>Total Purchase Value</span>
+                <strong>
+                    @dashboard.TotalPurchaseValue.ToString("N2")
+                </strong>
+            </div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="dashboard-panel transactions-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Recent Transactions</h2>
+                        <p>Latest inventory activity</p>
+                    </div>
+                </div>
+                @if (dashboard.RecentTransactions.Any())
+                {
+                    <div class="table-wrapper">
+
+                        <table class="dashboard-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in dashboard.RecentTransactions)
+                                {
+                                    <tr>
+
+                                        <td>
+                                            <strong>
+                                                @transaction.MaterialName
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-type
+                                                @GetTransactionClass(transaction.TransactionType)">
+                                                @transaction.TransactionType
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @transaction.Quantity
+                                        </td>
+                                        <td>
+                                            @transaction.Date
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        No recent transactions.
+                    </div>
+                }
+            </div>
+            <div class="dashboard-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Project Progress</h2>
+                        <p>Current project status</p>
+                    </div>
+                </div>
+                @if (dashboard.ProjectProgress.Any())
+                {
+                    <div class="project-list">
+                        @foreach (var project in dashboard.ProjectProgress)
+                        {
+                            <div class="project-item">
+                                <div class="project-info">
+                                    <strong>
+                                        @project.ProjectName
+                                    </strong>
+                                    <span>
+                                        @project.Progress%
+                                    </span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-bar" 
+                                    style="width:@project.Progress%">
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        No active project progress available.
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="dashboard-panel alerts-panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Alerts & Attention</h2>
+                    <p>Items that may require action</p>
+                </div>
+            </div>
+            @if (dashboard.Alerts.Any())
+            {
+                <div class="alerts-list">
+                    @foreach (var alert in dashboard.Alerts)
+                    {
+                        <div class="alert-item @GetAlertClass(alert.Type)">
+                            <div class="alert-icon">
+                                ⚠
+                            </div>
+                            <div>
+                                <strong>@alert.Type</strong>
+                                <p>@alert.message</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="success-state">
+                    ✓ Everything looks good. No active alerts.
+                </div>
+            }
+        </div>
+    }
+</div>
+@code {
+    private DashboardDto? dashboard;
+    private bool isLoading = true;
+    private string? errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+    }
+    private async Task LoadDashboard()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            dashboard = await Http.GetFromJsonAsync<DashboardDto>("api/dashboard");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    private string GetTransactionClass(string type)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+            return "";
+        type = type.ToLower();
+        if (type.Contains("in") || type.Contains("purchase") || type.Contains("return"))
+        {
+            return "transaction-in";
+        }
+        if (type.Contains("out") ||type.Contains("issue"))
+        {
+            return "transaction-out";
+        }
+        return "transaction-adjustment";
+    }
+    private string GetAlertClass(string type)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+            return "alert-warning";
+        return type.ToLower().Contains("stock") ? "alert-danger" : "alert-warning";
+    }
 }
-h3{
-       font-weight: 100;
-}
-</style>

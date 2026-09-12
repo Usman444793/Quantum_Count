@@ -1,7 +1,484 @@
 ﻿@page "/settings"
-@attribute [Authorize]
+
 @using Microsoft.AspNetCore.Authorization
-<h2>Settings</h2>
+@using Quantum_Count.Models
+@using Quantum_Count.Services
+
+@attribute [Authorize]
+
+@inject SettingsService SettingsService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+<PageTitle>Settings - Quantum Count</PageTitle>
+
+<div class="settings-page">
+
+    <div class="settings-header">
+        <div>
+            <h1>Settings</h1>
+            <p>Manage your Quantum Count application preferences.</p>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="settings-state">
+            <MudProgressCircular Indeterminate="true" />
+            <p>Loading settings...</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="settings-alert error">
+            @errorMessage
+        </div>
+    }
+    else if (settings != null)
+    {
+        <EditForm Model="settings" OnValidSubmit="SaveSettings">
+
+            <DataAnnotationsValidator />
+
+            <div class="settings-grid">
+
+                <!-- GENERAL -->
+
+                <div class="settings-card">
+
+                    <div class="settings-card-header">
+                        <div class="settings-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.Business" />
+                        </div>
+
+                        <div>
+                            <h2>General</h2>
+                            <p>Basic application configuration.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-form">
+
+                        <MudTextField @bind-Value="settings.OrganizationName"
+                                      Label="Organization Name"
+                                      Variant="Variant.Outlined"
+                                      Required="true" />
+
+                        <MudSelect @bind-Value="settings.Currency"
+                                   Label="Currency"
+                                   Variant="Variant.Outlined">
+
+                            <MudSelectItem Value="@("PKR")">
+                                PKR - Pakistani Rupee
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("USD")">
+                                USD - US Dollar
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("EUR")">
+                                EUR - Euro
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("GBP")">
+                                GBP - British Pound
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+                        <MudSelect @bind-Value="settings.TimeZone"
+                                   Label="Time Zone"
+                                   Variant="Variant.Outlined">
+
+                            <MudSelectItem Value="@("Pakistan Standard Time")">
+                                Pakistan Standard Time
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("UTC")">
+                                UTC
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+                        <MudSelect @bind-Value="settings.DateFormat"
+                                   Label="Date Format"
+                                   Variant="Variant.Outlined">
+
+                            <MudSelectItem Value="@("dd/MM/yyyy")">
+                                dd/MM/yyyy
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("MM/dd/yyyy")">
+                                MM/dd/yyyy
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("yyyy-MM-dd")">
+                                yyyy-MM-dd
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INVENTORY -->
+
+                <div class="settings-card">
+
+                    <div class="settings-card-header">
+
+                        <div class="settings-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                        </div>
+
+                        <div>
+                            <h2>Inventory</h2>
+                            <p>Control inventory behavior and alerts.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="settings-options">
+
+                        <div class="setting-option">
+
+                            <div>
+                                <strong>Low Stock Alerts</strong>
+                                <span>
+                                    Notify when material stock reaches
+                                    its minimum level.
+                                </span>
+                            </div>
+
+                            <MudSwitch @bind-Value="settings.LowStockAlerts"
+                                       Color="Color.Primary" />
+
+                        </div>
+
+
+                        <div class="setting-option">
+
+                            <div>
+                                <strong>Allow Negative Stock</strong>
+                                <span>
+                                    Allow inventory to fall below zero.
+                                </span>
+                            </div>
+
+                            <MudSwitch @bind-Value="settings.AllowNegativeStock"
+                                       Color="Color.Primary" />
+
+                        </div>
+
+
+                        <div class="settings-form">
+
+                            <MudTextField @bind-Value="settings.DefaultUnit"
+                                          Label="Default Unit"
+                                          Variant="Variant.Outlined"
+                                          Required="true" />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- NOTIFICATIONS -->
+
+                <div class="settings-card">
+
+                    <div class="settings-card-header">
+
+                        <div class="settings-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.Notifications" />
+                        </div>
+
+                        <div>
+                            <h2>Notifications</h2>
+                            <p>Choose which system notifications are enabled.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-options">
+
+                        <div class="setting-option">
+
+                            <div>
+                                <strong>Purchase Order Notifications</strong>
+                                <span>
+                                    Receive notifications related to purchase orders.
+                                </span>
+                            </div>
+
+                            <MudSwitch @bind-Value="settings.PurchaseOrderNotifications"
+                                       Color="Color.Primary" />
+
+                        </div>
+
+
+                        <div class="setting-option">
+
+                            <div>
+                                <strong>Equipment Maintenance</strong>
+                                <span>
+                                    Receive alerts related to equipment maintenance.
+                                </span>
+                            </div>
+
+                            <MudSwitch @bind-Value="settings.EquipmentMaintenanceNotifications"
+                                       Color="Color.Primary" />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- APPEARANCE -->
+
+                <div class="settings-card">
+
+                    <div class="settings-card-header">
+
+                        <div class="settings-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.Palette" />
+                        </div>
+
+                        <div>
+                            <h2>Appearance</h2>
+                            <p>Customize the application interface.</p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-form">
+
+                        <MudSelect @bind-Value="settings.Theme"
+                                   Label="Theme"
+                                   Variant="Variant.Outlined">
+
+                            <MudSelectItem Value="@("Dark")">
+                                Dark
+                            </MudSelectItem>
+
+                            <MudSelectItem Value="@("Light")">
+                                Light
+                            </MudSelectItem>
+
+                        </MudSelect>
+
+
+                        <div class="setting-option">
+
+                            <div>
+                                <strong>Compact Sidebar</strong>
+
+                                <span>
+                                    Use a smaller navigation sidebar.
+                                </span>
+
+                            </div>
+
+                            <MudSwitch @bind-Value="settings.CompactSidebar"
+                                       Color="Color.Primary" />
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="settings-actions">
+
+                <MudButton Variant="Variant.Outlined"
+                           OnClick="ResetSettings"
+                           Disabled="@isSaving">
+
+                    Reset
+
+                </MudButton>
+
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="@isSaving">
+
+                    @if (isSaving)
+                    {
+                        <MudProgressCircular Size="Size.Small"
+                                             Indeterminate="true"
+                                             Class="mr-2" />
+
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Save"
+                                 Class="mr-2" />
+
+                        <span>Save Changes</span>
+                    }
+
+                </MudButton>
+
+            </div>
+
+        </EditForm>
+
+
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="settings-alert success">
+                @successMessage
+            </div>
+        }
+
+
+        <!-- SYSTEM INFORMATION -->
+
+        <div class="settings-card system-info">
+
+            <div class="settings-card-header">
+
+                <div class="settings-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" />
+                </div>
+
+                <div>
+                    <h2>System Information</h2>
+                    <p>Application and environment information.</p>
+                </div>
+
+            </div>
+
+
+            <div class="system-info-grid">
+
+                <div>
+                    <span>Application</span>
+                    <strong>Quantum Count</strong>
+                </div>
+
+                <div>
+                    <span>Version</span>
+                    <strong>1.0.0</strong>
+                </div>
+
+                <div>
+                    <span>Framework</span>
+                    <strong>.NET 10</strong>
+                </div>
+
+                <div>
+                    <span>Database</span>
+                    <strong>SQL Server</strong>
+                </div>
+
+                <div>
+                    <span>Status</span>
+                    <strong class="system-status">
+                        <span></span>
+                        Operational
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    }
+
+</div>
+
 @code {
+
+    private ApplicationSettings? settings;
+
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+    }
+
+
+    private async Task LoadSettings()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            settings = await SettingsService.GetSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    private async Task SaveSettings()
+    {
+        if (settings == null)
+            return;
+
+        isSaving = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await SettingsService
+                .UpdateSettingsAsync(settings);
+
+            if (!result.success)
+            {
+                errorMessage = result.message;
+                return;
+            }
+
+            settings = result.settings;
+
+            successMessage = result.message;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+
+    private async Task ResetSettings()
+    {
+        await LoadSettings();
+        successMessage = null;
+        errorMessage = null;
+    }
 
 }

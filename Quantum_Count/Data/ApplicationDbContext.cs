@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUsers>
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+    public DbSet<ApplicationSettings> ApplicationSettings { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -67,5 +68,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUsers>
         builder.Entity<PurchaseOrderItem>().Property(i => i.QuantityReceived).HasPrecision(18, 2);
         builder.Entity<PurchaseOrderItem>().Property(i => i.UnitPrice).HasPrecision(18, 2);
         builder.Entity<PurchaseOrderItem>().Property(i => i.TotalPrice).HasPrecision(18, 2);
+        builder.Entity<ApplicationSettings>().Property(s => s.OrganizationName).HasMaxLength(150);
+        builder.Entity<ApplicationSettings>().Property(s => s.Currency).HasMaxLength(10);
+        builder.Entity<ApplicationSettings>().Property(s => s.TimeZone).HasMaxLength(100);
+        builder.Entity<ApplicationSettings>().Property(s => s.DateFormat).HasMaxLength(30);
+        builder.Entity<ApplicationSettings>().Property(s => s.DefaultUnit).HasMaxLength(30);
+        builder.Entity<ApplicationSettings>().Property(s => s.Theme).HasMaxLength(20);
     }
 }
