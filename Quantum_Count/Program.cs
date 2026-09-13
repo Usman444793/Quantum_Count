@@ -79,6 +79,8 @@ builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<StaffService>();
 builder.Services.AddScoped<SettingsService>();
+builder.Services.AddScoped<GeminiAiService>();
+builder.Services.AddScoped<InventoryAiOrchestrator>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>

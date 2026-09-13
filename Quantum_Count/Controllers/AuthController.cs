@@ -53,7 +53,8 @@ public class AuthController : ControllerBase
             var errors = result.Errors.Select(error => error.Description).ToList();
             return BadRequest(new { message = "Unable to create account.", errors });
         }
-        var (token, expiresAt) = _jwtService.GenerateToken(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var (token, expiresAt) = _jwtService.GenerateToken(user, roles);
         SetJwtCookie(token, expiresAt);
         var response = new AuthResponse
         {
@@ -93,7 +94,8 @@ public class AuthController : ControllerBase
         {
             return Redirect("/register?error=failed");
         }
-        var (token, expiresAt) = _jwtService.GenerateToken(user);
+        var regFormRoles = await _userManager.GetRolesAsync(user);
+        var (token, expiresAt) = _jwtService.GenerateToken(user, regFormRoles);
         SetJwtCookie(token, expiresAt);
         return Redirect("/login");
     }
@@ -111,7 +113,8 @@ public class AuthController : ControllerBase
         {
             return Unauthorized(new { message = "Invalid email or password." });
         }
-        var (token, expiresAt) = _jwtService.GenerateToken(user);
+        var loginRoles = await _userManager.GetRolesAsync(user);
+        var (token, expiresAt) = _jwtService.GenerateToken(user, loginRoles);
         SetJwtCookie(token, expiresAt);
         return Ok(new AuthResponse
         {
@@ -142,7 +145,8 @@ public class AuthController : ControllerBase
         {
             return Redirect("/login?error=invalid");
         }
-        var (token, expiresAt) = _jwtService.GenerateToken(user);
+        var loginFormRoles = await _userManager.GetRolesAsync(user);
+        var (token, expiresAt) = _jwtService.GenerateToken(user, loginFormRoles);
         SetJwtCookie(token, expiresAt);
         return Redirect("/dashboard");
     }

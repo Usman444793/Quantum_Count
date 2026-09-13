@@ -12,7 +12,7 @@
     margin-bottom: 26px;
 }
 .back-button {
-    color: #64748b !important;
+    color: var(--qc-text) !important;
     margin-bottom: 10px;
 }
 .history-title-row {
@@ -34,14 +34,14 @@
     margin: 0;
     font-size: 27px;
     font-weight: 700;
-    color: #111827;
+    color: var(--qc-text);
 }
 .history-title-row p {
     margin: 4px 0 0;
     color: #64748b;
     font-size: 13px;
 }
-.teal-button {
+.teal-button ::deep{
     background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
     color: white !important;
     font-weight: 600 !important;
@@ -55,8 +55,8 @@
     margin-bottom: 24px;
 }
 .equipment-summary-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--qc-card);
+    border: 1px solid var(--qc-border);
     border-radius: 12px;
     padding: 18px 20px;
     min-height: 85px;
@@ -67,12 +67,12 @@
 }
 .summary-label {
     font-size: 12px;
-    color: #64748b;
+    color: var(--qc-text);
     font-weight: 500;
 }
 .equipment-summary-card strong {
     font-size: 15px;
-    color: #111827;
+    color: var(--qc-text);
 }
 .status-badge {
     width: fit-content;
@@ -106,18 +106,19 @@
     color: #475569;
 }
 .history-container {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--qc-card);
+    border: 1px solid var(--qc-border);
     border-radius: 14px;
     overflow: hidden;
 }
 .history-section-header {
     padding: 22px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--qc-border);
+    color: var(--qc-text);
 }
     .history-section-header h2 {
         margin: 0;
-        color: #111827;
+        color: var(--qc-text);
         font-size: 19px;
         font-weight: 700;
     }
@@ -135,14 +136,14 @@
 }
     .equipment-history-table th {
         background: #f8fafc !important;
-        color: #64748b !important;
+        color: var(--qc-text) !important;
         font-size: 11px !important;
         font-weight: 700 !important;
         text-transform: uppercase;
         letter-spacing: 0.4px;
     }
     .equipment-history-table td {
-        color: #374151;
+        color: var(--qc-text);
         font-size: 13px;
         border-bottom: 1px solid #f1f5f9;
     }
@@ -152,7 +153,7 @@
     gap: 2px;
 }
     .history-date strong {
-        color: #111827;
+        color: var(--qc-text);
         font-size: 13px;
     }
     .history-date span {

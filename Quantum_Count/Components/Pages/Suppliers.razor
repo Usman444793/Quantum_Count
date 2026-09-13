@@ -1,162 +1,320 @@
-﻿@page "/suppliers"
+@page "/suppliers"
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-@attribute [Authorize]
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+
 <PageTitle>Suppliers | Quantum Count</PageTitle>
-<div class="supplier-page">
+
+<div class="suppliers-page">
     <div class="page-header">
         <div>
+            <div class="page-breadcrumb">Procurement <span>/</span> Suppliers</div>
             <h1>Suppliers</h1>
-            <p>Manage suppliers and vendor information.</p>
+            <p>Manage vendors, external suppliers, and contact directories.</p>
         </div>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@(() => Navigation.NavigateTo("/suppliers/new"))">
-            New Supplier
-        </MudButton>
+        <button class="qc-btn-primary" @onclick="OpenCreateModal">
+            <span>+</span> New Supplier
+        </button>
     </div>
-    @if (!string.IsNullOrEmpty(errorMessage))
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Total Suppliers</span>
+                <span class="summary-value">@suppliers.Count</span>
+                <span class="summary-description">Registered vendors</span>
+            </div>
+            <div class="summary-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Medium" />
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Active Suppliers</span>
+                <span class="summary-value success-number">@suppliers.Count(s => s.IsActive)</span>
+                <span class="summary-description">Ready for procurement</span>
+            </div>
+            <div class="summary-icon success">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Medium" />
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Inactive</span>
+                <span class="summary-value muted-number">@suppliers.Count(s => !s.IsActive)</span>
+                <span class="summary-description">Archived or paused</span>
+            </div>
+            <div class="summary-icon inactive">
+                <MudIcon Icon="@Icons.Material.Filled.Block" Size="Size.Medium" />
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    @if (!string.IsNullOrEmpty(_toastMessage))
     {
-        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">
-            @errorMessage
-        </MudAlert>
+        <div class="qc-toast @_toastType">
+            <span>@_toastMessage</span>
+            <button type="button" @onclick="() => _toastMessage = null">×</button>
+        </div>
     }
 
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mb-4">
-            @successMessage
-        </MudAlert>
-    }
+    <!-- TOOLBAR -->
+    <div class="suppliers-toolbar">
+        <div class="search-box-wrapper">
+            <span class="search-icon">⌕</span>
+            <input type="text"
+                   class="search-box-input"
+                   placeholder="Search by code, company, contact, or email..."
+                   @bind="searchText"
+                   @bind:event="oninput" />
+            @if (!string.IsNullOrEmpty(searchText))
+            {
+                <button type="button" class="clear-search-btn" @onclick="() => searchText = string.Empty">×</button>
+            }
+        </div>
 
-    <div class="supplier-toolbar">
-        <MudTextField @bind-Value="searchText"
-                      Placeholder="Search suppliers..."
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search"
-                      Variant="Variant.Outlined"
-                      Margin="Margin.Dense"
-                      Immediate="true"
-                      Class="supplier-search" />
-        <MudText Typo="Typo.body2" Class="supplier-count">
-            @FilteredSuppliers.Count supplier(s)
-        </MudText>
+        <select class="qc-select status-filter" @bind="statusFilter">
+            <option value="All">All Statuses</option>
+            <option value="Active">Active Only</option>
+            <option value="Inactive">Inactive Only</option>
+        </select>
     </div>
+
+    <!-- CONTENT -->
     @if (isLoading)
     {
-        <div class="supplier-loading">
-            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-            <MudText>Loading suppliers...</MudText>
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <span>Loading suppliers...</span>
         </div>
     }
-    else if (FilteredSuppliers.Count == 0)
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <MudPaper Class="supplier-empty" Elevation="1">
-            <MudIcon Icon="@Icons.Material.Filled.Business"
-                     Size="Size.Large" />
-            <MudText Typo="Typo.h6">
-                No suppliers found
-            </MudText>
-            <MudText Typo="Typo.body2">
-                Add your first supplier to start managing procurement.
-            </MudText>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(() => Navigation.NavigateTo("/suppliers/new"))">
-                Add Supplier
-            </MudButton>
-        </MudPaper>
+        <div class="error-container">
+            <strong>Unable to Load Suppliers</strong>
+            <p>@errorMessage</p>
+            <button class="qc-btn-primary" @onclick="LoadSuppliers">Retry</button>
+        </div>
+    }
+    else if (!FilteredSuppliers.Any())
+    {
+        <div class="empty-container">
+            <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
+            <h3>No Suppliers Found</h3>
+            <p>@(string.IsNullOrWhiteSpace(searchText) ? "Add your first supplier to begin managing procurement." : "No suppliers match your search query.")</p>
+            @if (string.IsNullOrWhiteSpace(searchText))
+            {
+                <button class="qc-btn-primary" @onclick="OpenCreateModal">+ New Supplier</button>
+            }
+        </div>
     }
     else
     {
-        <MudPaper Class="supplier-table-wrapper" Elevation="1">
-            <MudTable Items="@FilteredSuppliers"
-                      Hover="true"
-                      Striped="true"
-                      Dense="true"
-                      Class="supplier-table">
-                <HeaderContent>
-                    <MudTh>Code</MudTh>
-                    <MudTh>Company</MudTh>
-                    <MudTh>Contact Person</MudTh>
-                    <MudTh>Phone</MudTh>
-                    <MudTh>Email</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh Align="Align.Right">Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Code">
-                        <strong>@context.SupplierCode</strong>
-                    </MudTd>
-                    <MudTd DataLabel="Company">
-                        @context.CompanyName
-                    </MudTd>
-                    <MudTd DataLabel="Contact Person">
-                        @(string.IsNullOrWhiteSpace(context.ContactPerson) ? "-" : context.ContactPerson)
-                    </MudTd>
-                    <MudTd DataLabel="Phone">
-                        @(string.IsNullOrWhiteSpace(context.Phone)  ? "-" : context.Phone)
-                    </MudTd>
-                    <MudTd DataLabel="Email">
-                        @(string.IsNullOrWhiteSpace(context.Email) ? "-" : context.Email)
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        @if (context.IsActive)
-                        {
-                            <span class="status-badge status-active">
-                                Active
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="status-badge status-inactive">
-                                Inactive
-                            </span>
-                        }
-                    </MudTd>
-                    <MudTd Align="Align.Right">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Title="Edit"
-                                       OnClick="@(() => Navigation.NavigateTo($"/suppliers/edit/{context.Id}"))" />
+        <div class="suppliers-container">
+            <div class="section-header">
+                <div>
+                    <h2>Suppliers Directory</h2>
+                    <span>Showing @FilteredSuppliers.Count of @suppliers.Count suppliers</span>
+                </div>
+            </div>
 
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                       Color="Color.Error"
-                                       Size="Size.Small"
-                                       Title="Deactivate"
-                                       OnClick="@(() => DeactivateSupplier(context.Id))" />
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
+            <div class="table-responsive">
+                <table class="qc-table">
+                    <thead>
+                        <tr>
+                            <th>CODE</th>
+                            <th>COMPANY NAME</th>
+                            <th>CONTACT PERSON</th>
+                            <th>PHONE</th>
+                            <th>EMAIL</th>
+                            <th>STATUS</th>
+                            <th style="text-align: right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in FilteredSuppliers)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="supplier-code-badge">@s.SupplierCode</span>
+                                </td>
+                                <td>
+                                    <div class="company-name-cell">
+                                        <strong>@s.CompanyName</strong>
+                                        @if (!string.IsNullOrEmpty(s.TaxNumber))
+                                        {
+                                            <span class="tax-num">Tax: @s.TaxNumber</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(s.ContactPerson) ? "—" : s.ContactPerson)</td>
+                                <td>@(string.IsNullOrWhiteSpace(s.Phone) ? "—" : s.Phone)</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(s.Email))
+                                    {
+                                        <span class="email-text">@s.Email</span>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="status-badge @(s.IsActive ? "active" : "inactive")">
+                                        <span></span>
+                                        @(s.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons-cell">
+                                        <button class="action-btn edit" title="Edit Supplier" @onclick="@(() => OpenEditModal(s))">
+                                            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+                                        </button>
+                                        @if (s.IsActive)
+                                        {
+                                            <button class="action-btn delete" title="Deactivate Supplier" @onclick="@(() => DeactivateSupplier(s))">
+                                                <MudIcon Icon="@Icons.Material.Filled.DeleteOutline" Size="Size.Small" />
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     }
 </div>
+
+<!-- CREATE / EDIT SUPPLIER MODAL -->
+@if (_showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="qc-modal qc-modal-lg" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <div>
+                    <h2>@(_isEdit ? "Edit Supplier" : "Add New Supplier")</h2>
+                    <p>@(_isEdit ? "Update supplier contact details and tax info." : "Register a new external supplier for procurement.")</p>
+                </div>
+                <button type="button" class="close-modal" @onclick="CloseModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(_modalError))
+                {
+                    <div class="form-error">@_modalError</div>
+                }
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Supplier Code *</label>
+                        <input @bind="_activeSupplier.SupplierCode" placeholder="e.g. SUP-001" />
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name *</label>
+                        <input @bind="_activeSupplier.CompanyName" placeholder="e.g. Apex Industrial Supplies" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <input @bind="_activeSupplier.ContactPerson" placeholder="e.g. John Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input @bind="_activeSupplier.Phone" placeholder="e.g. +1 (555) 019-2834" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" @bind="_activeSupplier.Email" placeholder="e.g. orders@apex.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>Tax / VAT Number</label>
+                        <input @bind="_activeSupplier.TaxNumber" placeholder="e.g. TX-984210" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Physical / Billing Address</label>
+                    <textarea @bind="_activeSupplier.Address" placeholder="Street address, building, city, state, postal code..."></textarea>
+                </div>
+
+                <div class="form-checkbox-row">
+                    <label class="qc-checkbox-label">
+                        <input type="checkbox" @bind="_activeSupplier.IsActive" />
+                        <span>Active Supplier (enabled for purchase orders)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="qc-btn-secondary" @onclick="CloseModal" disabled="@_saving">Cancel</button>
+                <button type="button" class="qc-btn-primary" @onclick="SaveSupplierAsync" disabled="@_saving">
+                    @if (_saving)
+                    {
+                        <span class="btn-spinner"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>@(_isEdit ? "Update Supplier" : "Save Supplier")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<Supplier> suppliers = new();
     private string searchText = string.Empty;
+    private string statusFilter = "All";
     private bool isLoading = true;
     private string? errorMessage;
-    private string? successMessage;
+    private string? _toastMessage;
+    private string _toastType = "success";
+
+    // Modal state
+    private bool _showModal;
+    private bool _isEdit;
+    private bool _saving;
+    private string? _modalError;
+    private Supplier _activeSupplier = new();
+
     private List<Supplier> FilteredSuppliers =>
         suppliers
             .Where(s =>
-                string.IsNullOrWhiteSpace(searchText) ||
-                s.SupplierCode.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                s.CompanyName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                (s.ContactPerson?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (s.Email?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (s.Phone?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+                (string.IsNullOrWhiteSpace(searchText) ||
+                 s.SupplierCode.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                 s.CompanyName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                 (s.ContactPerson?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (s.Email?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (s.Phone?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+                &&
+                (statusFilter == "All" ||
+                 (statusFilter == "Active" && s.IsActive) ||
+                 (statusFilter == "Inactive" && !s.IsActive)))
             .ToList();
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSuppliers();
     }
+
     private async Task LoadSuppliers()
     {
         try
@@ -174,24 +332,133 @@
             isLoading = false;
         }
     }
-    private async Task DeactivateSupplier(int id)
+
+    private void OpenCreateModal()
     {
+        _isEdit = false;
+        _activeSupplier = new Supplier
+        {
+            SupplierCode = $"SUP-{new Random().Next(100, 999)}",
+            IsActive = true
+        };
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void OpenEditModal(Supplier s)
+    {
+        _isEdit = true;
+        _activeSupplier = new Supplier
+        {
+            Id = s.Id,
+            SupplierCode = s.SupplierCode,
+            CompanyName = s.CompanyName,
+            ContactPerson = s.ContactPerson,
+            Phone = s.Phone,
+            Email = s.Email,
+            Address = s.Address,
+            TaxNumber = s.TaxNumber,
+            IsActive = s.IsActive
+        };
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal = false;
+        _modalError = null;
+    }
+
+    private async Task SaveSupplierAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_activeSupplier.SupplierCode))
+        {
+            _modalError = "Supplier Code is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_activeSupplier.CompanyName))
+        {
+            _modalError = "Company Name is required.";
+            return;
+        }
+
+        _saving = true;
+        _modalError = null;
+
         try
         {
-            errorMessage = null;
-            successMessage = null;
-            var result = await InventoryService.DeleteSupplierAsync(id);
-            if (!result.success)
+            if (_isEdit)
             {
-                errorMessage = result.message;
-                return;
+                var (success, message, _) = await InventoryService.UpdateSupplierAsync(_activeSupplier);
+                if (success)
+                {
+                    ShowToast("Supplier updated successfully.", "success");
+                    _showModal = false;
+                    await LoadSuppliers();
+                }
+                else
+                {
+                    _modalError = message;
+                }
             }
-            successMessage = "Supplier deactivated successfully.";
-            await LoadSuppliers();
+            else
+            {
+                var (success, message, _) = await InventoryService.CreateSupplierAsync(_activeSupplier);
+                if (success)
+                {
+                    ShowToast("Supplier created successfully.", "success");
+                    _showModal = false;
+                    await LoadSuppliers();
+                }
+                else
+                {
+                    _modalError = message;
+                }
+            }
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            _modalError = ex.Message;
         }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeactivateSupplier(Supplier supplier)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Deactivate Supplier",
+            $"Are you sure you want to deactivate '{supplier.CompanyName}'?",
+            yesText: "Deactivate",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+            return;
+
+        var result = await InventoryService.DeleteSupplierAsync(supplier.Id);
+        if (result.success)
+        {
+            ShowToast("Supplier deactivated successfully.", "success");
+            await LoadSuppliers();
+        }
+        else
+        {
+            ShowToast(result.message, "danger");
+        }
+    }
+
+    private void ShowToast(string message, string type = "success")
+    {
+        _toastMessage = message;
+        _toastType = type;
+        _ = Task.Delay(3500).ContinueWith(_ =>
+        {
+            _toastMessage = null;
+            InvokeAsync(StateHasChanged);
+        });
     }
 }

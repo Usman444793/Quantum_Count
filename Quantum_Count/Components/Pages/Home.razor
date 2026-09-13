@@ -1,7 +1,9 @@
-﻿@page "/dashboard"
+@page "/dashboard"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using Quantum_Count.DTO.Dashboard
+@using Quantum_Count.Services
+@inject DashboardService DashboardService
 @inject HttpClient Http
 <PageTitle>Dashboard | Quantum Count</PageTitle>
 <div class="dashboard-page">
@@ -243,11 +245,18 @@
         {
             isLoading = true;
             errorMessage = null;
-            dashboard = await Http.GetFromJsonAsync<DashboardDto>("api/dashboard");
+            dashboard = await DashboardService.GetDashboardAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            try
+            {
+                dashboard = await Http.GetFromJsonAsync<DashboardDto>("api/dashboard");
+            }
+            catch
+            {
+                errorMessage = ex.Message;
+            }
         }
         finally
         {

@@ -1,13 +1,13 @@
 .dashboard-page {
     padding: 28px;
-    color: #f4f7f6;
+    color: var(--qc-text);
 }
 .dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 28px;
-    color: black;
+    color: var(--qc-text, #f4f7f6);
 }
     .dashboard-header h1 {
         margin: 0;
@@ -41,14 +41,15 @@
     gap: 18px;
 }
 .dashboard-card {
-    background: #101614;
-    border: 1px solid #202a27;
+    background: var(--qc-card-bg,var(--qc-surface));
+    border: 1px solid var(--qc-border);
     border-radius: 14px;
     padding: 20px;
     display: flex;
     align-items: center;
     gap: 16px;
     transition: .25s;
+    color: var(--qc-text);
 }
     .dashboard-card:hover {
         transform: translateY(-3px);
@@ -86,10 +87,11 @@
     margin-top: 18px;
 }
 .stat-box {
-    background: #0d1210;
-    border: 1px solid #202a27;
+    background: var(--qc-input-bg);
+    border: 1px solid var(--qc-border);
     padding: 17px;
     border-radius: 11px;
+    color: var(--qc-text);
 }
     .stat-box span {
         display: block;
@@ -110,10 +112,11 @@
     margin-top: 22px;
 }
 .dashboard-panel {
-    background: #101614;
-    border: 1px solid #202a27;
+    background: var(--qc-card-bg, var(--qc-surface));
+    border: 1px solid var(--qc-border);
     border-radius: 14px;
     overflow: hidden;
+    color:var(--qc-text);
 }
 .panel-header {
     padding: 20px;

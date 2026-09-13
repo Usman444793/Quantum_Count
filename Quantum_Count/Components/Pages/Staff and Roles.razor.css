@@ -1,6 +1,6 @@
 .staff-page {
     padding: 28px;
-    color: #f4f7f6;
+    color: var(--qc-text);
 }
 
 
@@ -56,8 +56,9 @@
 
 .search-box {
     width: 320px;
-    background: #101614;
-    border: 1px solid #202a27;
+    background: var(--qc-surface);
+    border: 1px solid var(--qc-border);
+    color: var(--qc-text);
     border-radius: 9px;
     display: flex;
     align-items: center;
@@ -74,7 +75,7 @@
         background: transparent;
         border: none;
         outline: none;
-        color: #f4f7f6;
+        color: var(--qc-text);
         padding: 12px;
     }
 
@@ -91,8 +92,9 @@
 /* TABLE */
 
 .staff-table-card {
-    background: #101614;
-    border: 1px solid #202a27;
+    background: var(--qc-surface);
+    border: 1px solid var(--qc-border);
+    color: var(--qc-text);
     border-radius: 14px;
     overflow: hidden;
 }
@@ -110,15 +112,16 @@
     .staff-table th {
         text-align: left;
         padding: 15px 18px;
-        color: #77837e;
+        background: var(--qc-card-header);
+        color: var(--qc-text-muted);
         font-size: 12px;
         font-weight: 600;
-        background: #0d1210;
     }
 
     .staff-table td {
         padding: 16px 18px;
-        border-top: 1px solid #1d2723;
+        border-top: 1px solid var(--qc-border);
+        color: var(--qc-text);
         font-size: 13px;
     }
 
@@ -127,7 +130,7 @@
     }
 
         .staff-table tbody tr:hover {
-            background: #141c19;
+            background: var(--qc-surface);
         }
 
 
@@ -328,7 +331,9 @@
     display: flex;
     justify-content: space-between;
     padding: 22px;
-    border-bottom: 1px solid #222b27;
+    background: var(--qc-card-bg);
+    color: var(--qc-text);
+    border-bottom: 1px solid var(--qc-border);
 }
 
     .modal-header h2 {
@@ -359,6 +364,7 @@
 
 .modal-body {
     padding: 22px;
+    background: var(--qc-card-bg);
 }
 
 .form-group {
@@ -367,7 +373,7 @@
 
     .form-group label {
         display: block;
-        color: #a8b2ae;
+        color: var(--qc-text);
         font-size: 12px;
         margin-bottom: 7px;
     }
@@ -376,9 +382,9 @@
     .form-group select {
         width: 100%;
         box-sizing: border-box;
-        background: #0b100e;
-        border: 1px solid #29332f;
-        color: white;
+        background: var(--qc-card-bg);
+        border: 1px solid var(--qc-border);
+        color: var(--qc-text);
         border-radius: 8px;
         padding: 11px 12px;
         outline: none;
@@ -479,21 +485,15 @@
         transform: rotate(360deg);
     }
 }
-
-
-/* ERROR */
-
 .staff-error {
     background: rgba(239, 68, 68, .08);
     border: 1px solid rgba(239, 68, 68, .2);
     border-radius: 10px;
     padding: 20px;
 }
-
     .staff-error p {
         color: #9ba5a1;
     }
-
     .staff-error button {
         background: #009b72;
         border: none;
@@ -501,19 +501,11 @@
         padding: 8px 13px;
         border-radius: 7px;
     }
-
-
-/* NO RESULTS */
-
 .no-results {
     padding: 50px;
     text-align: center;
     color: #697570;
 }
-
-
-/* RESPONSIVE */
-
 @media (max-width: 700px) {
 
     .staff-page {

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Quantum_Count.Data;
 using Quantum_Count.Models;
 
@@ -12,6 +12,8 @@ public class SettingsService
     {
         _context = context;
     }
+
+    public static event Action<ApplicationSettings>? SettingsUpdated;
 
     public async Task<ApplicationSettings> GetSettingsAsync()
     {
@@ -33,7 +35,7 @@ public class SettingsService
             DefaultUnit = "Piece",
             PurchaseOrderNotifications = true,
             EquipmentMaintenanceNotifications = true,
-            Theme = "Light",
+            Theme = "Dark",
             CompactSidebar = false,
             UpdatedAt = DateTime.UtcNow
         };
@@ -98,6 +100,7 @@ public class SettingsService
         }
 
         await _context.SaveChangesAsync();
+        SettingsUpdated?.Invoke(settings);
 
         return (
             true,

@@ -1,59 +1,96 @@
-﻿@using Microsoft.AspNetCore.Components.Routing
-<MudNavMenu>
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "dashboard".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+@using Microsoft.AspNetCore.Components.Routing
+<nav class="qc-nav-menu">
+    @if (Matches("dashboard"))
     {
-        <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard"> Dashboard </MudNavLink>
+        <NavLink class="qc-nav-link" href="/dashboard" Match="NavLinkMatch.All" title="Dashboard">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Dashboard</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) || "materials inventory".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("materials inventory"))
     {
-        <MudNavLink Href="/materials" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Inventory2">
-          Materials & Inventory </MudNavLink>
+        <NavLink class="qc-nav-link" href="/materials" Match="NavLinkMatch.Prefix" title="Materials & Inventory">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Materials</span>
+        </NavLink>
     }
-     @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "equipment assets".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("equipment assets"))
     {
-        <MudNavLink Href="/equipment" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Construction">
-            Equipment & Assets </MudNavLink>
+        <NavLink class="qc-nav-link" href="/equipment" Match="NavLinkMatch.Prefix" title="Equipment & Assets">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Construction" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Equipment</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) || "categories".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("categories"))
     {
-        <MudNavLink href="/categories" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Category">
-          Categories
-        </MudNavLink>
+        <NavLink class="qc-nav-link" href="/categories" Match="NavLinkMatch.Prefix" title="Categories">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Categories</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "projects".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("projects"))
     {
-        <MudNavLink Href="/projects" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Apartment">
-            Projects </MudNavLink>
+        <NavLink class="qc-nav-link" href="/projects" Match="NavLinkMatch.Prefix" title="Projects">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Projects</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "procurement".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("procurement purchase orders"))
     {
-        <MudNavGroup Title="Procurement" Icon="@Icons.Material.Filled.ShoppingCart" Expanded="true">
-            <MudNavLink Href="/procurement" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ReceiptLong">
-                Purchase Orders
-            </MudNavLink>
-            <MudNavLink Href="/suppliers" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Business">
-                Suppliers
-            </MudNavLink>
-        </MudNavGroup>
+        <NavLink class="qc-nav-link" href="/procurement" Match="NavLinkMatch.Prefix" title="Purchase Orders">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Purchase Orders</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "reports analytics".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("suppliers vendors"))
     {
-        <MudNavLink Href="/reports" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">
-            Reports & Analytics </MudNavLink>
+        <NavLink class="qc-nav-link" href="/suppliers" Match="NavLinkMatch.Prefix" title="Suppliers">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Suppliers</span>
+        </NavLink>
     }
-    @if (string.IsNullOrWhiteSpace(SearchText) ||
-         "staff roles".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+    @if (Matches("reports analytics"))
     {
-        <MudNavLink Href="/staff" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
-            Staff & Roles </MudNavLink>
+        <NavLink class="qc-nav-link" href="/reports" Match="NavLinkMatch.Prefix" title="Reports & Analytics">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.BarChart" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Reports</span>
+        </NavLink>
     }
-</MudNavMenu>
+    @if (Matches("staff roles users"))
+    {
+        <NavLink class="qc-nav-link" href="/staff" Match="NavLinkMatch.Prefix" title="Staff & Roles">
+            <div class="qc-nav-icon-badge">
+                <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Small" />
+            </div>
+            <span class="qc-nav-label">Staff & Roles</span>
+        </NavLink>
+    }
+</nav>
 @code {
     [Parameter]
     public string SearchText { get; set; } = string.Empty;
+
+    private bool Matches(string keywords)
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
+
+        return keywords.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+    }
 }

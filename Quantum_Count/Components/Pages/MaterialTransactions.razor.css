@@ -1,101 +1,134 @@
+/* ==========================================================================
+   QUANTUM COUNT - MATERIAL TRANSACTIONS STYLESHEET (DYNAMIC THEMED)
+   ========================================================================== */
+
 .transactions-page {
-    padding: 28px;
+    padding: var(--qc-spacing-xl, 28px);
+    background-color: var(--qc-bg-surface);
+    color: var(--qc-text-primary);
 }
+
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: var(--qc-spacing-lg, 20px);
+    margin-bottom: var(--qc-spacing-xl, 28px);
 }
+
     .page-header h1 {
         margin: 0;
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #1f2937;
+        font-size: var(--qc-font-size-2xl, 1.8rem);
+        font-weight: var(--qc-font-weight-bold, 700);
+        color: var(--qc-text-primary);
     }
+
 .page-subtitle {
-    margin: 6px 0 0;
-    color: #6b7280;
+    margin: var(--qc-spacing-xs, 6px) 0 0;
+    color: var(--qc-text-secondary);
 }
+
 .material-code {
-    color: #159570;
-    font-weight: 600;
+    color: var(--qc-color-primary, #159570);
+    font-weight: var(--qc-font-weight-semibold, 600);
 }
+
 .header-actions {
     display: flex;
-    gap: 10px;
+    gap: var(--qc-spacing-sm, 10px);
 }
+
 .teal-button {
-    background-color: #159570 !important;
-    color: white !important;
-    font-weight: 600;
+    background-color: var(--qc-color-primary, #159570) !important;
+    color: var(--qc-btn-text, #ffffff) !important;
+    font-weight: var(--qc-font-weight-semibold, 600);
 }
+
     .teal-button:hover {
-        background-color: #117d5e !important;
+        background-color: var(--qc-color-primary-hover, #117d5e) !important;
     }
+
 .stock-summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin-bottom: 24px;
+    gap: var(--qc-spacing-md, 18px);
+    margin-bottom: var(--qc-spacing-lg, 24px);
 }
+
 .stock-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 20px;
+    background: var(--qc-card-bg);
+    border: 1px solid var(--qc-border-color);
+    border-radius: var(--qc-radius-lg, 12px);
+    padding: var(--qc-spacing-lg, 20px);
 }
+
 .stock-label {
     display: block;
-    color: #6b7280;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
+    color: var(--qc-text-secondary);
+    font-size: var(--qc-font-size-xs, 0.85rem);
+    margin-bottom: var(--qc-spacing-xs, 8px);
 }
+
 .stock-value {
-    font-size: 1.7rem;
-    color: #1f2937;
+    font-size: var(--qc-font-size-xl, 1.7rem);
+    font-weight: var(--qc-font-weight-bold, 700);
+    color: var(--qc-text-primary);
 }
+
 .stock-unit {
-    margin-left: 6px;
-    color: #6b7280;
-    font-size: 0.85rem;
+    margin-left: var(--qc-spacing-xs, 6px);
+    color: var(--qc-text-secondary);
+    font-size: var(--qc-font-size-xs, 0.85rem);
 }
+
 .transactions-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    background: var(--qc-card-bg);
+    border: 1px solid var(--qc-border-color);
+    border-radius: var(--qc-radius-lg, 12px);
     overflow: hidden;
 }
+
 .section-header {
-    padding: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: var(--qc-spacing-lg, 20px);
+    border-bottom: 1px solid var(--qc-border-color);
 }
+
     .section-header h2 {
         margin: 0;
-        font-size: 1.15rem;
+        font-size: var(--qc-font-size-md, 1.15rem);
+        color: var(--qc-text-primary);
     }
+
 .quantity-positive {
-    color: #159570;
+    color: var(--qc-status-success-text, #159570);
+    font-weight: var(--qc-font-weight-medium, 500);
 }
+
 .quantity-negative {
-    color: #dc2626;
+    color: var(--qc-status-error-text, #dc2626);
+    font-weight: var(--qc-font-weight-medium, 500);
 }
+
 .quantity-neutral {
-    color: #2563eb;
+    color: var(--qc-status-info-text, #2563eb);
+    font-weight: var(--qc-font-weight-medium, 500);
 }
+
 .empty-state {
-    padding: 60px 20px;
+    padding: var(--qc-spacing-2xl, 60px) var(--qc-spacing-lg, 20px);
     text-align: center;
-    color: #6b7280;
+    color: var(--qc-text-secondary);
 }
+
     .empty-state h3 {
-        margin: 15px 0 6px;
-        color: #374151;
+        margin: var(--qc-spacing-sm, 15px) 0 var(--qc-spacing-xs, 6px);
+        color: var(--qc-text-primary);
     }
+
     .empty-state p {
-        margin-bottom: 20px;
+        margin-bottom: var(--qc-spacing-lg, 20px);
     }
+
 .loading-container,
 .error-container {
     min-height: 400px;
@@ -103,19 +136,58 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    color: var(--qc-text-secondary);
 }
+
 @media (max-width: 768px) {
     .transactions-page {
-        padding: 16px;
+        padding: var(--qc-spacing-md, 16px);
     }
+
     .page-header {
         flex-direction: column;
         align-items: flex-start;
     }
+
     .stock-summary {
         grid-template-columns: 1fr;
     }
+
     .header-actions {
         width: 100%;
     }
+}
+
+/* ==========================================================================
+   GLOBAL THEME VARIABLE DEFINITIONS
+   ========================================================================== */
+
+/* Light Mode Defaults */
+:root {
+    --qc-bg-surface: #f8fafc;
+    --qc-card-bg: #ffffff;
+    --qc-border-color: #e5e7eb;
+    --qc-text-primary: #1f2937;
+    --qc-text-secondary: #6b7280;
+    --qc-color-primary: #159570;
+    --qc-color-primary-hover: #117d5e;
+    --qc-btn-text: #ffffff;
+    --qc-status-success-text: #159570;
+    --qc-status-error-text: #dc2626;
+    --qc-status-info-text: #2563eb;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"], .mud-theme-dark {
+    --qc-bg-surface: #0f172a;
+    --qc-card-bg: #1e293b;
+    --qc-border-color: #334155;
+    --qc-text-primary: #f8fafc;
+    --qc-text-secondary: #94a3b8;
+    --qc-color-primary: #10b981;
+    --qc-color-primary-hover: #059669;
+    --qc-btn-text: #ffffff;
+    --qc-status-success-text: #34d399;
+    --qc-status-error-text: #f87171;
+    --qc-status-info-text: #60a5fa;
 }

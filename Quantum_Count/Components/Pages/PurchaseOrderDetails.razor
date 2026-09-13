@@ -1,4 +1,4 @@
-﻿@page "/procurement/{Id:int}"
+@page "/procurement/{Id:int}"
 
 @using Microsoft.AspNetCore.Authorization
 @using Quantum_Count.Models
@@ -193,24 +193,18 @@
 
                 <div class="add-item-grid">
 
-                    <MudSelect T="int"
-                               @bind-Value="newItem.MaterialId"
-                               Label="Material"
-                               Variant="Variant.Outlined">
-
-                        <MudSelectItem Value="0">
-                            Select Material
-                        </MudSelectItem>
-
-                        @foreach (var material in materials)
-                        {
-                            <MudSelectItem Value="@material.Id">
-                                @material.MaterialCode -
-                                @material.Name
-                            </MudSelectItem>
-                        }
-
-                    </MudSelect>
+                    <div class="native-form-field">
+                        <label>Material</label>
+                        <select class="qc-select" @bind="newItem.MaterialId">
+                            <option value="0">Select Material</option>
+                            @foreach (var material in materials)
+                            {
+                                <option value="@material.Id">
+                                    @material.MaterialCode - @material.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
 
                     <MudNumericField T="decimal"
                                      @bind-Value="newItem.QuantityOrdered"

@@ -1,30 +1,44 @@
-﻿@page "/projects"
+@page "/projects"
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
 <PageTitle>Projects | Quantum Count</PageTitle>
+
 <div class="projects-page">
     <div class="projects-header">
         <div>
-            <div class="page-breadcrumb">
-                Operations <span>/</span> Projects
-            </div>
+            <div class="page-breadcrumb">Operations <span>/</span> Projects</div>
             <h1>Projects</h1>
-            <p>Manage Projects, resources, equipment and operational progress.</p>
+            <p>Manage projects, resources, equipment and operational progress.</p>
         </div>
-        <button class="primary-button" @onclick="CreateProject">
-            <span>+ &nbsp;&nbsp;</span> New Project
+        <button class="qc-btn-primary" @onclick="OpenCreateModal">
+            <span>+</span> New Project
         </button>
     </div>
+
+    <!-- TOOLBAR -->
     <div class="projects-toolbar">
-        <div class="search-box">
+        <div class="search-box-wrapper">
             <span class="search-icon">⌕</span>
-            <input type="text" placeholder="Search projects..." @bind="searchText" @bind:event="oninput" />
+            <input type="text"
+                   class="search-box-input"
+                   placeholder="Search projects by name, code or client..."
+                   @bind="searchText"
+                   @bind:event="oninput" />
+            @if (!string.IsNullOrEmpty(searchText))
+            {
+                <button type="button" class="clear-search-btn" @onclick="() => searchText = string.Empty">×</button>
+            }
         </div>
-        <select class="status-filter" @bind="selectedStatus">
+
+        <select class="qc-select status-filter" @bind="selectedStatus">
             <option value="All">All Status</option>
             <option value="Planning">Planning</option>
             <option value="Active">Active</option>
@@ -33,11 +47,12 @@
             <option value="Cancelled">Cancelled</option>
         </select>
     </div>
-@if (isLoading)
+
+    @if (isLoading)
     {
         <div class="loading-container">
             <div class="spinner"></div>
-            <span>LoadingfProjects</span>
+            <span>Loading projects...</span>
         </div>
     }
     else if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -45,31 +60,35 @@
         <div class="error-container">
             <strong>Unable to Load Projects</strong>
             <p>@errorMessage</p>
-            <button class="secondary-button" @onclick="LoadProjects">Retry</button>
+            <button class="qc-btn-primary" @onclick="LoadProjects">Retry</button>
         </div>
     }
     else if (!FilteredProjects.Any())
     {
         <div class="empty-container">
-            <div class="empty-icon">▢</div>
+            <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Large" />
             <h3>No Projects Found</h3>
-            <p>@(string.IsNullOrWhiteSpace(searchText)?"Create your first project to get started.":"Try changing your search or status filter.")</p>
+            <p>@(string.IsNullOrWhiteSpace(searchText) ? "Create your first project to get started." : "Try changing your search or status filter.")</p>
             @if (string.IsNullOrWhiteSpace(searchText))
             {
-                <button class="secondary-button" @onclick="CreateProject">+ New Project</button>
+                <button class="qc-btn-primary" @onclick="OpenCreateModal">+ New Project</button>
             }
         </div>
     }
     else
     {
-      <div class="project-grid">
+        <div class="project-grid">
             @foreach (var project in FilteredProjects)
             {
                 <div class="project-card">
                     <div class="project-card-header">
                         <div class="project-code">@project.ProjectCode</div>
-                        <span class="@GetStatusClass(project.Status)">@project.Status</span>
+                        <span class="status-badge @GetStatusClass(project.Status)">
+                            <span></span>
+                            @project.Status
+                        </span>
                     </div>
+
                     <div class="project-info">
                         <h2>@project.Name</h2>
                         @if (!string.IsNullOrWhiteSpace(project.Description))
@@ -81,67 +100,176 @@
                             <p class="project-description muted">No description provided.</p>
                         }
                     </div>
+
                     <div class="project-meta">
                         <div>
                             <span>Start Date</span>
-                            <strong>@project.StartDate</strong>
+                            <strong>@(project.StartDate?.ToString("dd MMM yyyy") ?? "—")</strong>
                         </div>
                         <div>
                             <span>Budget</span>
-                            <strong>@project.Budget</strong>
+                            <strong>@(project.Budget.ToString("C"))</strong>
                         </div>
                     </div>
+
                     <div class="progress-section">
                         <div class="progress-header">
                             <span>Progress</span>
-                            <strong>@GetProgress(project) %</strong>
+                            <strong>@GetProgress(project)%</strong>
                         </div>
                         <div class="progress-track">
-                            <div class="progress-fill"
-                                 style="width:@GetProgress(project)%">
-                            </div>
+                            <div class="progress-fill" style="width: @(GetProgress(project))%"></div>
                         </div>
                     </div>
+
                     <div class="resource-summary">
                         <div class="resource-item">
-                            <span class="resource-number">@project.Materials.Count</span>
+                            <span class="resource-number">@(project.Materials?.Count ?? 0)</span>
                             <span>Materials</span>
                         </div>
                         <div class="resource-item">
-                            <span class="resource-number">@project.Equipment.Count</span>
+                            <span class="resource-number">@(project.Equipment?.Count ?? 0)</span>
                             <span>Equipment</span>
                         </div>
                         <div class="resource-item">
-                            <span class="resource-number">@project.Tasks.Count</span>
+                            <span class="resource-number">@(project.Tasks?.Count ?? 0)</span>
                             <span>Tasks</span>
                         </div>
                     </div>
+
                     <div class="project-actions">
-                        <button class="view-button" @onclick="() => ViewProject(project.Id)"> View Project</button>
-                        <button class="edit-button" @onclick="() => EditProject(project.Id)"> Edit </button>
+                        <button class="view-button" @onclick="() => ViewProject(project.Id)">View Project</button>
+                        <button class="edit-button" @onclick="() => OpenEditModal(project)">Edit</button>
+                        <button class="delete-btn-mini" title="Deactivate Project" @onclick="() => DeleteProjectAsync(project)">✕</button>
                     </div>
                 </div>
             }
-      </div>
+        </div>
     }
 </div>
+
+<!-- CREATE / EDIT PROJECT MODAL -->
+@if (_showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="qc-modal qc-modal-lg" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <div>
+                    <h2>@(_isEdit ? "Edit Project" : "Add New Project")</h2>
+                    <p>@(_isEdit ? "Update project details, budget, and schedule." : "Initiate a new operational project.")</p>
+                </div>
+                <button type="button" class="close-modal" @onclick="CloseModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(_modalError))
+                {
+                    <div class="form-error">@_modalError</div>
+                }
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Project Name *</label>
+                        <input @bind="_activeProject.Name" placeholder="e.g. Downtown High-Rise Foundation" />
+                    </div>
+                    <div class="form-group">
+                        <label>Project Code *</label>
+                        <input @bind="_activeProject.ProjectCode" placeholder="e.g. PRJ-2026-001" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client or Department</label>
+                        <input @bind="_activeProject.ClientOrDepartment" placeholder="e.g. Urban Development Authority" />
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select @bind="_activeProject.Status">
+                            <option value="Planning">Planning</option>
+                            <option value="Active">Active</option>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" value="@(_activeProject.StartDate?.ToString("yyyy-MM-dd"))" @onchange="OnStartDateChanged" />
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" value="@(_activeProject.EndDate?.ToString("yyyy-MM-dd"))" @onchange="OnEndDateChanged" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Budget Amount</label>
+                    <input type="number" step="any" @bind="_activeProject.Budget" placeholder="e.g. 500000" />
+                </div>
+
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <textarea @bind="_activeProject.Description" placeholder="Project objectives, milestones, scope of work..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
+                <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveProjectAsync">
+                    @if (_saving)
+                    {
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>@(_isEdit ? "Update Project" : "Create Project")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_successMessage))
+{
+    <div class="toast-success">
+        ✓ @_successMessage
+    </div>
+}
+
 @code {
     private List<Project> projects = new();
     private string searchText = string.Empty;
     private string selectedStatus = "All";
     private bool isLoading = true;
+    private bool _saving = false;
     private string errorMessage = string.Empty;
+
+    // Modal State
+    private bool _showModal = false;
+    private bool _isEdit = false;
+    private Project _activeProject = new();
+    private string? _modalError;
+    private string? _successMessage;
+
     private IEnumerable<Project> FilteredProjects =>
-    projects.Where(p => p.isActive).Where(p => string.IsNullOrWhiteSpace(searchText)
-         || p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-         || p.ProjectCode.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-         || (p.ClientOrDepartment?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
-         .Where(p => selectedStatus == "All"
-         || p.Status.Equals(selectedStatus,StringComparison.OrdinalIgnoreCase));
+        projects.Where(p => p.isActive)
+            .Where(p => string.IsNullOrWhiteSpace(searchText)
+                || p.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || p.ProjectCode.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || (p.ClientOrDepartment?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(p => selectedStatus == "All"
+                || p.Status.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase));
+
     protected override async Task OnInitializedAsync()
     {
         await LoadProjects();
     }
+
     private async Task LoadProjects()
     {
         try
@@ -150,7 +278,7 @@
             errorMessage = string.Empty;
             projects = await InventoryService.GetProjectsAsync();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             errorMessage = ex.Message;
         }
@@ -159,34 +287,175 @@
             isLoading = false;
         }
     }
+
     private int GetProgress(Project project)
     {
         if (project.Tasks == null || !project.Tasks.Any())
             return 0;
         return (int)Math.Round(project.Tasks.Where(t => t.IsActive).Select(t => t.Progress).DefaultIfEmpty(0).Average());
     }
+
     private string GetStatusClass(string status)
     {
         return status switch
         {
-            "Planning" => "status planning",
-            "Active" => "status active",
-            "On Hold" => "status on-hold",
-            "Completed" => "status completed",
-            "Cancelled" => "status cancelled",
-            _ => "status"
+            "Planning" => "warning",
+            "Active" => "active",
+            "On Hold" => "warning",
+            "Completed" => "info",
+            "Cancelled" => "inactive",
+            _ => "default"
         };
     }
-    private void CreateProject()
+
+    private void OpenCreateModal()
     {
-        Navigation.NavigateTo("/projects/new");
+        _isEdit = false;
+        _activeProject = new Project
+        {
+            Status = "Planning",
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddMonths(3)
+        };
+        _modalError = null;
+        _showModal = true;
     }
+
+    private void OpenEditModal(Project project)
+    {
+        _isEdit = true;
+        _activeProject = new Project
+        {
+            Id = project.Id,
+            ProjectCode = project.ProjectCode,
+            Name = project.Name,
+            Description = project.Description,
+            ClientOrDepartment = project.ClientOrDepartment,
+            Status = project.Status,
+            StartDate = project.StartDate,
+            EndDate = project.EndDate,
+            Budget = project.Budget,
+            isActive = project.isActive
+        };
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal = false;
+        _modalError = null;
+    }
+
+    private void OnStartDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+            _activeProject.StartDate = dt;
+        else
+            _activeProject.StartDate = null;
+    }
+
+    private void OnEndDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+            _activeProject.EndDate = dt;
+        else
+            _activeProject.EndDate = null;
+    }
+
+    private async Task SaveProjectAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_activeProject.Name))
+        {
+            _modalError = "Project Name is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_activeProject.ProjectCode))
+        {
+            _modalError = "Project Code is required.";
+            return;
+        }
+
+        _saving = true;
+        _modalError = null;
+
+        try
+        {
+            if (_isEdit)
+            {
+                var (success, message, _) = await InventoryService.UpdateProjectAsync(_activeProject);
+                if (success)
+                {
+                    ShowToast("Project updated successfully.");
+                    _showModal = false;
+                    await LoadProjects();
+                }
+                else
+                {
+                    _modalError = message;
+                }
+            }
+            else
+            {
+                var (success, message, _) = await InventoryService.CreateProjectAsync(_activeProject);
+                if (success)
+                {
+                    ShowToast("Project created successfully.");
+                    _showModal = false;
+                    await LoadProjects();
+                }
+                else
+                {
+                    _modalError = message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _modalError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteProjectAsync(Project project)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Deactivate Project",
+            $"Are you sure you want to deactivate '{project.Name}'?",
+            yesText: "Deactivate",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+            return;
+
+        var (success, _) = await InventoryService.DeleteProjectAsync(project.Id);
+        if (success)
+        {
+            projects.Remove(project);
+            ShowToast("Project deactivated.");
+        }
+        else
+        {
+            Snackbar.Add("Unable to deactivate project.", Severity.Error);
+        }
+    }
+
     private void ViewProject(int id)
     {
         Navigation.NavigateTo($"/projects/{id}");
     }
-    private void EditProject(int id)
+
+    private void ShowToast(string message)
     {
-        Navigation.NavigateTo($"/projects/edit/{id}");
+        _successMessage = message;
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            _successMessage = null;
+            InvokeAsync(StateHasChanged);
+        });
     }
 }

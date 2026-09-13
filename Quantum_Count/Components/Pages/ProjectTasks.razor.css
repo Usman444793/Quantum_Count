@@ -1,13 +1,16 @@
-/* ================================
-   PROJECT TASKS
-   ================================ */
+:host {
+    display: block;
+}
 
 .project-operation-page {
     max-width: 1250px;
     margin: 0 auto;
     padding: 30px 32px 50px;
+    background-color: var(--qc-bg-surface, transparent);
+    color: var(--qc-text-primary, inherit);
 }
 
+/* Header Section */
 .operation-header {
     display: flex;
     justify-content: space-between;
@@ -20,11 +23,12 @@
         margin: 8px 0 6px;
         font-size: 30px;
         font-weight: 700;
+        color: var(--qc-text);
     }
 
     .operation-header p {
         margin: 0;
-        color: #777;
+        color: var(--qc-text-secondary, #777777);
         font-size: 13px;
     }
 
@@ -32,21 +36,20 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #888;
+    color: var(--qc-text-tertiary, #888888);
     font-size: 12px;
 }
 
     .page-breadcrumb span {
-        color: #bbb;
+        color: var(--qc-border-color-hover, #bbb);
     }
 
 /* Sections */
-
 .details-section {
     margin-bottom: 20px;
     padding: 24px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
+    background: var(--qc-card-bg, var(--qc-card, #ffffff));
+    border: 1px solid var(--qc-border-color, #e5e5e5);
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
 }
@@ -55,10 +58,10 @@
         margin: 0 0 6px;
         font-size: 18px;
         font-weight: 650;
+        color: var(--qc-text-primary, var(--qc-text, #111827));
     }
 
-/* Form */
-
+/* Form Layout & Inputs */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -77,7 +80,7 @@
     }
 
     .form-group label {
-        color: #444;
+        color: var(--qc-text-primary, var(--qc-text, #444444));
         font-size: 12px;
         font-weight: 600;
     }
@@ -87,25 +90,41 @@
     min-height: 42px;
     box-sizing: border-box;
     padding: 9px 12px;
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--qc-border-color, #dcdcdc);
     border-radius: 9px;
-    background: #fff;
-    color: #222;
-    font-family: inherit;
-    font-size: 13px;
+    background-color: var(--qc-input-bg, var(--qc-card, #ffffff)) !important;
+    color: var(--qc-text-primary, var(--qc-text, #222222)) !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 500;
     outline: none;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-    .form-control:hover {
-        border-color: #9ca3af;
+/* FIXED: Select and Option Styles */
+select.form-control {
+    cursor: pointer;
+    appearance: auto;
+    background-color: var(--qc-input-bg, var(--qc-card, #ffffff)) !important;
+    color: var(--qc-text-primary, var(--qc-text, #222222)) !important;
+}
+
+    select.form-control option {
+        font-family: inherit !important;
+        font-size: 13px !important;
+        background-color: var(--qc-card-bg, var(--qc-card, #ffffff)) !important;
+        color: var(--qc-text-primary, var(--qc-text, #222222)) !important;
     }
 
-    .form-control:focus {
-        border-color: #159570;
-        box-shadow: 0 0 0 3px rgba(21, 149, 112, 0.12);
-        outline: none;
-    }
+.form-control:hover {
+    border-color: var(--qc-border-color-hover, #9ca3af);
+}
+
+.form-control:focus {
+    border-color: var(--qc-color-primary, #159570);
+    box-shadow: 0 0 0 3px var(--qc-focus-ring, rgba(21, 149, 112, 0.12));
+    outline: none;
+}
 
 .textarea {
     min-height: 100px;
@@ -119,7 +138,6 @@
 }
 
 /* Buttons */
-
 .primary-button,
 .secondary-button {
     min-height: 40px;
@@ -128,17 +146,18 @@
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .primary-button {
-    border: 1px solid #159570;
-    background: #159570;
-    color: white;
+    border: 1px solid var(--qc-color-primary, #159570);
+    background: var(--qc-color-primary, #159570);
+    color: var(--qc-color-on-primary, #ffffff);
 }
 
-    .primary-button:hover {
-        background: #117d5e;
+    .primary-button:hover:not(:disabled) {
+        background: var(--qc-color-primary-hover, #117d5e);
+        border-color: var(--qc-color-primary-hover, #117d5e);
     }
 
     .primary-button:disabled {
@@ -147,18 +166,18 @@
     }
 
 .secondary-button {
-    border: 1px solid #ddd;
-    background: #fff;
-    color: #444;
+    border: 1px solid var(--qc-border-color, #dddddd);
+    background: var(--qc-card-bg, #ffffff);
+    color: var(--qc-text-primary, #444444);
 }
 
     .secondary-button:hover {
-        border-color: #159570;
-        color: #159570;
+        border-color: var(--qc-color-primary, #159570);
+        color: var(--qc-color-primary, #159570);
+        background: var(--qc-bg-surface-secondary, #f9fafb);
     }
 
-/* Progress */
-
+/* Progress Indicator */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -169,32 +188,31 @@
 
     .section-header p {
         margin: 4px 0 0;
-        color: #888;
+        color: var(--qc-text-secondary, #888888);
         font-size: 12px;
     }
 
 .large-progress {
-    color: #009b72;
+    color: var(--qc-color-primary, #009b72);
     font-size: 26px;
 }
 
 .progress-track {
     width: 100%;
     height: 9px;
-    background: #eeeeee;
+    background: var(--qc-border-color, #eeeeee);
     border-radius: 20px;
     overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
-    background: #159570;
+    background: var(--qc-color-primary, #159570);
     border-radius: inherit;
     transition: width 0.3s ease;
 }
 
-/* Tasks */
-
+/* Tasks Items */
 .operation-list {
     display: flex;
     flex-direction: column;
@@ -207,9 +225,9 @@
     align-items: center;
     gap: 25px;
     padding: 18px;
-    border: 1px solid #eeeeee;
+    border: 1px solid var(--qc-border-color, #eeeeee);
     border-radius: 11px;
-    background: #fcfcfc;
+    background: var(--qc-card-bg, var(--qc-card, #ffffff));
 }
 
 .task-information {
@@ -221,19 +239,19 @@
 }
 
     .task-information strong {
-        color: #222;
+        color: var(--qc-text-primary, var(--qc-text, #111827));
         font-size: 14px;
         font-weight: 650;
     }
 
     .task-information span {
-        color: #666;
+        color: var(--qc-text-secondary, var(--qc-text, #4b5563));
         font-size: 12px;
         line-height: 1.5;
     }
 
     .task-information small {
-        color: #999;
+        color: var(--qc-text-tertiary, var(--qc-text, #6b7280));
         font-size: 11px;
     }
 
@@ -256,14 +274,14 @@
 
     .task-progress-control input[type="range"] {
         flex: 1;
-        accent-color: #009b72;
+        accent-color: var(--qc-color-primary, #009b72);
         cursor: pointer;
     }
 
     .task-progress-control strong {
         min-width: 38px;
         text-align: right;
-        color: #008f6a;
+        color: var(--qc-color-primary, #008f6a);
         font-size: 12px;
     }
 
@@ -279,28 +297,27 @@
 }
 
     .status.completed {
-        background: #e8f6ed;
-        color: #26834f;
+        background: var(--qc-status-success-bg, #e8f6ed);
+        color: var(--qc-status-success-text, #26834f);
     }
 
-/* Empty/Error */
-
+/* Empty, Error & Loading States */
 .section-empty {
     padding: 30px;
-    border: 1px dashed #d9d9d9;
+    border: 1px dashed var(--qc-border-color, #d9d9d9);
     border-radius: 10px;
     text-align: center;
-    color: #999;
+    color: var(--qc-text-tertiary, #999999);
     font-size: 13px;
 }
 
 .form-error {
     margin-top: 15px;
     padding: 12px 14px;
-    border: 1px solid #f1caca;
+    border: 1px solid var(--qc-status-error-border, #f1caca);
     border-radius: 8px;
-    background: #fff3f3;
-    color: #b33f3f;
+    background: var(--qc-status-error-bg, #fff3f3);
+    color: var(--qc-status-error-text, #b33f3f);
     font-size: 13px;
 }
 
@@ -308,13 +325,15 @@
 .error-container {
     padding: 70px 20px;
     text-align: center;
+    color: var(--qc-text-secondary, #777777);
 }
 
+/* Spinner Animation */
 .spinner {
     width: 30px;
     height: 30px;
-    border: 3px solid #e5e5e5;
-    border-top-color: #009b72;
+    border: 3px solid var(--qc-border-color, #e5e5e5);
+    border-top-color: var(--qc-color-primary, #009b72);
     border-radius: 50%;
     animation: tasks-spin 0.8s linear infinite;
     margin: 0 auto 12px;
@@ -326,8 +345,7 @@
     }
 }
 
-/* Responsive */
-
+/* Responsive Styles */
 @media (max-width: 950px) {
     .task-management-row {
         align-items: flex-start;

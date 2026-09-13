@@ -1,292 +1,354 @@
-﻿@page "/procurement"
-
+@page "/procurement"
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
+@using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-
-@attribute [Authorize]
-
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
 
 <PageTitle>Procurement | Quantum Count</PageTitle>
 
 <div class="procurement-page">
-
     <div class="page-header">
-
         <div>
+            <div class="page-breadcrumb">Operations <span>/</span> Procurement</div>
             <h1>Purchase Orders</h1>
-            <p>Manage procurement, purchase orders and incoming inventory.</p>
+            <p>Manage procurement, purchase orders, and incoming inventory.</p>
         </div>
-        <MudButton Variant="Variant.Outlined"
-                   StartIcon="@Icons.Material.Filled.Business"
-                   Href="/suppliers"
-                   Class="supplier-button">
-            Manage Suppliers
-        </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@(() => Navigation.NavigateTo("/procurement/new"))">
-            New Purchase Order
-        </MudButton>
-
+        <div class="header-actions">
+            <button class="qc-btn-secondary" @onclick="@(() => Navigation.NavigateTo("/suppliers"))">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" Class="mr-1" />
+                Manage Suppliers
+            </button>
+            <button class="qc-btn-primary" @onclick="OpenCreateModal">
+                <span>+</span> New Purchase Order
+            </button>
+        </div>
     </div>
 
-    <div class="procurement-summary">
-
-        <div class="procurement-stat">
-            <span>Total Orders</span>
-            <strong>@purchaseOrders.Count</strong>
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Total Orders</span>
+                <span class="summary-value">@purchaseOrders.Count</span>
+                <span class="summary-description">All recorded POs</span>
+            </div>
+            <div class="summary-icon">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Medium" />
+            </div>
         </div>
 
-        <div class="procurement-stat">
-            <span>Draft</span>
-            <strong>@CountStatus("Draft")</strong>
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Draft</span>
+                <span class="summary-value">@CountStatus("Draft")</span>
+                <span class="summary-description">Pending submission</span>
+            </div>
+            <div class="summary-icon draft">
+                <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Medium" />
+            </div>
         </div>
 
-        <div class="procurement-stat">
-            <span>Ordered</span>
-            <strong>@CountStatus("Ordered")</strong>
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Ordered</span>
+                <span class="summary-value info-number">@CountStatus("Ordered")</span>
+                <span class="summary-description">Sent to vendor</span>
+            </div>
+            <div class="summary-icon info">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Medium" />
+            </div>
         </div>
 
-        <div class="procurement-stat">
-            <span>Partially Received</span>
-            <strong>@CountStatus("Partially Received")</strong>
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Partially Received</span>
+                <span class="summary-value warning-number">@CountStatus("Partially Received")</span>
+                <span class="summary-description">In-transit delivery</span>
+            </div>
+            <div class="summary-icon warning">
+                <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Medium" />
+            </div>
         </div>
 
-        <div class="procurement-stat">
-            <span>Received</span>
-            <strong>@CountStatus("Received")</strong>
+        <div class="summary-card">
+            <div class="summary-card-content">
+                <span class="summary-label">Received</span>
+                <span class="summary-value success-number">@CountStatus("Received")</span>
+                <span class="summary-description">Fulfilled orders</span>
+            </div>
+            <div class="summary-icon success">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Medium" />
+            </div>
         </div>
-
     </div>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
+    <!-- TOAST NOTIFICATION -->
+    @if (!string.IsNullOrEmpty(_toastMessage))
     {
-        <MudAlert Severity="Severity.Error"
-                  Variant="Variant.Outlined"
-                  Class="mb-4">
-            @errorMessage
-        </MudAlert>
+        <div class="qc-toast @_toastType">
+            <span>@_toastMessage</span>
+            <button type="button" @onclick="() => _toastMessage = null">×</button>
+        </div>
     }
 
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <MudAlert Severity="Severity.Success"
-                  Variant="Variant.Outlined"
-                  Class="mb-4">
-            @successMessage
-        </MudAlert>
-    }
-
+    <!-- TOOLBAR -->
     <div class="procurement-toolbar">
+        <div class="search-box-wrapper">
+            <span class="search-icon">⌕</span>
+            <input type="text"
+                   class="search-box-input"
+                   placeholder="Search orders by PO number or supplier..."
+                   @bind="searchText"
+                   @bind:event="oninput" />
+            @if (!string.IsNullOrEmpty(searchText))
+            {
+                <button type="button" class="clear-search-btn" @onclick="() => searchText = string.Empty">×</button>
+            }
+        </div>
 
-        <MudTextField @bind-Value="searchText"
-                      Placeholder="Search purchase orders..."
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search"
-                      Variant="Variant.Outlined"
-                      Margin="Margin.Dense"
-                      Immediate="true"
-                      Class="procurement-search" />
-
-        <MudSelect T="string"
-                   @bind-Value="statusFilter"
-                   Label="Status"
-                   Variant="Variant.Outlined"
-                   Margin="Margin.Dense"
-                   Class="status-filter">
-
-            <MudSelectItem Value="@("All")">
-                All Statuses
-            </MudSelectItem>
-
-            <MudSelectItem Value="@("Draft")">
-                Draft
-            </MudSelectItem>
-
-            <MudSelectItem Value="@("Ordered")">
-                Ordered
-            </MudSelectItem>
-
-            <MudSelectItem Value="@("Partially Received")">
-                Partially Received
-            </MudSelectItem>
-
-            <MudSelectItem Value="@("Received")">
-                Received
-            </MudSelectItem>
-
-            <MudSelectItem Value="@("Cancelled")">
-                Cancelled
-            </MudSelectItem>
-
-        </MudSelect>
-
+        <select class="qc-select status-filter" @bind="statusFilter">
+            <option value="All">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Ordered">Ordered</option>
+            <option value="Partially Received">Partially Received</option>
+            <option value="Received">Received</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
     </div>
 
+    <!-- CONTENT -->
     @if (isLoading)
     {
-        <div class="procurement-loading">
-
-            <MudProgressCircular Indeterminate="true"
-                                 Color="Color.Primary" />
-
-            <MudText>
-                Loading purchase orders...
-            </MudText>
-
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <span>Loading purchase orders...</span>
         </div>
     }
-    else if (FilteredOrders.Count == 0)
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
     {
-        <MudPaper Class="procurement-empty" Elevation="1">
-
-            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart"
-                     Size="Size.Large" />
-
-            <MudText Typo="Typo.h6">
-                No purchase orders found
-            </MudText>
-
-            <MudText Typo="Typo.body2">
-                Create a purchase order to begin procurement.
-            </MudText>
-
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(() => Navigation.NavigateTo("/procurement/new"))">
-                Create Purchase Order
-            </MudButton>
-
-        </MudPaper>
+        <div class="error-container">
+            <strong>Unable to Load Purchase Orders</strong>
+            <p>@errorMessage</p>
+            <button class="qc-btn-primary" @onclick="LoadPurchaseOrders">Retry</button>
+        </div>
+    }
+    else if (!FilteredOrders.Any())
+    {
+        <div class="empty-container">
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" />
+            <h3>No Purchase Orders Found</h3>
+            <p>@(string.IsNullOrWhiteSpace(searchText) ? "Create your first purchase order to begin procurement." : "No orders match your filter criteria.")</p>
+            @if (string.IsNullOrWhiteSpace(searchText))
+            {
+                <button class="qc-btn-primary" @onclick="OpenCreateModal">+ New Purchase Order</button>
+            }
+        </div>
     }
     else
     {
-        <MudPaper Class="procurement-table-wrapper" Elevation="1">
+        <div class="procurement-container">
+            <div class="section-header">
+                <div>
+                    <h2>Purchase Orders List</h2>
+                    <span>Showing @FilteredOrders.Count of @purchaseOrders.Count orders</span>
+                </div>
+            </div>
 
-            <MudTable Items="@FilteredOrders"
-                      Hover="true"
-                      Striped="true"
-                      Dense="true"
-                      Class="procurement-table">
-
-                <HeaderContent>
-
-                    <MudTh>PO Number</MudTh>
-                    <MudTh>Supplier</MudTh>
-                    <MudTh>Order Date</MudTh>
-                    <MudTh>Expected Delivery</MudTh>
-                    <MudTh>Items</MudTh>
-                    <MudTh>Total</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh>Actions</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="PO Number">
-
-                        <strong>@context.PONumber</strong>
-
-                    </MudTd>
-
-                    <MudTd DataLabel="Supplier">
-
-                        @(context.Supplier?.CompanyName ?? "Unknown")
-
-                    </MudTd>
-
-                    <MudTd DataLabel="Order Date">
-
-                        @context.OrderDate.ToLocalTime().ToString("dd MMM yyyy")
-
-                    </MudTd>
-
-                    <MudTd DataLabel="Expected Delivery">
-
-                        @if (context.ExpectedDeliveryDate.HasValue)
+            <div class="table-responsive">
+                <table class="qc-table">
+                    <thead>
+                        <tr>
+                            <th>PO NUMBER</th>
+                            <th>SUPPLIER</th>
+                            <th>ORDER DATE</th>
+                            <th>EXPECTED DELIVERY</th>
+                            <th>ITEMS</th>
+                            <th>TOTAL AMOUNT</th>
+                            <th>STATUS</th>
+                            <th style="text-align: right;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var po in FilteredOrders)
                         {
-                            @context.ExpectedDeliveryDate.Value.ToString("dd MMM yyyy")
+                            <tr>
+                                <td>
+                                    <span class="po-code-badge">@po.PONumber</span>
+                                </td>
+                                <td>
+                                    <div class="supplier-cell">
+                                        <strong>@(po.Supplier?.CompanyName ?? "Unknown")</strong>
+                                        @if (!string.IsNullOrEmpty(po.Supplier?.SupplierCode))
+                                        {
+                                            <span class="supplier-code">@po.Supplier.SupplierCode</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@po.OrderDate.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (po.ExpectedDeliveryDate.HasValue)
+                                    {
+                                        <span>@po.ExpectedDeliveryDate.Value.ToLocalTime().ToString("dd MMM yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="muted-text">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="item-count-badge">@(po.Items?.Count(i => i.IsActive) ?? 0)</span>
+                                </td>
+                                <td>
+                                    <strong class="total-amount">@po.TotalAmount.ToString("C")</strong>
+                                </td>
+                                <td>
+                                    <span class="status-badge @GetStatusClass(po.Status)">
+                                        <span></span>
+                                        @po.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons-cell">
+                                        <button class="action-btn view" title="View Details" @onclick="@(() => Navigation.NavigateTo($"/procurement/{po.Id}"))">
+                                            <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" />
+                                        </button>
+                                            <button class="action-btn edit" title="Edit Order" @onclick="@(() => OpenEditModal(po))">
+                                                <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+                                            </button>
+                                            <button class="action-btn cancel" title="Cancel Order" @onclick="@(() => CancelPurchaseOrder(po))">
+                                                <MudIcon Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" />
+                                            </button>
+                                    </div>
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span>Not specified</span>
-                        }
-                    </MudTd>
-
-                    <MudTd DataLabel="Items">
-
-                        @(context.Items?.Count(i => i.IsActive) ?? 0)
-
-                    </MudTd>
-
-                    <MudTd DataLabel="Total">
-
-                        <strong>
-                            @context.TotalAmount.ToString("N2")
-                        </strong>
-
-                    </MudTd>
-
-                    <MudTd DataLabel="Status">
-
-                        <span class="@GetStatusClass(context.Status)">
-                            @context.Status
-                        </span>
-                    </MudTd>
-                    <MudTd Align="Align.Right">
-                        <MudIconButton Icon="@Icons.Material.Filled.Visibility"
-                                       Color="Color.Default"
-                                       Size="Size.Small"
-                                       Title="View"
-                                       OnClick="@(() =>  Navigation.NavigateTo($"/procurement/{context.Id}"))" />
-                        @if (context.Status == "Draft")
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                           Color="Color.Primary"
-                                           Size="Size.Small"
-                                           Title="Edit"
-                                           OnClick="@(() => Navigation.NavigateTo($"/procurement/edit/{context.Id}"))" />
-                            <MudIconButton Icon="@Icons.Material.Filled.Cancel"
-                                           Color="Color.Error"
-                                           Size="Size.Small"
-                                           Title="Cancel"
-                                           OnClick="@(() => CancelPurchaseOrder(context.Id))" />
-                        }
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        </MudPaper>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     }
 </div>
+
+<!-- CREATE / EDIT PURCHASE ORDER MODAL -->
+@if (_showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="qc-modal qc-modal-lg" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <div>
+                    <h2>@(_isEdit ? "Edit Purchase Order" : "New Purchase Order")</h2>
+                    <p>@(_isEdit ? "Update purchase order header and schedule." : "Initiate a new purchase order for materials.")</p>
+                </div>
+                <button type="button" class="close-modal" @onclick="CloseModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(_modalError))
+                {
+                    <div class="form-error">@_modalError</div>
+                }
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>PO Number *</label>
+                        <input @bind="_activePO.PONumber" placeholder="e.g. PO-2026-001" />
+                    </div>
+                    <div class="form-group">
+                        <label>Supplier *</label>
+                        <select @bind="_activePO.SupplierId">
+                            <option value="0">Select Supplier</option>
+                            @foreach (var s in suppliers)
+                            {
+                                <option value="@s.Id">@s.SupplierCode - @s.CompanyName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Order Date *</label>
+                        <input type="date" value="@(_orderDate?.ToString("yyyy-MM-dd"))" @onchange="OnOrderDateChanged" />
+                    </div>
+                    <div class="form-group">
+                        <label>Expected Delivery Date</label>
+                        <input type="date" value="@(_expectedDeliveryDate?.ToString("yyyy-MM-dd"))" @onchange="OnDeliveryDateChanged" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes / Instructions (Optional)</label>
+                    <textarea @bind="_activePO.Notes" placeholder="Delivery instructions, reference codes, vendor notes..."></textarea>
+                </div>
+
+                <div class="po-info-banner">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
+                    <span>Purchase orders are created in <strong>Draft</strong> status. You can add materials and line items on the details page.</span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="qc-btn-secondary" @onclick="CloseModal" disabled="@_saving">Cancel</button>
+                <button type="button" class="qc-btn-primary" @onclick="SavePurchaseOrderAsync" disabled="@_saving">
+                    @if (_saving)
+                    {
+                        <span class="btn-spinner"></span>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>@(_isEdit ? "Update Order" : "Create Order")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<PurchaseOrder> purchaseOrders = new();
+    private List<Supplier> suppliers = new();
     private string searchText = string.Empty;
     private string statusFilter = "All";
     private bool isLoading = true;
     private string? errorMessage;
-    private string? successMessage;
+    private string? _toastMessage;
+    private string _toastType = "success";
+
+    // Modal state
+    private bool _showModal;
+    private bool _isEdit;
+    private bool _saving;
+    private string? _modalError;
+    private PurchaseOrder _activePO = new();
+    private DateTime? _orderDate = DateTime.Today;
+    private DateTime? _expectedDeliveryDate;
+
     private List<PurchaseOrder> FilteredOrders =>
         purchaseOrders
             .Where(p =>
                 (string.IsNullOrWhiteSpace(searchText) ||
                  p.PONumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                 (p.Supplier?.CompanyName?.Contains(
-                     searchText,
-                     StringComparison.OrdinalIgnoreCase) ?? false))
+                 (p.Supplier?.CompanyName?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (p.Supplier?.SupplierCode?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
                 &&
-                (statusFilter == "All" ||
-                 p.Status.Equals(
-                     statusFilter,
-                     StringComparison.OrdinalIgnoreCase)))
+                (statusFilter == "All" || p.Status.Equals(statusFilter, StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadPurchaseOrders();
+        try
+        {
+            suppliers = await InventoryService.GetSuppliersAsync();
+        }
+        catch { }
     }
+
     private async Task LoadPurchaseOrders()
     {
         try
@@ -304,42 +366,174 @@
             isLoading = false;
         }
     }
+
     private int CountStatus(string status)
     {
-        return purchaseOrders.Count(p =>
-            p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+        return purchaseOrders.Count(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
     }
+
     private string GetStatusClass(string status)
     {
         return status switch
         {
-            "Draft" => "po-status po-draft",
-            "Ordered" => "po-status po-ordered",
-            "Partially Received" => "po-status po-partial",
-            "Received" => "po-status po-received",
-            "Cancelled" => "po-status po-cancelled",
-            _ => "po-status"
+            "Draft" => "warning",
+            "Ordered" => "info",
+            "Partially Received" => "warning",
+            "Received" => "active",
+            "Cancelled" => "inactive",
+            _ => "default"
         };
     }
-    private async Task CancelPurchaseOrder(int id)
+
+    private void OpenCreateModal()
     {
+        _isEdit = false;
+        _activePO = new PurchaseOrder
+        {
+            PONumber = $"PO-{DateTime.UtcNow:yyyyMMdd}-{new Random().Next(100, 999)}",
+            Status = "Draft",
+            OrderDate = DateTime.Today
+        };
+        _orderDate = DateTime.Today;
+        _expectedDeliveryDate = DateTime.Today.AddDays(14);
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void OpenEditModal(PurchaseOrder po)
+    {
+        _isEdit = true;
+        _activePO = new PurchaseOrder
+        {
+            Id = po.Id,
+            PONumber = po.PONumber,
+            SupplierId = po.SupplierId,
+            OrderDate = po.OrderDate,
+            ExpectedDeliveryDate = po.ExpectedDeliveryDate,
+            Notes = po.Notes,
+            Status = po.Status,
+            IsActive = po.IsActive
+        };
+        _orderDate = po.OrderDate;
+        _expectedDeliveryDate = po.ExpectedDeliveryDate;
+        _modalError = null;
+        _showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal = false;
+        _modalError = null;
+    }
+
+    private void OnOrderDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+            _orderDate = dt;
+        else
+            _orderDate = null;
+    }
+
+    private void OnDeliveryDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+            _expectedDeliveryDate = dt;
+        else
+            _expectedDeliveryDate = null;
+    }
+
+    private async Task SavePurchaseOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_activePO.PONumber))
+        {
+            _modalError = "PO Number is required.";
+            return;
+        }
+
+        if (_activePO.SupplierId <= 0)
+        {
+            _modalError = "Please select a Supplier.";
+            return;
+        }
+
+        _saving = true;
+        _modalError = null;
+
         try
         {
-            errorMessage = null;
-            successMessage = null;
-            var result = await InventoryService.DeletePurchaseOrderAsync(id);
-            if (!result.success)
-            {
-                errorMessage = result.message;
-                return;
-            }
-            successMessage = result.message;
+            _activePO.OrderDate = _orderDate ?? DateTime.UtcNow;
+            _activePO.ExpectedDeliveryDate = _expectedDeliveryDate;
 
-            await LoadPurchaseOrders();
+            if (_isEdit)
+            {
+                var (success, message, _) = await InventoryService.UpdatePurchaseOrderAsync(_activePO);
+                if (success)
+                {
+                    ShowToast("Purchase Order updated successfully.", "success");
+                    _showModal = false;
+                    await LoadPurchaseOrders();
+                }
+                else
+                {
+                    _modalError = message;
+                }
+            }
+            else
+            {
+                var (success, message, po) = await InventoryService.CreatePurchaseOrderAsync(_activePO);
+                if (success)
+                {
+                    ShowToast("Purchase Order created successfully.", "success");
+                    _showModal = false;
+                    await LoadPurchaseOrders();
+                }
+                else
+                {
+                    _modalError = message;
+                }
+            }
         }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            _modalError = ex.Message;
         }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task CancelPurchaseOrder(PurchaseOrder po)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Cancel Purchase Order",
+            $"Are you sure you want to cancel order '{po.PONumber}'?",
+            yesText: "Cancel Order",
+            cancelText: "Keep Order");
+
+        if (confirmed != true)
+            return;
+
+        var result = await InventoryService.DeletePurchaseOrderAsync(po.Id);
+        if (result.success)
+        {
+            ShowToast("Purchase order cancelled.", "success");
+            await LoadPurchaseOrders();
+        }
+        else
+        {
+            ShowToast(result.message, "danger");
+        }
+    }
+
+    private void ShowToast(string message, string type = "success")
+    {
+        _toastMessage = message;
+        _toastType = type;
+        _ = Task.Delay(3500).ContinueWith(_ =>
+        {
+            _toastMessage = null;
+            InvokeAsync(StateHasChanged);
+        });
     }
 }

@@ -51,8 +51,8 @@
 .overview-card {
     min-height: 90px;
     padding: 19px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
+    background: var(--qc-card);
+    border: 1px solid var(--qc-border);
     border-radius: 13px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.035);
 }
@@ -60,13 +60,13 @@
     .overview-card > span {
         display: block;
         margin-bottom: 9px;
-        color: #888;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
     .overview-card strong {
         display: block;
-        color: #222;
+        color: var(--qc-text);
         font-size: 22px;
         font-weight: 700;
     }
@@ -80,8 +80,8 @@
 .details-section {
     margin-bottom: 20px;
     padding: 24px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
+    background: var(--qc-card);
+    border: 1px solid var(--qc-border);
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
 }
@@ -93,7 +93,7 @@
     }
 
     .details-section > p {
-        color: #777;
+        color: var(--qc-text);
     }
 
 /* Section Header */
@@ -112,7 +112,7 @@
 
     .section-header p {
         margin: 5px 0 0;
-        color: #888;
+        color: var(--qc-text);
         font-size: 12px;
     }
 
@@ -130,36 +130,36 @@
         flex-direction: column;
         gap: 6px;
         padding: 15px;
-        background: #fafafa;
+        background: var(--qc-card);
         border-radius: 10px;
     }
 
     .information-grid span {
-        color: #999;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
     .information-grid strong {
-        color: #333;
+        color: var(--qc-text);
         font-size: 13px;
     }
 
 .project-description-box {
     margin-top: 16px;
     padding: 16px;
-    border-left: 3px solid #009b72;
+    border-left: 3px solid var(--qc-border);
     border-radius: 8px;
-    background: #f7faf9;
+    background: var(--qc-card);
 }
 
     .project-description-box span {
-        color: #888;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
     .project-description-box p {
         margin: 7px 0 0;
-        color: #555;
+        color: var(--qc-text);
         font-size: 13px;
         line-height: 1.6;
     }
@@ -178,9 +178,9 @@
     align-items: center;
     gap: 20px;
     padding: 15px 16px;
-    border: 1px solid #eeeeee;
+    border: 1px solid var(--qc-border);
     border-radius: 10px;
-    background: #fcfcfc;
+    background: var(--qc-card);
 }
 
     .operation-row > div {
@@ -191,12 +191,12 @@
     }
 
     .operation-row strong {
-        color: #222;
+        color: var(--qc-text);
         font-size: 13px;
     }
 
     .operation-row span {
-        color: #888;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
@@ -208,9 +208,9 @@
     align-items: center;
     gap: 25px;
     padding: 15px 16px;
-    border: 1px solid #eeeeee;
+    border: 1px solid var(--qc-border);
     border-radius: 10px;
-    background: #fcfcfc;
+    background: var(--qc-card);
 }
 
 .task-main {
@@ -221,12 +221,12 @@
 }
 
     .task-main strong {
-        color: #222;
+        color: var(--qc-text);
         font-size: 13px;
     }
 
     .task-main span {
-        color: #888;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
@@ -290,9 +290,9 @@
 }
 
 .primary-button {
-    border: 1px solid #159570;
+    border: 1px solid var(--qc-border);
     background: #159570;
-    color: #fff;
+    color: var(--qc-text);
 }
 
     .primary-button:hover {
@@ -301,8 +301,8 @@
 
 .secondary-button {
     border: 1px solid #ddd;
-    background: #fff;
-    color: #444;
+    background: var(--qc-card);
+    color: var(--qc-text);
 }
 
     .secondary-button:hover {

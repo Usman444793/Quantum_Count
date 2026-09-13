@@ -1,358 +1,274 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Routing
+@using Quantum_Count.Models
+@using Quantum_Count.Services
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SettingsService SettingsService
+@inject Quantum_Count.Services.InventoryAiOrchestrator Orchestrator
 @inject IJSRuntime JS
-<MudThemeProvider Theme="@_theme" />
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
-<MudLayout>
-    <MudAppBar Elevation="1" Color="Color.Transparent" Class="quantum-appbar">
-    <MudSpacer />
-    <AuthorizeView>
-        <Authorized Context="authState">
-            <div class="account-menu-wrapper">
-                <button type="button" class="avatar-button" @onclick:stopPropagation="true" @onclick="ToggleAccountMenu" aria-expanded="@(accountMenuOpen)">
-                    <div class="avatar-circle">@GetInitial(authState.User)</div>
-                </button>
-                <div class="account-popover @(accountMenuOpen ? "visible" : "hidden")" role="menu">
-                    <div class="user-menu-header">
-                        <strong>@GetUserName(authState.User)</strong>
-                        <div class="user-email">@GetUserEmail(authState.User)</div>
-                    </div>
-                    <div class="popover-divider"></div>
-                    <a class="popover-item" href="/dashboard">Dashboard</a>
-                    <a class="popover-item" href="/materials">Materials & Equipment</a>
-                    <a class="popover-item" href="/projects">Projects</a>
-                    <a class="popover-item" href="/equipment">Equipments & Assets</a>
-                    <a class="popover-item" href="/procurement">Procurement</a>
-                    <a class="popover-item" href="/reports">Reports & Analytics</a>
-                    <a class="popover-item" href="/staff">Staff & Roles</a>
-                    <a class="popover-item" href="/settings">Settings</a>
-                    <form method="post" action="/api/auth/logout" style="margin: 0; padding: 0;">
-                        <AntiforgeryToken />
-                        <button type="submit" class="popover-item logout-button">
-                            <span>↪</span>
-                            <span>Logout</span>
+
+<div class="quantum-shell @(_isDarkTheme ? "theme-dark" : "theme-light")" @onclick="CloseAccountMenu">
+    <!-- TOP APPBAR -->
+    <header class="quantum-topbar">
+        <div class="topbar-left">
+            <button type="button" class="mobile-toggle-btn" @onclick="ToggleMobileDrawer" aria-label="Toggle navigation menu">
+                ☰
+            </button>
+            <a class="topbar-brand" href="/dashboard">
+                <div class="topbar-logo">QC</div>
+                <div class="topbar-title-group">
+                    <span class="topbar-name">Quantum Count</span>
+                    <span class="topbar-subtitle">Inventory Management</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="topbar-right">
+            <!-- Theme Mode Switcher -->
+            <button type="button" class="theme-toggle-btn" @onclick="ToggleTheme" title="@(_isDarkTheme ? "Switch to Light Mode" : "Switch to Dark Mode")">
+                @(_isDarkTheme ? "🌙" : "☀️")
+            </button>
+
+            <!-- Account Menu -->
+            <AuthorizeView>
+                <Authorized Context="authState">
+                    <div class="account-menu-wrapper">
+                        <button type="button" class="avatar-button" @onclick:stopPropagation="true" @onclick="ToggleAccountMenu" aria-expanded="@(accountMenuOpen)">
+                            <div class="avatar-circle">@GetInitial(authState.User)</div>
                         </button>
-                    </form>
+                        <div class="account-popover @(accountMenuOpen ? "visible" : "hidden")" @onclick:stopPropagation="true" role="menu">
+                            <div class="user-menu-header">
+                                <strong>@GetUserName(authState.User)</strong>
+                                <div class="user-email">@GetUserEmail(authState.User)</div>
+                            </div>
+                            <div class="popover-divider"></div>
+                            <a class="popover-item" href="/dashboard" @onclick="CloseAccountMenu">📊 Dashboard</a>
+                            <a class="popover-item" href="/materials" @onclick="CloseAccountMenu">📦 Materials</a>
+                            <a class="popover-item" href="/equipment" @onclick="CloseAccountMenu">🛠 Equipment</a>
+                            <a class="popover-item" href="/categories" @onclick="CloseAccountMenu">🏷 Categories</a>
+                            <a class="popover-item" href="/projects" @onclick="CloseAccountMenu">📋 Projects</a>
+                            <a class="popover-item" href="/procurement" @onclick="CloseAccountMenu">🛒 Procurement</a>
+                            <a class="popover-item" href="/suppliers" @onclick="CloseAccountMenu">🏢 Suppliers</a>
+                            <a class="popover-item" href="/reports" @onclick="CloseAccountMenu">📈 Reports & Analytics</a>
+                            <a class="popover-item" href="/staff" @onclick="CloseAccountMenu">👥 Staff & Roles</a>
+                            <a class="popover-item" href="/settings" @onclick="CloseAccountMenu">⚙ Settings</a>
+                            <div class="popover-divider"></div>
+                            <form method="post" action="/api/auth/logout" style="margin: 0; padding: 0;">
+                                <AntiforgeryToken />
+                                <button type="submit" class="popover-item logout-button">
+                                    <span>↪</span>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/login" class="qc-btn-primary" style="text-decoration: none;">Sign in</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </header>
+
+    <!-- LAYOUT BODY -->
+    <div class="quantum-layout-body">
+        @if (_mobileDrawerOpen)
+        {
+            <div class="sidebar-backdrop" @onclick="CloseMobileDrawer"></div>
+        }
+
+        <!-- COLLAPSIBLE HOVER SIDEBAR -->
+        <aside class="quantum-sidebar @(_mobileDrawerOpen ? "mobile-open" : "")">
+            <div class="sidebar-header">
+                <div class="sidebar-brand-icon">QC</div>
+                <div class="sidebar-brand-text">
+                    <span class="brand-main">Quantum Count</span>
+                    <span class="brand-sub">Operations</span>
                 </div>
             </div>
-        </Authorized>
-        <NotAuthorized>
-            <MudButton Href="/login" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Login">
-                Sign in
-            </MudButton>
-        </NotAuthorized>
-    </AuthorizeView>
-</MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" Variant="DrawerVariant.Responsive" Breakpoint="Breakpoint.Md" ClipMode="DrawerClipMode.Never"
-     Elevation="1" Width="270px" Class="quantum-drawer">
-        <div class="drawer-header">
-            <div class="brand-container">
-                <div class="brand-icon">
-                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Medium" />
-                </div>
-                <div>
-                    <MudText Typo="Typo.h6" Class="brand-title"> Quantum Count </MudText>
-                    <MudText Typo="Typo.caption" Class="brand-subtitle"> Inventory Management </MudText>
+
+            <div class="sidebar-search">
+                <div class="sidebar-search-box">
+                    <span class="sidebar-search-icon">⌕</span>
+                    <input class="sidebar-search-input" placeholder="Search menu..." @bind="_searchText" @bind:event="oninput" />
                 </div>
             </div>
-        </div>
-        <div class="drawer-search">
-            <MudTextField @bind-Value="_searchText" Placeholder="Search..." Variant="Variant.Outlined"
-             Margin="Margin.Dense" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" Clearable="true" Class="search-field" />
-        </div>
-        <div class="drawer-navigation">
-            <NavMenu SearchText="@_searchText" />
-        </div>
-        <div class="drawer-bottom">
-            <MudDivider Class="drawer-divider" />
-            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings" Match="NavLinkMatch.Prefix"> Settings
-            </MudNavLink>
-        </div>
-    </MudDrawer>
-    <MudMainContent Class="quantum-main-content">
-        <div class="quantum-page-container"> @Body </div>
-    </MudMainContent>
-</MudLayout>
-<div id="blazor-error-ui" data-nosnippet> An unhandled error has occurred.
-    <a href="." class="reload"> Reload </a>
-    <span class="dismiss"> 🗙 </span>
+
+            <div class="sidebar-nav-container">
+                <NavMenu SearchText="@_searchText" />
+            </div>
+
+            <div class="sidebar-footer">
+                <NavLink class="qc-nav-link" href="/settings" Match="NavLinkMatch.Prefix" title="Settings">
+                    <div class="qc-nav-icon-badge">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Small" />
+                    </div>
+                    <span class="qc-nav-label">Settings</span>
+                </NavLink>
+            </div>
+        </aside>
+        <main class="quantum-content">
+            @Body
+        </main>
+    </div>
 </div>
-<style>
-    * {
-        font-family: "Poppins";
-    }
-    .quantum-appbar {
-        background: #ffffff !important;
-        color: #111111 !important;
-        border-bottom: 1px solid #e5e7eb;
-    }
-.account-menu-wrapper {
-    position: relative;
-    display: inline-block;
-}
-.avatar-button {
-    background: transparent;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-}
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#0f766e,#14b8a6);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-}
-.account-popover {
-    position: fixed;
-    right: 18px;
-    top: 56px;
-    background: white;
-    color: #111827;
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    min-width: 220px;
-    z-index: 9999;
-    padding: 8px;
-    display: block;
-}
-.user-menu-header {
-    padding: 8px 12px;
-}
-.user-email {
-    font-size: 12px;
-    color: #6b7280;
-}
-.popover-divider {
-    height: 1px;
-    background: #e5e7eb;
-    margin: 6px 0;
-}
-.popover-item {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 8px 12px;
-    border: none;
-    background: transparent;
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-    font: inherit;
-}
-.popover-item:hover {
-    background: #f3f4f6;
-}
-.account-popover.hidden { display: none; }
-.account-popover.visible { display: block; }
-    .quantum-brand {
-        font-weight: 700;
-        letter-spacing: -0.3px;
-    }
-    .drawer-toggle {
-        margin-right: 6px;
-    }
-    .theme-toggle {
-        margin-right: 8px;
-    }
-    .quantum-drawer {
-        background: #090909 !important;
-        color: #ffffff;
-    }
-        .quantum-drawer .mud-drawer-content {
-            background: #090909 !important;
-        }
-    .drawer-header {
-        padding: 22px 18px 18px 18px;
-    }
-    .brand-container {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .brand-icon {
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #009b72;
-        color: white;
-        border-radius: 10px;
-    }
-    .brand-title {
-        color: #ffffff !important;
-        font-weight: 700;
-        line-height: 1.1;
-    }
-    .brand-subtitle {
-        color: #9ca3af !important;
-        font-size: 11px;
-    }
-    .drawer-search {
-        padding: 4px 14px 16px 14px;
-    }
-    .search-field .mud-input-control-input-container {
-        background: #171717;
-    }
-    .search-field .mud-input-outlined-border {
-        border-color: #303030 !important;
-    }
-    .search-field .mud-input {
-        color: #ffffff !important;
-    }
-    .search-field input::placeholder {
-        color: #8c8c8c !important;
-        opacity: 1;
-    }
-    .search-field .mud-input-adornment {
-        color: #ffffff !important;
-    }
-    .search-field .mud-icon-root {
-        color: #ffffff !important;
-    }
-    .drawer-navigation {
-        padding: 0 10px;
-    }
-    .quantum-drawer .mud-nav-link {
-        color: #d1d5db !important;
-        border-radius: 9px;
-        margin: 4px 0;
-        min-height: 46px;
-        padding-left: 14px;
-        padding-right: 14px;
-        transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-    }
-        .quantum-drawer .mud-nav-link:hover {
-            background: #171717 !important;
-            color: #ffffff !important;
-        }
-        .quantum-drawer .mud-nav-link.active {
-            background: #009b72 !important;
-            color: #ffffff !important;
-            font-weight: 600;
-            box-shadow: 0 3px 10px rgba(0, 155, 114, 0.18);
-        }
-         .quantum-drawer .mud-nav-link.active:hover {
-             background: #00a77a !important;
-             color: #ffffff !important;
-         }
-        .quantum-drawer .mud-nav-link .mud-nav-link-icon {
-            color: inherit !important;
-        }
-    .drawer-bottom {
-        margin-top: auto;
-        padding: 10px;
-    }
-    .drawer-divider {
-        border-color: #292929 !important;
-        margin-bottom: 8px;
-    }
-    .theme-button {
-        justify-content: flex-start;
-        color: #bdbdbd !important;
-        border-radius: 9px;
-        padding: 10px 14px;
-        margin-top: 3px;
-    }
-        .theme-button:hover {
-            background: #171717 !important;
-            color: #ffffff !important;
-        }
-    .quantum-main-content {
-        min-height: calc(100vh - 64px);
-        background: var(--mud-palette-background);
-    }
-    .quantum-page-container {
-        width: 100%;
-        min-height: calc(100vh - 64px);
-    }
-    #blazor-error-ui {
-        background: #ffebee;
-        color: #b71c1c;
-        bottom: 0;
-        box-shadow: 0 -1px 4px rgba(0, 0, 0, .2);
-        display: none;
-        left: 0;
-        padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-        position: fixed;
-        width: 100%;
-        z-index: 1000;
-    }
-        #blazor-error-ui .dismiss {
-            cursor: pointer;
-            position: absolute;
-            right: 0.75rem;
-            top: 0.5rem;
-            .user-avatar {
-                cursor: pointer;
-                font-weight: 700;
-                font-size: 14px;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .user-avatar:hover {
-                    transform: scale(1.05);
-                    box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+<!-- QUANTUM AI ASSISTANT -->
+<div class="quantum-ai">
+    @if (_aiOpen)
+    {
+        <div class="ai-window">
+            <div class="ai-header">
+                <div class="ai-title">
+                    <div class="ai-icon">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" />
+                    </div>
+                    <div>
+                        <strong>Quantum AI</strong>
+                        <span>Inventory Assistant</span>
+                    </div>
+                </div>
+                <button type="button" class="ai-close-btn" @onclick="CloseAI">✕</button>
+            </div>
+            <div class="ai-messages">
+                @if (_messages.Count == 0)
+                {
+                    <div class="ai-welcome">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Large" style="color: #00c994;" />
+                        <h3>Hi! I'm Quantum AI</h3>
+                        <p>Ask me about your inventory, stock levels, equipment status, active projects, or procurement.</p>
+                    </div>
                 }
-            .user-menu-header {
-                display: flex;
-                flex-direction: column;
-                min-width: 190px;
-                padding: 4px 0;
-            }
-                .user-menu-header strong {
-                    font-size: 14px;
-                    color: #111827;
-                    line-height: 1.4;
+                else
+                {
+                    @foreach (var message in _messages)
+                    {
+                        <div class="ai-message @(message.IsUser ? "user-message" : "assistant-message")">
+                            @message.Text
+                        </div>
+                    }
                 }
-                .user-menu-header span {
-                    margin-top: 3px;
-                    font-size: 12px;
-                    color: #64748b;
-                    word-break: break-word;
+                @if (_aiLoading)
+                {
+                    <div class="ai-message assistant-message">
+                        Thinking...
+                    </div>
                 }
-    @@media (max-width: 960px) {
-        .quantum-brand {
-            font-size: 17px;
-        }
-        .quantum-page-container {
-            padding: 0;
-        }
+            </div>
+            <div class="ai-input-bar">
+                <input @bind="_aiInput"
+                       @bind:event="oninput"
+                       placeholder="Ask Quantum AI about inventory, equipment, projects..."
+                       @onkeydown="HandleAIKeyDown" />
+                <button type="button"
+                        class="ai-send-btn"
+                        disabled="@(_aiLoading || string.IsNullOrWhiteSpace(_aiInput))"
+                        @onclick="SendAIMessage">
+                    ➤
+                </button>
+            </div>
+        </div>
     }
-    }
-</style>
+    <button class="ai-floating-button" @onclick="ToggleAI" title="Chat with Quantum AI">
+        <MudIcon Icon="@(_aiOpen ? Icons.Material.Filled.Close : Icons.Material.Filled.AutoAwesome)" Size="Size.Medium" />
+    </button>
+</div>
+<div id="blazor-error-ui" data-nosnippet style="display: none;">
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
 @code {
-    private bool _drawerOpen = true;
+    private bool _isDarkTheme = true;
+    private bool _mobileDrawerOpen = false;
     private string _searchText = string.Empty;
+    private bool accountMenuOpen = false;
+    private ApplicationSettings? _settings;
     private MudTheme _theme = new MudTheme
     {
         PaletteLight = new PaletteLight
         {
             Primary = "#009b72",
             PrimaryContrastText = "#ffffff",
-            Secondary = "#14b8a6",
-            Black = "#111827",
-            AppbarText = "#111827",
-            AppbarBackground = "#ffffff",
-            Background = "#f8fafc",
+            Secondary = "#00c994",
+            Background = "#f5f7f6",
             Surface = "#ffffff",
-            DrawerBackground = "#0f172a",
-            TextPrimary = "#111827",
-            TextSecondary = "#64748b",
-            GrayLight = "#e5e7eb",
-            GrayLighter = "#f1f5f9",
-            Divider = "#e5e7eb"
+            AppbarBackground = "#ffffff",
+            AppbarText = "#17211d",
+            TextPrimary = "#17211d",
+            TextSecondary = "#5e6b66",
+            DrawerBackground = "#ffffff"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#009b72",
+            PrimaryContrastText = "#ffffff",
+            Secondary = "#00c994",
+            Background = "#0c110f",
+            Surface = "#101614",
+            AppbarBackground = "#101614",
+            AppbarText = "#f4f7f6",
+            TextPrimary = "#f4f7f6",
+            TextSecondary = "#87928e",
+            DrawerBackground = "#101614"
         }
     };
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsService.SettingsUpdated += OnSettingsUpdated;
+        try
+        {
+            _settings = await SettingsService.GetSettingsAsync();
+            if (_settings != null)
+            {
+                _isDarkTheme = !string.Equals(_settings.Theme, "Light", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch
+        {
+            _isDarkTheme = true;
+        }
+    }
+    private void OnSettingsUpdated(ApplicationSettings updated)
+    {
+        _settings = updated;
+        _isDarkTheme = !string.Equals(updated.Theme, "Light", StringComparison.OrdinalIgnoreCase);
+        InvokeAsync(StateHasChanged);
+    }
+    private async Task ToggleTheme()
+    {
+        _isDarkTheme = !_isDarkTheme;
+        if (_settings != null)
+        {
+            _settings.Theme = _isDarkTheme ? "Dark" : "Light";
+            await SettingsService.UpdateSettingsAsync(_settings);
+        }
+    }
+    private void ToggleMobileDrawer()
+    {
+        _mobileDrawerOpen = !_mobileDrawerOpen;
+    }
+    private void CloseMobileDrawer()
+    {
+        _mobileDrawerOpen = false;
+    }
+    private void ToggleAccountMenu()
+    {
+        accountMenuOpen = !accountMenuOpen;
+    }
+    private void CloseAccountMenu()
+    {
+        accountMenuOpen = false;
+    }
     private string GetUserName(ClaimsPrincipal user)
     {
         return user?.FindFirst("FullName")?.Value ?? user?.Identity?.Name ?? "User";
@@ -366,25 +282,56 @@
         var name = GetUserName(user);
         return string.IsNullOrEmpty(name) ? "U" : name[0].ToString().ToUpper();
     }
-    private bool accountMenuOpen = false;
-    private void ToggleAccountMenu()
+    private bool _aiOpen;
+    private bool _aiLoading;
+    private string _aiInput = string.Empty;
+    private List<AIMessage> _messages = new();
+    private void ToggleAI() => _aiOpen = !_aiOpen;
+    private void CloseAI() => _aiOpen = false;
+    private async Task HandleAIKeyDown(KeyboardEventArgs e)
     {
-        accountMenuOpen = !accountMenuOpen;
+        if (e.Key == "Enter")
+        {
+            await SendAIMessage();
+        }
     }
-    private readonly PaletteLight _lightPalette = new()
+    private async Task SendAIMessage()
     {
-        Primary = "#0f766e",
-        Secondary = "#14b8a6",
-        Black = "#111827",
-        AppbarText = "#111827",
-        AppbarBackground = "#ffffff",
-        Background = "#f8fafc",
-        Surface = "#ffffff",
-        DrawerBackground = "#0f172a",
-        TextPrimary = "#111827",
-        TextSecondary = "#64748b",
-        GrayLight = "#e5e7eb",
-        GrayLighter = "#f1f5f9",
-        Divider = "#e5e7eb"
-    };
+        if (string.IsNullOrWhiteSpace(_aiInput) || _aiLoading)
+            return;
+        var question = _aiInput.Trim();
+        _messages.Add(new AIMessage { Text = question, IsUser = true });
+        _aiInput = string.Empty;
+        _aiLoading = true;
+        try
+        {
+            var answer = await Orchestrator.GetPersonalizedInventoryAnalysisAsync(question);
+            _messages.Add(new AIMessage
+            {
+                Text = answer ?? "No response received.",
+                IsUser = false
+            });
+        }
+        catch (Exception ex)
+        {
+            _messages.Add(new AIMessage
+            {
+                Text = $"Service error: {ex.Message}",
+                IsUser = false
+            });
+        }
+        finally
+        {
+            _aiLoading = false;
+        }
+    }
+    public void Dispose()
+    {
+        SettingsService.SettingsUpdated -= OnSettingsUpdated;
+    }
+    private class AIMessage
+    {
+        public string Text { get; set; } = string.Empty;
+        public bool IsUser { get; set; }
+    }
 }

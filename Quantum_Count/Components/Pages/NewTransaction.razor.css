@@ -8,22 +8,23 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
+    color:var(--qc-text);
 }
     .transaction-header h1 {
         margin: 0;
         font-size: 28px;
         font-weight: 700;
-        color: #111827;
+        color: var(--qc-text);
     }
     .transaction-header p {
         margin: 6px 0 0;
-        color: #6b7280;
+        color: var(--qc-text);
         font-size: 14px;
     }
 .back-button {
-    border: 1px solid #d1d5db;
-    background: #ffffff;
-    color: #374151;
+    border: 1px solid var(--qc-border);
+    background: var(--qc-card-bg);
+    color: var(--qc-text);
     padding: 9px 16px;
     border-radius: 7px;
     font-size: 14px;
@@ -39,8 +40,8 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--qc-card-bg);
+    border: 1px solid var(--qc-border);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 24px;
@@ -51,20 +52,20 @@
         gap: 6px;
     }
 .summary-label {
-    color: #6b7280;
+    color: var(--qc-text);
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: .04em;
 }
 .material-summary strong {
-    color: #111827;
+    color: var(--qc-text);
     font-size: 15px;
     font-weight: 600;
 }
 .form-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--qc-card);
+    border: 1px solid var(--qc-border);
     border-radius: 10px;
     padding: 28px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
@@ -78,11 +79,11 @@
         margin: 0;
         font-size: 20px;
         font-weight: 650;
-        color: #111827;
+        color: var(--qc-text);
     }
     .form-title p {
         margin: 6px 0 0;
-        color: #6b7280;
+        color: var(--qc-text);
         font-size: 14px;
     }
 .form-grid {
@@ -99,7 +100,7 @@
         grid-column: 1 / -1;
     }
     .form-group label {
-        color: #374151;
+        color: var(--qc-text);
         font-size: 13px;
         font-weight: 600;
     }
@@ -107,10 +108,10 @@
     width: 100%;
     min-height: 46px;
     padding: 10px 13px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--qc-border);
     border-radius: 7px;
-    background: #ffffff;
-    color: #1f2937;
+    background: var(--qc-card);
+    color: var(--qc-text);
     font-family: inherit;
     font-size: 14px;
     outline: none;
@@ -129,8 +130,8 @@
         color: #9ca3af;
     }
     .form-input[readonly] {
-        background: #f8fafc;
-        color: #475569;
+        background: var(--qc-card);
+        color: var(--qc-text);
         cursor: not-allowed;
         border-color: #e2e8f0;
     }
@@ -172,17 +173,16 @@ input[type="number"].form-input {
 .cancel-button {
     min-width: 100px;
     padding: 10px 18px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--qc-border);
     border-radius: 7px;
-    background: #ffffff;
-    color: #374151;
+    background: var(--qc-card);
+    color: var(--qc-text);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all .2s ease;
 }
     .cancel-button:hover {
-        background: #f9fafb;
         border-color: #9ca3af;
     }
 .save-button {

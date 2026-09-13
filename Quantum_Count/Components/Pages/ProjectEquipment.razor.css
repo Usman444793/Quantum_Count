@@ -1,13 +1,13 @@
-/* ================================
-   PROJECT EQUIPMENT
-   ================================ */
-
+:host {
+    display: block;
+}
 .project-operation-page {
     max-width: 1250px;
     margin: 0 auto;
     padding: 30px 32px 50px;
+    background-color: var(--qc-bg-surface);
+    color: var(--qc-text);
 }
-
 .operation-header {
     display: flex;
     justify-content: space-between;
@@ -15,97 +15,96 @@
     gap: 24px;
     margin-bottom: 28px;
 }
-
     .operation-header h1 {
         margin: 8px 0 6px;
         font-size: 30px;
         font-weight: 700;
+        color: var(--qc-text);
     }
-
     .operation-header p {
         margin: 0;
-        color: #777;
+        color: var(--qc-text);
         font-size: 13px;
     }
-
 .page-breadcrumb {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #888;
+    color: var(--qc-text);
     font-size: 12px;
 }
-
     .page-breadcrumb span {
-        color: #bbb;
+        color: var(--qc-text);
     }
-
 .details-section {
     margin-bottom: 20px;
     padding: 24px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
+    background: var(--qc-card-bg);
+    border: 1px solid var(--qc-border);
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.035);
 }
-
     .details-section h2 {
         margin: 0 0 20px;
         font-size: 18px;
         font-weight: 650;
+        color: var(--qc-text);
     }
-
-/* Form */
-
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 18px;
 }
-
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 7px;
 }
-
     .form-group label {
-        color: #444;
+        color: var(--qc-text);
         font-size: 12px;
         font-weight: 600;
     }
-
 .form-control {
     width: 100%;
     min-height: 42px;
     box-sizing: border-box;
     padding: 9px 12px;
-    border: 1px solid #dcdcdc;
+    border: 1px solid var(--qc-border);
     border-radius: 9px;
-    background: #fff;
-    color: #222;
-    font-family: inherit;
-    font-size: 13px;
+    background-color: var(--qc-input-bg) !important;
+    color: var(--qc-text) !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 500;
     outline: none;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
-
-    .form-control:hover {
-        border-color: #9ca3af;
+select.form-control {
+    cursor: pointer;
+    appearance: auto;
+    background-color: var(--qc-input-bg) !important;
+    color: var(--qc-text) !important;
+}
+    select.form-control option {
+        font-family: inherit !important;
+        font-size: 13px !important;
+        background-color: var(--qc-card-bg) !important;
+        color: var(--qc-text) !important;
     }
-
-    .form-control:focus {
-        border-color: #159570;
-        box-shadow: 0 0 0 3px rgba(21, 149, 112, 0.12);
-        outline: none;
-    }
-
+.form-control:hover {
+    border-color: var(--qc-border-color-hover, #9ca3af);
+}
+.form-control:focus {
+    border-color: var(--qc-color-primary, #159570);
+    box-shadow: 0 0 0 3px var(--qc-focus-ring, rgba(21, 149, 112, 0.12));
+    outline: none;
+}
 .form-actions {
     display: flex;
     justify-content: flex-end;
     margin-top: 18px;
 }
-
 .primary-button,
 .secondary-button {
     min-height: 40px;
@@ -114,36 +113,31 @@
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
-
 .primary-button {
-    border: 1px solid #159570;
-    background: #159570;
-    color: white;
+    border: 1px solid var(--qc-color-primary, #159570);
+    background: var(--qc-color-primary, #159570);
+    color: var(--qc-color-on-primary, #ffffff);
 }
-
-    .primary-button:hover {
-        background: #117d5e;
+    .primary-button:hover:not(:disabled) {
+        background: var(--qc-color-primary-hover, #117d5e);
+        border-color: var(--qc-color-primary-hover, #117d5e);
     }
-
     .primary-button:disabled {
         opacity: 0.55;
         cursor: not-allowed;
     }
-
 .secondary-button {
-    border: 1px solid #ddd;
-    background: #fff;
-    color: #444;
+    border: 1px solid var(--qc-border-color, #dddddd);
+    background: var(--qc-card-bg, #ffffff);
+    color: var(--qc-text-primary, #444444);
 }
-
     .secondary-button:hover {
-        border-color: #159570;
-        color: #159570;
+        border-color: var(--qc-color-primary, #159570);
+        color: var(--qc-color-primary, #159570);
+        background: var(--qc-bg-surface-secondary, #f9fafb);
     }
-
-/* Equipment List */
-
 .operation-list {
     display: flex;
     flex-direction: column;
@@ -156,9 +150,9 @@
     align-items: center;
     gap: 20px;
     padding: 16px;
-    border: 1px solid #eeeeee;
+    border: 1px solid var(--qc-border-color, #eeeeee);
     border-radius: 10px;
-    background: #fcfcfc;
+    background: var(--qc-bg-surface);
 }
 
     .operation-row > div {
@@ -169,31 +163,32 @@
     }
 
     .operation-row strong {
-        color: #222;
+        color: var(--qc-text);
         font-size: 13px;
     }
 
     .operation-row span {
-        color: #888;
+        color: var(--qc-text);
         font-size: 11px;
     }
 
+/* --- Empty, Error & Loading States --- */
 .section-empty {
     padding: 30px;
-    border: 1px dashed #d9d9d9;
+    border: 1px dashed var(--qc-border-color, #d9d9d9);
     border-radius: 10px;
     text-align: center;
-    color: #999;
+    color: var(--qc-text-tertiary, #999999);
     font-size: 13px;
 }
 
 .form-error {
     margin-top: 15px;
     padding: 12px 14px;
-    border: 1px solid #f1caca;
+    border: 1px solid var(--qc-status-error-border, #f1caca);
     border-radius: 8px;
-    background: #fff3f3;
-    color: #b33f3f;
+    background: var(--qc-status-error-bg, #fff3f3);
+    color: var(--qc-status-error-text, #b33f3f);
     font-size: 13px;
 }
 
@@ -201,13 +196,15 @@
 .error-container {
     padding: 70px 20px;
     text-align: center;
+    color: var(--qc-text-secondary, #777777);
 }
 
+/* --- Spinner Animation --- */
 .spinner {
     width: 30px;
     height: 30px;
-    border: 3px solid #e5e5e5;
-    border-top-color: #009b72;
+    border: 3px solid var(--qc-border-color, #e5e5e5);
+    border-top-color: var(--qc-color-primary, #009b72);
     border-radius: 50%;
     animation: equipment-spin 0.8s linear infinite;
     margin: 0 auto 12px;
@@ -219,6 +216,7 @@
     }
 }
 
+/* --- Responsive Layout --- */
 @media (max-width: 700px) {
     .project-operation-page {
         padding: 20px 16px 40px;

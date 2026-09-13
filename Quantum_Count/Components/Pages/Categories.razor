@@ -1,451 +1,248 @@
-﻿@page "/categories"
-
+@page "/categories"
 @attribute [Authorize]
-
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Categories | Quantum Count</PageTitle>
 
 <div class="categories-page">
-
-    <!-- HEADER -->
-
     <div class="page-header">
-
         <div class="page-title-section">
-
             <h1>Categories</h1>
-
-            <p>
-                Organize materials and equipment using inventory categories.
-            </p>
-
+            <p>Organize materials and equipment using inventory categories.</p>
         </div>
-
-        <button class="primary-action"
-                @onclick="CreateCategory">
-
-            <span class="action-icon">+</span>
-
-            New Category
-
+        <button class="qc-btn-primary" @onclick="OpenCreateModal">
+            <span>+</span> New Category
         </button>
-
     </div>
-
 
     @if (_loading)
     {
         <div class="loading-state">
-
-            <MudProgressCircular Indeterminate="true"
-                                 Color="Color.Primary" />
-
+            <div class="spinner"></div>
             <span>Loading categories...</span>
-
         </div>
     }
     else
     {
-
-        <!-- SUMMARY -->
-
         <div class="summary-grid">
-
             <div class="summary-card">
-
                 <div class="summary-content">
-
-                    <span class="summary-label">
-                        Total Categories
-                    </span>
-
-                    <span class="summary-value">
-                        @_categories.Count
-                    </span>
-
-                    <span class="summary-description">
-                        Active categories
-                    </span>
-
+                    <span class="summary-label">Total Categories</span>
+                    <span class="summary-value">@_categories.Count</span>
+                    <span class="summary-description">Active categories</span>
                 </div>
-
                 <div class="summary-icon">
                     <MudIcon Icon="@Icons.Material.Filled.Category" />
                 </div>
-
             </div>
 
-
             <div class="summary-card">
-
                 <div class="summary-content">
-
-                    <span class="summary-label">
-                        Materials
-                    </span>
-
-                    <span class="summary-value">
-                        @_categories.Sum(c => c.Materials?.Count ?? 0)
-                    </span>
-
-                    <span class="summary-description">
-                        Categorized materials
-                    </span>
-
+                    <span class="summary-label">Materials</span>
+                    <span class="summary-value">@_categories.Sum(c => c.Materials?.Count ?? 0)</span>
+                    <span class="summary-description">Categorized materials</span>
                 </div>
-
                 <div class="summary-icon">
                     <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
                 </div>
-
             </div>
-
 
             <div class="summary-card">
-
                 <div class="summary-content">
-
-                    <span class="summary-label">
-                        Equipment
-                    </span>
-
-                    <span class="summary-value">
-                        @_categories.Sum(c => c.Equipment?.Count ?? 0)
-                    </span>
-
-                    <span class="summary-description">
-                        Categorized assets
-                    </span>
-
+                    <span class="summary-label">Equipment</span>
+                    <span class="summary-value">@_categories.Sum(c => c.Equipment?.Count ?? 0)</span>
+                    <span class="summary-description">Categorized assets</span>
                 </div>
-
                 <div class="summary-icon">
-                    <MudIcon Icon="@Icons.Material.Filled.Build" />
+                    <MudIcon Icon="@Icons.Material.Filled.Construction" />
                 </div>
-
             </div>
-
         </div>
 
-
-        <!-- MAIN -->
-
         <div class="categories-container">
-
             <div class="section-header">
-
                 <div>
-
-                    <h2>Inventory Categories</h2>
-
-                    <span>
-                        @_categories.Count categories available
-                    </span>
-
+                    <h2>Categories</h2>
+                    <span>@FilteredCategories.Count() categories displayed</span>
                 </div>
-
             </div>
-
-
-            <!-- SEARCH -->
 
             <div class="filter-bar">
-
-                <div class="search-wrapper">
-
-                    <MudIcon Icon="@Icons.Material.Filled.Search"
-                             Class="search-icon" />
-
-                    <input class="search-input"
-                           placeholder="Search categories..."
+                <div class="search-box-wrapper">
+                    <span class="search-icon">⌕</span>
+                    <input type="text"
+                           class="search-box-input"
                            @bind="_searchText"
-                           @bind:event="oninput" />
-
-                    @if (!string.IsNullOrWhiteSpace(_searchText))
+                           @bind:event="oninput"
+                           placeholder="Search categories by name or description..." />
+                    @if (!string.IsNullOrEmpty(_searchText))
                     {
-                        <button class="clear-search"
-                                @onclick="ClearSearch">
-                            ×
-                        </button>
+                        <button type="button" class="clear-search-btn" @onclick="() => _searchText = string.Empty">×</button>
                     }
-
                 </div>
-
             </div>
 
-
-            <!-- TABLE -->
-
             <div class="table-wrapper">
-
                 <table class="categories-table">
-
                     <thead>
-
                         <tr>
-
                             <th>Category</th>
-
                             <th>Description</th>
-
                             <th>Materials</th>
-
                             <th>Equipment</th>
-
                             <th>Created</th>
-
-                            <th>Status</th>
-
-                            <th class="actions-column">
-                                Actions
-                            </th>
-
+                            <th style="text-align: right;">Actions</th>
                         </tr>
-
                     </thead>
-
                     <tbody>
-
                         @foreach (var category in FilteredCategories)
                         {
                             <tr>
-
                                 <td>
-
-                                    <div class="category-cell">
-
+                                    <div class="category-name-cell">
                                         <div class="category-avatar">
-                                            <MudIcon Icon="@Icons.Material.Filled.Category" />
+                                            @GetInitials(category.Name)
                                         </div>
-
-                                        <div>
-
-                                            <div class="category-name">
-                                                @category.Name
-                                            </div>
-
-                                            <div class="category-id">
-                                                CAT-@category.Id.ToString("000")
-                                            </div>
-
-                                        </div>
-
+                                        <strong>@category.Name</strong>
                                     </div>
-
                                 </td>
-
-
                                 <td>
-
-                                    <span class="description">
-                                        @(string.IsNullOrWhiteSpace(category.Description)
-                                            ? "No description"
-                                            : category.Description)
+                                    <span class="description-text">
+                                        @(string.IsNullOrWhiteSpace(category.Description) ? "No description provided." : category.Description)
                                     </span>
-
                                 </td>
-
-
                                 <td>
-
                                     <span class="count-badge">
-                                        @(category.Materials?.Count ?? 0)
+                                        @(category.Materials?.Count ?? 0) items
                                     </span>
-
                                 </td>
-
-
                                 <td>
-
-                                    <span class="count-badge">
-                                        @(category.Equipment?.Count ?? 0)
+                                    <span class="count-badge blue">
+                                        @(category.Equipment?.Count ?? 0) assets
                                     </span>
-
                                 </td>
-
-
                                 <td>
-
-                                    <span class="date-value">
-                                        @category.CreatedAt.ToLocalTime()
+                                    <span class="date-text">
+                                        @(category.CreatedAt)
                                     </span>
-
                                 </td>
-
-
-                                <td>
-
-                                    <span class="status-badge active">
-                                        Active
-                                    </span>
-
-                                </td>
-
-
-                                <!-- ACTIONS -->
-
-                                <td class="actions-column">
-
-                                    <div class="action-menu-wrapper">
-
-                                        <button class="action-button"
-                                                title="Actions"
-                                                @onclick="() => ToggleMenu(category.Id)">
-
-                                            ⋮
-
+                                <td style="text-align: right;">
+                                    <div class="action-buttons-group">
+                                        <button class="action-btn edit-btn" title="Edit Category" @onclick="() => OpenEditModal(category)">
+                                            ✎
                                         </button>
-
-
-                                        @if (_openMenuId == category.Id)
-                                        {
-                                            <div class="action-menu">
-
-                                                <button @onclick="() => EditCategory(category.Id)">
-
-                                                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
-
-                                                    <span>Edit</span>
-
-                                                </button>
-
-
-                                                <button @onclick="() => DeleteCategory(category)">
-
-                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
-
-                                                    <span>Delete</span>
-
-                                                </button>
-
-                                            </div>
-                                        }
-
+                                        <button class="action-btn delete-btn" title="Delete Category" @onclick="() => DeleteCategoryAsync(category)">
+                                            ✕
+                                        </button>
                                     </div>
-
                                 </td>
-
                             </tr>
                         }
-
                     </tbody>
-
                 </table>
-
 
                 @if (!FilteredCategories.Any())
                 {
                     <div class="empty-state">
-
-                        <MudIcon Icon="@Icons.Material.Filled.Category"
-                                 Size="Size.Large" />
-
+                        <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Large" />
                         <h3>No categories found</h3>
-
-                        <p>
-                            Try changing your search or create a new category.
-                        </p>
-
+                        <p>Try changing your search or create a new category.</p>
                     </div>
                 }
-
             </div>
-
-        </div>
-
-    }
-
-
-    <!-- DELETE CONFIRMATION -->
-    @if (_categoryToDelete != null)
-    {
-        <div class="confirmation-overlay">
-
-            <div class="confirmation-card">
-
-                <div class="confirmation-icon">
-                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                </div>
-
-                <h2>Delete Category?</h2>
-
-                <p>
-                    Are you sure you want to delete
-                    <strong>@_categoryToDelete.Name</strong>?
-                </p>
-
-                <p class="confirmation-note">
-                    The category will be deactivated. Existing materials
-                    and equipment will not be deleted.
-                </p>
-
-                <div class="confirmation-actions">
-
-                    <button class="cancel-button"
-                            @onclick="CancelDelete">
-
-                        Cancel
-
-                    </button>
-
-                    <button class="delete-button"
-                            @onclick="ConfirmDelete">
-
-                        Delete Category
-
-                    </button>
-
-                </div>
-
-            </div>
-
         </div>
     }
-
 </div>
 
+<!-- CREATE / EDIT CATEGORY MODAL -->
+@if (_showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="qc-modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <div>
+                    <h2>@(_isEdit ? "Edit Category" : "Add Category")</h2>
+                    <p>@(_isEdit ? "Update category details." : "Create a new category for organizing assets.")</p>
+                </div>
+                <button type="button" class="close-modal" @onclick="CloseModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(_modalError))
+                {
+                    <div class="form-error">@_modalError</div>
+                }
+
+                <div class="form-group">
+                    <label>Category Name *</label>
+                    <input @bind="_activeCategory.Name" placeholder="e.g. Heavy Machinery, Construction Raw Materials" />
+                </div>
+
+                <div class="form-group">
+                    <label>Description (Optional)</label>
+                    <textarea @bind="_activeCategory.Description" placeholder="Optional description for items in this category..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
+                <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveCategoryAsync">
+                    @if (_saving)
+                    {
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>@(_isEdit ? "Update Category" : "Create Category")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_successMessage))
+{
+    <div class="toast-success">
+        ✓ @_successMessage
+    </div>
+}
 
 @code {
-
+    private bool _loading = true;
+    private bool _saving = false;
+    private string _searchText = string.Empty;
     private List<InventoryCategory> _categories = new();
 
-    private string _searchText = string.Empty;
-
-    private bool _loading = true;
-
-    private int? _openMenuId;
-
-    private InventoryCategory? _categoryToDelete;
-
+    // Modal state
+    private bool _showModal = false;
+    private bool _isEdit = false;
+    private InventoryCategory _activeCategory = new();
+    private string? _modalError;
+    private string? _successMessage;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCategoriesAsync();
     }
 
-
     private async Task LoadCategoriesAsync()
     {
         _loading = true;
-
         try
         {
-            _categories =
-                await InventoryService.GetCategoriesWithCountsAsync();
+            _categories = await InventoryService.GetCategoriesWithCountsAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            Snackbar.Add(
-                "Unable to load categories.",
-                Severity.Error);
+            Snackbar.Add($"Unable to load categories: {ex.Message}", Severity.Error);
         }
         finally
         {
@@ -453,89 +250,124 @@
         }
     }
 
-
     private IEnumerable<InventoryCategory> FilteredCategories =>
         _categories.Where(c =>
             string.IsNullOrWhiteSpace(_searchText)
-            ||
-            c.Name.Contains(
-                _searchText,
-                StringComparison.OrdinalIgnoreCase)
-            ||
-            (c.Description?.Contains(
-                _searchText,
-                StringComparison.OrdinalIgnoreCase) ?? false));
+            || c.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+            || (c.Description?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
 
-
-    private void CreateCategory()
+    private string GetInitials(string name)
     {
-        Navigation.NavigateTo("/categories/new");
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1)
+            return words[0][0].ToString().ToUpper();
+        return $"{words[0][0]}{words[1][0]}".ToUpper();
     }
 
-
-    private void EditCategory(int id)
+    private void OpenCreateModal()
     {
-        _openMenuId = null;
-
-        Navigation.NavigateTo($"/categories/edit/{id}");
+        _isEdit = false;
+        _activeCategory = new InventoryCategory();
+        _modalError = null;
+        _showModal = true;
     }
 
-
-    private void ToggleMenu(int id)
+    private void OpenEditModal(InventoryCategory item)
     {
-        _openMenuId =
-            _openMenuId == id
-                ? null
-                : id;
+        _isEdit = true;
+        _activeCategory = new InventoryCategory
+        {
+            Id = item.Id,
+            Name = item.Name,
+            Description = item.Description
+        };
+        _modalError = null;
+        _showModal = true;
     }
 
-
-    private void DeleteCategory(InventoryCategory category)
+    private void CloseModal()
     {
-        _openMenuId = null;
-
-        _categoryToDelete = category;
+        _showModal = false;
+        _modalError = null;
     }
 
-
-    private void CancelDelete()
+    private async Task SaveCategoryAsync()
     {
-        _categoryToDelete = null;
+        if (string.IsNullOrWhiteSpace(_activeCategory.Name))
+        {
+            _modalError = "Category Name is required.";
+            return;
+        }
+
+        _saving = true;
+        _modalError = null;
+
+        try
+        {
+            if (_isEdit)
+            {
+                var updated = await InventoryService.UpdateCategoryAsync(_activeCategory);
+                if (updated != null)
+                {
+                    ShowToast("Category updated successfully.");
+                    _showModal = false;
+                    await LoadCategoriesAsync();
+                }
+                else
+                {
+                    _modalError = "Unable to update category.";
+                }
+            }
+            else
+            {
+                await InventoryService.CreateCategoryAsync(_activeCategory);
+                ShowToast("Category created successfully.");
+                _showModal = false;
+                await LoadCategoriesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _modalError = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
     }
 
-
-    private async Task ConfirmDelete()
+    private async Task DeleteCategoryAsync(InventoryCategory item)
     {
-        if (_categoryToDelete == null)
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete Category",
+            $"Are you sure you want to delete category '{item.Name}'?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
             return;
 
-        var category = _categoryToDelete;
-
-        _categoryToDelete = null;
-
-        var deleted =
-            await InventoryService.DeleteCategoryAsync(
-                category.Id);
-
+        var deleted = await InventoryService.DeleteCategoryAsync(item.Id);
         if (deleted)
         {
-            _categories.Remove(category);
-
-            Snackbar.Add(
-                "Category deleted successfully.",
-                Severity.Success);
+            _categories.Remove(item);
+            ShowToast("Category deleted successfully.");
         }
         else
         {
-            Snackbar.Add(
-                "Unable to delete category.",
-                Severity.Error);
+            Snackbar.Add("Unable to delete category.", Severity.Error);
         }
     }
 
-
-    private void ClearSearch()
+    private void ShowToast(string message)
     {
-        _searchText = string.Empty;
+        _successMessage = message;
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            _successMessage = null;
+            InvokeAsync(StateHasChanged);
+        });
     }
 }
