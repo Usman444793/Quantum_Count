@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Quantum_Count.Models;
 using Quantum_Count.Services;
 namespace Quantum_Count.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProjectsController : ControllerBase
 {
     private readonly InventoryService _inventoryService;

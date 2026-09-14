@@ -9,9 +9,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
-
 <PageTitle>Materials & Inventory | Quantum Count</PageTitle>
-
 <div class="materials-page">
     <div class="page-header">
         <div class="page-title-section">
@@ -22,7 +20,6 @@
             <span>+</span> New Material
         </button>
     </div>
-
     @if (_loading)
     {
         <div class="loading-state">
@@ -74,7 +71,6 @@
                 </div>
             </div>
         </div>
-
         <div class="materials-container">
             <div class="section-header">
                 <div>
@@ -82,8 +78,6 @@
                     <span>@FilteredMaterials.Count() materials displayed</span>
                 </div>
             </div>
-
-            <!-- SEARCH & FILTERS -->
             <div class="filter-bar">
                 <div class="search-box-wrapper">
                     <span class="search-icon">⌕</span>
@@ -97,7 +91,6 @@
                         <button type="button" class="clear-search-btn" @onclick="() => _searchText = string.Empty">×</button>
                     }
                 </div>
-
                 <select class="qc-select category-filter" @bind="_selectedCategory">
                     <option value="@((int?)null)">All Categories</option>
                     @foreach (var category in _categories)
@@ -105,7 +98,6 @@
                         <option value="@category.Id">@category.Name</option>
                     }
                 </select>
-
                 <select class="qc-select status-filter" @bind="_stockFilter">
                     <option value="All">All Stock Status</option>
                     <option value="In Stock">In Stock</option>
@@ -113,8 +105,6 @@
                     <option value="Out of Stock">Out of Stock</option>
                 </select>
             </div>
-
-            <!-- TABLE -->
             <div class="table-wrapper">
                 <table class="materials-table">
                     <thead>
@@ -186,7 +176,6 @@
                         }
                     </tbody>
                 </table>
-
                 @if (!FilteredMaterials.Any())
                 {
                     <div class="empty-state">
@@ -199,8 +188,6 @@
         </div>
     }
 </div>
-
-<!-- CREATE / EDIT MATERIAL MODAL -->
 @if (_showModal)
 {
     <div class="modal-overlay" @onclick="CloseModal">
@@ -212,13 +199,11 @@
                 </div>
                 <button type="button" class="close-modal" @onclick="CloseModal">×</button>
             </div>
-
             <div class="modal-body">
                 @if (!string.IsNullOrEmpty(_modalError))
                 {
                     <div class="form-error">@_modalError</div>
                 }
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Material Name *</label>
@@ -229,7 +214,6 @@
                         <input @bind="_activeMaterial.MaterialCode" placeholder="e.g. MAT-001" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Category</label>
@@ -246,7 +230,6 @@
                         <input @bind="_activeMaterial.Unit" placeholder="e.g. Bag, Kg, Meter, Piece" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Current Quantity *</label>
@@ -257,7 +240,6 @@
                         <input type="number" step="any" @bind="_activeMaterial.UnitPrice" placeholder="0.00" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Minimum Stock Level</label>
@@ -268,13 +250,11 @@
                         <input type="number" step="any" @bind="_activeMaterial.MaximumStockLevel" placeholder="1000" />
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Description (Optional)</label>
                     <textarea @bind="_activeMaterial.Description" placeholder="Optional notes or material specs..."></textarea>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
                 <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveMaterialAsync">
@@ -291,14 +271,12 @@
         </div>
     </div>
 }
-
 @if (!string.IsNullOrEmpty(_successMessage))
 {
     <div class="toast-success">
         ✓ @_successMessage
     </div>
 }
-
 @code {
     private bool _loading = true;
     private bool _saving = false;
@@ -307,19 +285,15 @@
     private string _stockFilter = "All";
     private List<Material> _materials = new();
     private List<InventoryCategory> _categories = new();
-
-    // Modal state
     private bool _showModal = false;
     private bool _isEdit = false;
     private Material _activeMaterial = new();
     private string? _modalError;
     private string? _successMessage;
-
     protected override async Task OnInitializedAsync()
     {
         await LoadDataAsync();
     }
-
     private async Task LoadDataAsync()
     {
         _loading = true;
@@ -337,7 +311,6 @@
             _loading = false;
         }
     }
-
     private IEnumerable<Material> FilteredMaterials =>
         _materials.Where(m =>
             (string.IsNullOrWhiteSpace(_searchText)
@@ -346,11 +319,9 @@
                 || (m.Category?.Name?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false))
             && (!_selectedCategory.HasValue || m.CategoryId == _selectedCategory.Value)
             && (_stockFilter == "All" || GetStockStatus(m) == _stockFilter));
-
     private decimal InventoryValue => _materials.Sum(m => m.Quantity * m.UnitPrice);
     private int LowStockCount => _materials.Count(m => m.Quantity > 0 && m.Quantity <= m.MinimumStockLevel);
     private int OutOfStockCount => _materials.Count(m => m.Quantity <= 0);
-
     private string GetStockStatus(Material material)
     {
         if (material.Quantity <= 0)
@@ -359,7 +330,6 @@
             return "Low Stock";
         return "In Stock";
     }
-
     private string GetStockClass(Material material)
     {
         return GetStockStatus(material) switch
@@ -370,7 +340,6 @@
             _ => "default"
         };
     }
-
     private string GetInitials(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -380,7 +349,6 @@
             return words[0][0].ToString().ToUpper();
         return $"{words[0][0]}{words[1][0]}".ToUpper();
     }
-
     private void OpenCreateModal()
     {
         _isEdit = false;
@@ -394,7 +362,6 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void OpenEditModal(Material material)
     {
         _isEdit = true;
@@ -414,13 +381,11 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void CloseModal()
     {
         _showModal = false;
         _modalError = null;
     }
-
     private async Task SaveMaterialAsync()
     {
         if (string.IsNullOrWhiteSpace(_activeMaterial.Name))
@@ -428,30 +393,24 @@
             _modalError = "Material Name is required.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(_activeMaterial.MaterialCode))
         {
             _modalError = "Material Code is required.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(_activeMaterial.Unit))
         {
             _modalError = "Unit of measure is required.";
             return;
         }
-
-        // Check code uniqueness
         var codeExists = await InventoryService.MaterialCodeExistsAsync(_activeMaterial.MaterialCode, _isEdit ? _activeMaterial.Id : null);
         if (codeExists)
         {
             _modalError = $"Material Code '{_activeMaterial.MaterialCode}' is already in use.";
             return;
         }
-
         _saving = true;
         _modalError = null;
-
         try
         {
             if (_isEdit)
@@ -485,7 +444,6 @@
             _saving = false;
         }
     }
-
     private async Task DeleteMaterialAsync(Material material)
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
@@ -496,7 +454,6 @@
 
         if (confirmed != true)
             return;
-
         var deleted = await InventoryService.DeleteMaterialAsync(material.Id);
         if (deleted)
         {
@@ -508,12 +465,10 @@
             Snackbar.Add("Unable to delete material.", Severity.Error);
         }
     }
-
     private void ViewTransactions(int materialId)
     {
         Navigation.NavigateTo($"/materials/{materialId}/transactions");
     }
-
     private void ShowToast(string message)
     {
         _successMessage = message;

@@ -8,9 +8,7 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-
 <PageTitle>Projects | Quantum Count</PageTitle>
-
 <div class="projects-page">
     <div class="projects-header">
         <div>
@@ -22,8 +20,6 @@
             <span>+</span> New Project
         </button>
     </div>
-
-    <!-- TOOLBAR -->
     <div class="projects-toolbar">
         <div class="search-box-wrapper">
             <span class="search-icon">⌕</span>
@@ -37,7 +33,6 @@
                 <button type="button" class="clear-search-btn" @onclick="() => searchText = string.Empty">×</button>
             }
         </div>
-
         <select class="qc-select status-filter" @bind="selectedStatus">
             <option value="All">All Status</option>
             <option value="Planning">Planning</option>
@@ -47,7 +42,6 @@
             <option value="Cancelled">Cancelled</option>
         </select>
     </div>
-
     @if (isLoading)
     {
         <div class="loading-container">
@@ -88,7 +82,6 @@
                             @project.Status
                         </span>
                     </div>
-
                     <div class="project-info">
                         <h2>@project.Name</h2>
                         @if (!string.IsNullOrWhiteSpace(project.Description))
@@ -100,7 +93,6 @@
                             <p class="project-description muted">No description provided.</p>
                         }
                     </div>
-
                     <div class="project-meta">
                         <div>
                             <span>Start Date</span>
@@ -111,7 +103,6 @@
                             <strong>@(project.Budget.ToString("C"))</strong>
                         </div>
                     </div>
-
                     <div class="progress-section">
                         <div class="progress-header">
                             <span>Progress</span>
@@ -121,7 +112,6 @@
                             <div class="progress-fill" style="width: @(GetProgress(project))%"></div>
                         </div>
                     </div>
-
                     <div class="resource-summary">
                         <div class="resource-item">
                             <span class="resource-number">@(project.Materials?.Count ?? 0)</span>
@@ -136,7 +126,6 @@
                             <span>Tasks</span>
                         </div>
                     </div>
-
                     <div class="project-actions">
                         <button class="view-button" @onclick="() => ViewProject(project.Id)">View Project</button>
                         <button class="edit-button" @onclick="() => OpenEditModal(project)">Edit</button>
@@ -147,8 +136,6 @@
         </div>
     }
 </div>
-
-<!-- CREATE / EDIT PROJECT MODAL -->
 @if (_showModal)
 {
     <div class="modal-overlay" @onclick="CloseModal">
@@ -160,13 +147,11 @@
                 </div>
                 <button type="button" class="close-modal" @onclick="CloseModal">×</button>
             </div>
-
             <div class="modal-body">
                 @if (!string.IsNullOrEmpty(_modalError))
                 {
                     <div class="form-error">@_modalError</div>
                 }
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Project Name *</label>
@@ -177,7 +162,6 @@
                         <input @bind="_activeProject.ProjectCode" placeholder="e.g. PRJ-2026-001" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Client or Department</label>
@@ -194,7 +178,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Start Date</label>
@@ -205,18 +188,15 @@
                         <input type="date" value="@(_activeProject.EndDate?.ToString("yyyy-MM-dd"))" @onchange="OnEndDateChanged" />
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Budget Amount</label>
                     <input type="number" step="any" @bind="_activeProject.Budget" placeholder="e.g. 500000" />
                 </div>
-
                 <div class="form-group">
                     <label>Description (Optional)</label>
                     <textarea @bind="_activeProject.Description" placeholder="Project objectives, milestones, scope of work..."></textarea>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
                 <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveProjectAsync">
@@ -233,14 +213,12 @@
         </div>
     </div>
 }
-
 @if (!string.IsNullOrEmpty(_successMessage))
 {
     <div class="toast-success">
         ✓ @_successMessage
     </div>
 }
-
 @code {
     private List<Project> projects = new();
     private string searchText = string.Empty;
@@ -248,14 +226,11 @@
     private bool isLoading = true;
     private bool _saving = false;
     private string errorMessage = string.Empty;
-
-    // Modal State
     private bool _showModal = false;
     private bool _isEdit = false;
     private Project _activeProject = new();
     private string? _modalError;
     private string? _successMessage;
-
     private IEnumerable<Project> FilteredProjects =>
         projects.Where(p => p.isActive)
             .Where(p => string.IsNullOrWhiteSpace(searchText)
@@ -264,12 +239,10 @@
                 || (p.ClientOrDepartment?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false))
             .Where(p => selectedStatus == "All"
                 || p.Status.Equals(selectedStatus, StringComparison.OrdinalIgnoreCase));
-
     protected override async Task OnInitializedAsync()
     {
         await LoadProjects();
     }
-
     private async Task LoadProjects()
     {
         try
@@ -287,14 +260,12 @@
             isLoading = false;
         }
     }
-
     private int GetProgress(Project project)
     {
         if (project.Tasks == null || !project.Tasks.Any())
             return 0;
         return (int)Math.Round(project.Tasks.Where(t => t.IsActive).Select(t => t.Progress).DefaultIfEmpty(0).Average());
     }
-
     private string GetStatusClass(string status)
     {
         return status switch
@@ -307,7 +278,6 @@
             _ => "default"
         };
     }
-
     private void OpenCreateModal()
     {
         _isEdit = false;
@@ -320,7 +290,6 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void OpenEditModal(Project project)
     {
         _isEdit = true;
@@ -340,13 +309,11 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void CloseModal()
     {
         _showModal = false;
         _modalError = null;
     }
-
     private void OnStartDateChanged(ChangeEventArgs e)
     {
         if (DateTime.TryParse(e.Value?.ToString(), out var dt))
@@ -354,7 +321,6 @@
         else
             _activeProject.StartDate = null;
     }
-
     private void OnEndDateChanged(ChangeEventArgs e)
     {
         if (DateTime.TryParse(e.Value?.ToString(), out var dt))
@@ -362,7 +328,6 @@
         else
             _activeProject.EndDate = null;
     }
-
     private async Task SaveProjectAsync()
     {
         if (string.IsNullOrWhiteSpace(_activeProject.Name))
@@ -376,10 +341,8 @@
             _modalError = "Project Code is required.";
             return;
         }
-
         _saving = true;
         _modalError = null;
-
         try
         {
             if (_isEdit)
@@ -420,7 +383,6 @@
             _saving = false;
         }
     }
-
     private async Task DeleteProjectAsync(Project project)
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
@@ -428,10 +390,8 @@
             $"Are you sure you want to deactivate '{project.Name}'?",
             yesText: "Deactivate",
             cancelText: "Cancel");
-
         if (confirmed != true)
             return;
-
         var (success, _) = await InventoryService.DeleteProjectAsync(project.Id);
         if (success)
         {
@@ -443,12 +403,10 @@
             Snackbar.Add("Unable to deactivate project.", Severity.Error);
         }
     }
-
     private void ViewProject(int id)
     {
         Navigation.NavigateTo($"/projects/{id}");
     }
-
     private void ShowToast(string message)
     {
         _successMessage = message;

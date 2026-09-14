@@ -6,9 +6,6 @@
     color: var(--qc-text);
     font-family: var(--qc-font-sans);
 }
-/* =========================================
-   TOP APPBAR
-   ========================================= */
 .quantum-topbar {
     height: 64px;
     background: var(--qc-card-bg);
@@ -42,11 +39,9 @@
     justify-content: center;
     transition: background 0.15s ease;
 }
-
 .mobile-toggle-btn:hover {
     background: rgba(255, 255, 255, 0.08);
 }
-
 .topbar-brand {
     display: flex;
     align-items: center;
@@ -54,7 +49,6 @@
     text-decoration: none;
     color: inherit;
 }
-
 .topbar-logo {
     width: 38px;
     height: 38px;
@@ -69,12 +63,10 @@
     justify-content: center;
     box-shadow: 0 4px 14px rgba(0, 155, 114, 0.3);
 }
-
 .topbar-title-group {
     display: flex;
     flex-direction: column;
 }
-
 .topbar-name {
     font-size: 17px;
     font-weight: 700;
@@ -82,19 +74,16 @@
     line-height: 1.1;
     letter-spacing: -0.3px;
 }
-
 .topbar-subtitle {
     font-size: 11px;
     color: var(--qc-text-muted);
     font-weight: 500;
 }
-
 .topbar-right {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-
 .theme-toggle-btn {
     width: 40px;
     height: 40px;
@@ -109,7 +98,6 @@
     font-size: 18px;
     transition: all 0.18s ease;
 }
-
 .theme-toggle-btn:hover {
     border-color: var(--qc-primary);
     transform: translateY(-1px);
@@ -119,7 +107,6 @@
 .account-menu-wrapper {
     position: relative;
 }
-
 .avatar-button {
     background: transparent;
     border: none;
@@ -129,11 +116,9 @@
     outline: none;
     transition: transform 0.18s ease;
 }
-
 .avatar-button:hover {
     transform: scale(1.05);
 }
-
 .avatar-circle {
     width: 40px;
     height: 40px;
@@ -147,7 +132,6 @@
     font-size: 15px;
     box-shadow: 0 4px 12px rgba(0, 155, 114, 0.3);
 }
-
 .account-popover {
     position: absolute;
     right: 0;
@@ -161,33 +145,27 @@
     padding: 8px;
     animation: qcModalSlideIn 0.18s ease-out;
 }
-
 .account-popover.hidden {
     display: none;
 }
-
 .user-menu-header {
     padding: 10px 12px;
 }
-
 .user-menu-header strong {
     font-size: 14px;
     color: var(--qc-text);
     display: block;
 }
-
 .user-email {
     font-size: 12px;
     color: var(--qc-text-muted);
     margin-top: 2px;
 }
-
 .popover-divider {
     height: 1px;
     background: var(--qc-border);
     margin: 6px 0;
 }
-
 .popover-item {
     display: flex;
     align-items: center;
@@ -204,16 +182,13 @@
     box-sizing: border-box;
     transition: background 0.15s ease, color 0.15s ease;
 }
-
 .popover-item:hover {
     background: rgba(0, 155, 114, 0.1);
     color: var(--qc-primary-bright);
 }
-
 .logout-button {
     color: #ef7777;
 }
-
 .logout-button:hover {
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
@@ -223,7 +198,6 @@
     position: relative;
     flex: 1;
 }
-
 .quantum-sidebar {
     position: fixed;
     left: 0;
@@ -239,13 +213,10 @@
     overflow: hidden;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
 }
-
-/* Hover expansion */
 .quantum-sidebar:hover {
     width: 260px;
     box-shadow: 6px 0 25px rgba(0, 0, 0, 0.35);
 }
-
 .sidebar-header {
     padding: 16px 16px 12px 16px;
     display: flex;
@@ -255,7 +226,6 @@
     min-height: 48px;
     white-space: nowrap;
 }
-
 .sidebar-brand-icon {
     width: 42px;
     height: 42px;
@@ -263,7 +233,7 @@
     border-radius: 11px;
     background: var(--qc-primary);
     color: white;
-    font-weight: 800;
+    font-weight: 600;
     font-size: 15px;
     display: flex;
     align-items: center;
@@ -271,7 +241,6 @@
     box-shadow: 0 4px 12px rgba(0, 155, 114, 0.25);
     flex-shrink: 0;
 }
-
 .sidebar-brand-text {
     display: flex;
     flex-direction: column;
@@ -282,28 +251,23 @@
     overflow: hidden;
     transition: opacity 0.22s ease, max-width 0.22s ease;
 }
-
 .quantum-sidebar:hover .sidebar-brand-text {
     opacity: 1;
     max-width: 180px;
 }
-
 .brand-main {
     font-size: 16px;
     font-weight: 700;
     color: var(--qc-text);
     line-height: 1.1;
 }
-
 .brand-sub {
     font-size: 11px;
     color: var(--qc-text-muted);
 }
-
 .sidebar-search {
     padding: 10px 10px 6px 10px;
 }
-
 .sidebar-search-box {
     display: flex;
     align-items: center;
@@ -315,12 +279,10 @@
     gap: 10px;
     transition: border-color 0.18s ease;
 }
-
 .sidebar-search-box:focus-within {
     border-color: var(--qc-primary);
     box-shadow: 0 0 0 2px var(--qc-primary-glow);
 }
-
 .sidebar-search-icon {
     color: var(--qc-text-muted);
     font-size: 18px;
@@ -330,7 +292,6 @@
     align-items: center;
     justify-content: center;
 }
-
 .sidebar-search-input {
     width: 100%;
     background: transparent;
@@ -343,12 +304,10 @@
     max-width: 0;
     transition: opacity 0.2s ease, max-width 0.2s ease;
 }
-
 .quantum-sidebar:hover .sidebar-search-input {
     opacity: 1;
     max-width: 170px;
 }
-
 .sidebar-nav-container {
     flex: 1;
     overflow-y: auto;
@@ -358,7 +317,7 @@
     .sidebar-nav-container a,
     .sidebar-nav-container .nav-item {
         display: flex;
-        flex-direction: row; /* Force side-by-side icon and label layout */
+        flex-direction: row;
         align-items: center;
         padding: 10px 16px;
         text-decoration: none;
@@ -367,7 +326,6 @@
         width: 100%;
         box-sizing: border-box;
     }
-
 ::deep .qc-nav-label {
     opacity: 0;
     max-width: 0;
@@ -377,7 +335,6 @@
     align-items: center;
     transition: opacity 0.2s ease, max-width 0.2s ease;
 }
-
 .quantum-sidebar:hover ::deep .qc-nav-label {
     opacity: 1;
     max-width: 175px;
@@ -388,10 +345,27 @@
     border-top: 1px solid var(--qc-border-subtle);
     background: var(--qc-card-header);
 }
-
-/* =========================================
-   MAIN CONTENT AREA
-   ========================================= */
+.sidebar-footer ::deep .qc-nav-link{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-family: Poppins;
+    font-weight: 600;
+    font-size: 16px;
+}
+.sidebar-footer ::deep .qc-nav-icon-badge{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height:38px;
+    min-width: 38px;
+    border-radius:10px;
+    background: var(--qc-primary);
+    color: var(--qc-accent-text);
+}
 .quantum-content {
     margin-left: 74px;
     flex: 1;
@@ -399,21 +373,15 @@
     background-color: var(--qc-bg);
     transition: background-color 0.2s ease, margin-left 0.26s ease;
 }
-
 .sidebar-backdrop {
     display: none;
 }
-
-/* =========================================
-   QUANTUM AI ASSISTANT
-   ========================================= */
 .quantum-ai {
     position: fixed;
     right: 24px;
     bottom: 24px;
     z-index: 9999;
 }
-
 .ai-floating-button {
     width: 56px;
     height: 56px;
@@ -428,12 +396,10 @@
     box-shadow: 0 8px 24px rgba(0, 155, 114, 0.35);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .ai-floating-button:hover {
     transform: translateY(-3px) scale(1.03);
     box-shadow: 0 12px 28px rgba(0, 155, 114, 0.45);
 }
-
 .ai-window {
     position: absolute;
     right: 0;
@@ -450,7 +416,6 @@
     border: 1px solid var(--qc-border);
     animation: qcModalSlideIn 0.2s ease-out;
 }
-
 .ai-header {
     height: 60px;
     padding: 0 16px;
@@ -460,13 +425,11 @@
     align-items: center;
     justify-content: space-between;
 }
-
 .ai-title {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .ai-icon {
     width: 34px;
     height: 34px;
@@ -477,19 +440,16 @@
     align-items: center;
     justify-content: center;
 }
-
 .ai-title strong {
     display: block;
     font-size: 14px;
     color: var(--qc-text);
 }
-
 .ai-title span {
     display: block;
     font-size: 11px;
     color: var(--qc-text-muted);
 }
-
 .ai-close-btn {
     background: transparent;
     border: none;
@@ -500,11 +460,9 @@
     padding: 4px 8px;
     transition: color 0.15s ease;
 }
-
 .ai-close-btn:hover {
     color: var(--qc-text);
 }
-
 .ai-messages {
     flex: 1;
     overflow-y: auto;
@@ -513,25 +471,21 @@
     flex-direction: column;
     gap: 12px;
 }
-
 .ai-welcome {
     text-align: center;
     margin: auto 0;
     color: var(--qc-text-muted);
     padding: 20px;
 }
-
 .ai-welcome h3 {
     margin: 10px 0 6px;
     font-size: 16px;
     color: var(--qc-text);
 }
-
 .ai-welcome p {
     font-size: 12.5px;
     line-height: 1.5;
 }
-
 .ai-message {
     padding: 11px 15px;
     border-radius: 12px;
@@ -541,14 +495,12 @@
     word-break: break-word;
     white-space: pre-wrap;
 }
-
 .user-message {
     margin-left: auto;
     background: var(--qc-primary);
     color: white;
     border-bottom-right-radius: 3px;
 }
-
 .assistant-message {
     margin-right: auto;
     background: var(--qc-card-header);
@@ -556,7 +508,6 @@
     color: var(--qc-text);
     border-bottom-left-radius: 3px;
 }
-
 .ai-input-bar {
     padding: 12px;
     border-top: 1px solid var(--qc-border-subtle);
@@ -565,7 +516,6 @@
     gap: 8px;
     align-items: center;
 }
-
 .ai-input-bar input {
     flex: 1;
     background: var(--qc-input-bg);
@@ -577,11 +527,9 @@
     outline: none;
     font-family: var(--qc-font-sans);
 }
-
 .ai-input-bar input:focus {
     border-color: var(--qc-primary);
 }
-
 .ai-send-btn {
     width: 38px;
     height: 38px;
@@ -595,7 +543,6 @@
     justify-content: center;
     transition: background 0.15s ease;
 }
-
 .ai-send-btn:hover {
     background: var(--qc-primary-hover);
 }
@@ -604,47 +551,36 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-
-/* =========================================
-   RESPONSIVE (MOBILE & TABLET)
-   ========================================= */
 @media (max-width: 900px) {
     .mobile-toggle-btn {
         display: flex;
     }
-
     .quantum-sidebar {
         width: 260px;
         transform: translateX(-100%);
         transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
     }
-
     .quantum-sidebar.mobile-open {
         transform: translateX(0);
     }
-
     .quantum-sidebar .sidebar-brand-text {
         opacity: 1;
         max-width: 180px;
     }
-
     .quantum-sidebar .sidebar-search-input {
         opacity: 1;
         max-width: 170px;
     }
-
     ::deep .qc-nav-label {
         opacity: 1 !important;
         max-width: 175px !important;
         margin-left: 12px !important;
     }
-
     .quantum-content {
         margin-left: 0 !important;
         padding: 0;
     }
-
     .sidebar-backdrop {
         display: block;
         position: fixed;

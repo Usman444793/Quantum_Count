@@ -52,7 +52,6 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.Zero
         };
-
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -66,7 +65,6 @@ builder.Services.AddAuthentication(options =>
             }
         };
     });
-
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<InventoryService>();
@@ -121,8 +119,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode().AddInteractiveWebAssemblyRenderMode()
  .AddAdditionalAssemblies(typeof(Quantum_Count.Client._Imports).Assembly);
 app.MapControllers();
-
-// Seed roles on startup
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -133,5 +129,4 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 }
-
 app.Run();

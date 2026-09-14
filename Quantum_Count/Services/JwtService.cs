@@ -3,25 +3,19 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Quantum_Count.Models;
-
 namespace Quantum_Count.Services;
-
 public class JwtService
 {
     public const string CookieName = "jwt_token";
     private readonly IConfiguration _configuration;
-
     public JwtService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
-    public (string Token, DateTime ExpiresAt) GenerateToken(
-        ApplicationUsers user,
-        IEnumerable<string>? roles = null)
+    public (string Token, DateTime ExpiresAt) GenerateToken(ApplicationUsers user,IEnumerable<string>? roles = null)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = jwtSettings["Key"];
-
         if (string.IsNullOrWhiteSpace(key))
         {
             throw new InvalidOperationException(
@@ -29,24 +23,20 @@ public class JwtService
                 "Set it in appsettings.Development.json for development " +
                 "or in user secrets / environment variables for production.");
         }
-
         var issuer        = jwtSettings["Issuer"];
         var audience      = jwtSettings["Audience"];
         var expiryMinutes = int.Parse(jwtSettings["ExpiryMinutes"] ?? "60");
         var expiresAt     = DateTime.UtcNow.AddMinutes(expiryMinutes);
-
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub,   user.Id),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
-            new(ClaimTypes.NameIdentifier,     user.Id),
-            new(ClaimTypes.Name,               user.FullName ?? user.UserName ?? "User"),
-            new(ClaimTypes.Email,              user.Email ?? ""),
-            new("FullName",                    user.FullName ?? "")
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email,user.Email ?? ""),
+            new(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier,user.Id),
+            new(ClaimTypes.Name,user.FullName ?? user.UserName ?? "User"),
+            new(ClaimTypes.Email,user.Email ?? ""),
+            new("FullName",user.FullName ?? "")
         };
-
-        // Embed every assigned role as a ClaimTypes.Role claim
         if (roles != null)
         {
             foreach (var role in roles)
@@ -54,18 +44,13 @@ public class JwtService
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
         }
-
-        var credentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-            SecurityAlgorithms.HmacSha256);
-
+        var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
-            issuer:            issuer,
-            audience:          audience,
-            claims:            claims,
-            expires:           expiresAt,
+            issuer:  issuer,
+            audience:audience,
+            claims: claims,
+            expires:expiresAt,
             signingCredentials: credentials);
-
         return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
     }
 }

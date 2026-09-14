@@ -1,81 +1,99 @@
 .qc-nav-menu {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 6px 8px;
+    gap: 10px; /* Increased vertical spacing between menu items */
+    padding: 10px 12px;
     width: 100%;
     box-sizing: border-box;
 }
 
+/* Force horizontal alignment strictly from left to right */
 .qc-nav-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 48px;
-    padding: 4px 8px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 20px !important; /* Increased horizontal gap between icon and text */
+    min-height: 52px; /* Increased height for better target area */
+    padding: 10px 14px; /* Increased padding inside each item */
     border-radius: 12px;
     text-decoration: none;
     color: var(--qc-text-muted, #87928e);
     transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
     overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* Icon Badge styling (Fixed to left side) */
 .qc-nav-icon-badge {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    border-radius: 12px;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     background: rgba(0, 155, 114, 0.1);
     color: #00c994;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    font-size: 20px; /* Slightly larger icon size */
 }
 
+/* Nav Link Label (Placed on the right side) */
 .qc-nav-label {
-    font-size: 13.5px;
-    font-weight: 500;
-    white-space: nowrap;
+    display: inline-block !important;
+    font-size: 17px !important; /* Increased font size */
+    font-weight: 600 !important; /* Slightly bolder for improved readability */
+    letter-spacing: 0.3px;
+    line-height: 1 !important;
+    white-space: nowrap !important;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: opacity 0.2s ease, max-width 0.2s ease, transform 0.2s ease;
+    margin: 0 !important;
+    flex-grow: 1;
+    text-align: left !important;
+    margin-top: 10px;
 }
 
 .qc-nav-link:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--qc-text, #f4f7f6);
 }
 
-.qc-nav-link:hover .qc-nav-icon-badge {
-    background: rgba(0, 155, 114, 0.22);
-    color: #00e0a5;
-    transform: scale(1.05);
-}
+    .qc-nav-link:hover .qc-nav-icon-badge {
+        background: rgba(0, 155, 114, 0.22);
+        color: #00e0a5;
+        transform: scale(1.05);
+    }
 
 .qc-nav-link.active {
     color: #ffffff;
     font-weight: 600;
-    background: rgba(0, 155, 114, 0.08);
+    background: rgba(0, 155, 114, 0.12);
 }
 
-.qc-nav-link.active .qc-nav-icon-badge {
-    background: #009b72;
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(0, 155, 114, 0.35);
-}
+    .qc-nav-link.active .qc-nav-icon-badge {
+        background: #009b72;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 155, 114, 0.35);
+    }
 
 .theme-light .qc-nav-link {
     color: #4b5563;
 }
 
-.theme-light .qc-nav-link:hover {
-    background: rgba(0, 0, 0, 0.04);
-    color: #111827;
-}
+    .theme-light .qc-nav-link:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: #111827;
+    }
 
-.theme-light .qc-nav-link.active {
-    color: #0f172a;
-    background: rgba(0, 155, 114, 0.08);
-}
+    .theme-light .qc-nav-link.active {
+        color: #0f172a;
+        background: rgba(0, 155, 114, 0.08);
+    }

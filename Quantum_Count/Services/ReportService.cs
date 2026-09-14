@@ -38,8 +38,7 @@ public class ReportsService
     }
     public async Task<List<LowStockItemDto>> GetLowStockReportAsync()
     {
-        var materials = await _context.Materials
-            .Include(m => m.Category).Where(m => m.isActive && m.Quantity <= m.MinimumStockLevel)
+        var materials = await _context.Materials.Include(m => m.Category).Where(m => m.isActive && m.Quantity <= m.MinimumStockLevel)
             .AsNoTracking().OrderBy(m => m.Quantity).ToListAsync();
         return materials.Select(m => new LowStockItemDto
             {

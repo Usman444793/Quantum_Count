@@ -38,7 +38,7 @@
         <div class="dashboard-cards">
             <div class="dashboard-card">
                 <div class="card-icon material-icon">
-                    📦
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
                 </div>
                 <div class="card-content">
                     <span>Total Materials</span>
@@ -47,7 +47,7 @@
             </div>
             <div class="dashboard-card warning-card">
                 <div class="card-icon warning-icon">
-                    ⚠
+                    <MudIcon Icon="@Icons.Material.Filled.ReportProblem" />
                 </div>
                 <div class="card-content">
                     <span>Low Stock</span>
@@ -56,7 +56,7 @@
             </div>
             <div class="dashboard-card">
                 <div class="card-icon equipment-icon">
-                    🛠
+                    <MudIcon Icon="@Icons.Material.Filled.Handyman" />
                 </div>
                 <div class="card-content">
                     <span>Equipment</span>
@@ -65,7 +65,7 @@
             </div>
             <div class="dashboard-card">
                 <div class="card-icon project-icon">
-                    📋
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
                 </div>
                 <div class="card-content">
                     <span>Active Projects</span>
@@ -129,7 +129,6 @@
                                 @foreach (var transaction in dashboard.RecentTransactions)
                                 {
                                     <tr>
-
                                         <td>
                                             <strong>
                                                 @transaction.MaterialName

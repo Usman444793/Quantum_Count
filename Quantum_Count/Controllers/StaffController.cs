@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Quantum_Count.DTO.Staff;
 using Quantum_Count.Services;
 namespace Quantum_Count.Controllers;
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize(Roles = "Admin")]
 public class StaffController : ControllerBase
 {
     private readonly StaffService _staffService;

@@ -150,9 +150,6 @@
         border-top: 1px solid #1b2421;
         font-size: 13px;
     }
-    .dashboard-table tr:hover {
-        background: #141c19;
-    }
 .transaction-type {
     display: inline-block;
     padding: 5px 9px;

@@ -1,18 +1,12 @@
 @page "/procurement/{Id:int}"
-
 @using Microsoft.AspNetCore.Authorization
 @using Quantum_Count.Models
 @using Quantum_Count.Services
-@using System.Security.Claims
-
 @attribute [Authorize]
-
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
 @inject IHttpContextAccessor HttpContextAccessor
-
 <PageTitle>Purchase Order | Quantum Count</PageTitle>
-
 <div class="purchase-order-details">
 
     @if (isLoading)
@@ -458,39 +452,28 @@
 </div>
 
 @code {
-
     [Parameter]
     public int Id { get; set; }
-
     private PurchaseOrder? purchaseOrder;
-
     private List<Material> materials = new();
-
     private PurchaseOrderItem newItem = new();
-
     private PurchaseOrderItem? receivingItem;
-
     private decimal receiveQuantity;
-
     private bool isLoading;
     private bool isAddingItem;
     private bool isReceiving;
-
     private string? errorMessage;
     private string? successMessage;
     private string? itemErrorMessage;
     private string? receiveErrorMessage;
-
     private IEnumerable<PurchaseOrderItem> ActiveItems =>
         purchaseOrder?.Items?
             .Where(i => i.IsActive)
             ?? Enumerable.Empty<PurchaseOrderItem>();
-
     protected override async Task OnParametersSetAsync()
     {
         await LoadData();
     }
-
     private async Task LoadData()
     {
         try
@@ -518,33 +501,24 @@
             isLoading = false;
         }
     }
-
     private async Task AddItem()
     {
         if (purchaseOrder == null)
             return;
-
         try
         {
             isAddingItem = true;
             itemErrorMessage = null;
             successMessage = null;
-
             newItem.PurchaseOrderId = purchaseOrder.Id;
-
-            var result =
-                await InventoryService.AddPurchaseOrderItem(newItem);
-
+            var result = await InventoryService.AddPurchaseOrderItem(newItem);
             if (!result.success)
             {
                 itemErrorMessage = result.message;
                 return;
             }
-
             successMessage = result.message;
-
             newItem = new PurchaseOrderItem();
-
             await LoadData();
         }
         catch (Exception ex)
@@ -556,26 +530,19 @@
             isAddingItem = false;
         }
     }
-
     private async Task RemoveItem(int itemId)
     {
         try
         {
             itemErrorMessage = null;
             successMessage = null;
-
-            var result =
-                await InventoryService.RemovePurchaseOrderItemAsync(
-                    itemId);
-
+            var result = await InventoryService.RemovePurchaseOrderItemAsync(itemId);
             if (!result.success)
             {
                 itemErrorMessage = result.message;
                 return;
             }
-
             successMessage = result.message;
-
             await LoadData();
         }
         catch (Exception ex)
@@ -583,50 +550,38 @@
             itemErrorMessage = ex.Message;
         }
     }
-
     private void OpenReceiveForm(PurchaseOrderItem item)
     {
         receivingItem = item;
-
-        receiveQuantity =
-            item.QuantityOrdered -
-            item.QuantityReceived;
-
+        receiveQuantity =item.QuantityOrdered - item.QuantityReceived;
         receiveErrorMessage = null;
     }
-
     private void CloseReceiveForm()
     {
         receivingItem = null;
         receiveQuantity = 0;
         receiveErrorMessage = null;
     }
-
     private async Task ReceiveItem()
     {
         if (receivingItem == null)
             return;
-
         try
         {
             isReceiving = true;
             receiveErrorMessage = null;
             successMessage = null;
-
             var result =
                 await InventoryService.ReceivePurchaseOrderItemAsync(
                     receivingItem.Id,
                     receiveQuantity,
                     HttpContextAccessor.HttpContext?.User?.Identity?.Name);
-
             if (!result.success)
             {
                 receiveErrorMessage = result.message;
                 return;
             }
-
             successMessage = result.message;
-
             receivingItem = null;
             receiveQuantity = 0;
 
@@ -641,7 +596,6 @@
             isReceiving = false;
         }
     }
-
     private string GetStatusClass(string status)
     {
         return status switch

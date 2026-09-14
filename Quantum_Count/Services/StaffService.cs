@@ -84,8 +84,7 @@ public class StaffService
         return (true,"Staff member created successfully.",await GetStaffAsync(user.Id)
         );
     }
-    public async Task<(bool Success, string Message)>
-        UpdateStaffRoleAsync(string id,UpdateStaffRoleRequest request)
+    public async Task<(bool Success, string Message)>UpdateStaffRoleAsync(string id,UpdateStaffRoleRequest request)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
@@ -108,8 +107,7 @@ public class StaffService
         }
         return (true, "Staff role updated successfully.");
     }
-    public async Task<(bool Success, string Message)>
-        ActivateStaffAsync(string id)
+    public async Task<(bool Success, string Message)> ActivateStaffAsync(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)

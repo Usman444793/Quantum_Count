@@ -8,9 +8,7 @@
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-
 <PageTitle>Categories | Quantum Count</PageTitle>
-
 <div class="categories-page">
     <div class="page-header">
         <div class="page-title-section">
@@ -21,7 +19,6 @@
             <span>+</span> New Category
         </button>
     </div>
-
     @if (_loading)
     {
         <div class="loading-state">
@@ -42,7 +39,6 @@
                     <MudIcon Icon="@Icons.Material.Filled.Category" />
                 </div>
             </div>
-
             <div class="summary-card">
                 <div class="summary-content">
                     <span class="summary-label">Materials</span>
@@ -53,7 +49,6 @@
                     <MudIcon Icon="@Icons.Material.Filled.Inventory2" />
                 </div>
             </div>
-
             <div class="summary-card">
                 <div class="summary-content">
                     <span class="summary-label">Equipment</span>
@@ -65,7 +60,6 @@
                 </div>
             </div>
         </div>
-
         <div class="categories-container">
             <div class="section-header">
                 <div>
@@ -73,7 +67,6 @@
                     <span>@FilteredCategories.Count() categories displayed</span>
                 </div>
             </div>
-
             <div class="filter-bar">
                 <div class="search-box-wrapper">
                     <span class="search-icon">⌕</span>
@@ -88,7 +81,6 @@
                     }
                 </div>
             </div>
-
             <div class="table-wrapper">
                 <table class="categories-table">
                     <thead>
@@ -147,7 +139,6 @@
                         }
                     </tbody>
                 </table>
-
                 @if (!FilteredCategories.Any())
                 {
                     <div class="empty-state">
@@ -160,8 +151,6 @@
         </div>
     }
 </div>
-
-<!-- CREATE / EDIT CATEGORY MODAL -->
 @if (_showModal)
 {
     <div class="modal-overlay" @onclick="CloseModal">
@@ -173,24 +162,20 @@
                 </div>
                 <button type="button" class="close-modal" @onclick="CloseModal">×</button>
             </div>
-
             <div class="modal-body">
                 @if (!string.IsNullOrEmpty(_modalError))
                 {
                     <div class="form-error">@_modalError</div>
                 }
-
                 <div class="form-group">
                     <label>Category Name *</label>
                     <input @bind="_activeCategory.Name" placeholder="e.g. Heavy Machinery, Construction Raw Materials" />
                 </div>
-
                 <div class="form-group">
                     <label>Description (Optional)</label>
                     <textarea @bind="_activeCategory.Description" placeholder="Optional description for items in this category..."></textarea>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
                 <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveCategoryAsync">
@@ -207,32 +192,26 @@
         </div>
     </div>
 }
-
 @if (!string.IsNullOrEmpty(_successMessage))
 {
     <div class="toast-success">
         ✓ @_successMessage
     </div>
 }
-
 @code {
     private bool _loading = true;
     private bool _saving = false;
     private string _searchText = string.Empty;
     private List<InventoryCategory> _categories = new();
-
-    // Modal state
     private bool _showModal = false;
     private bool _isEdit = false;
     private InventoryCategory _activeCategory = new();
     private string? _modalError;
     private string? _successMessage;
-
     protected override async Task OnInitializedAsync()
     {
         await LoadCategoriesAsync();
     }
-
     private async Task LoadCategoriesAsync()
     {
         _loading = true;
@@ -249,13 +228,11 @@
             _loading = false;
         }
     }
-
     private IEnumerable<InventoryCategory> FilteredCategories =>
         _categories.Where(c =>
             string.IsNullOrWhiteSpace(_searchText)
             || c.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
             || (c.Description?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
-
     private string GetInitials(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -265,7 +242,6 @@
             return words[0][0].ToString().ToUpper();
         return $"{words[0][0]}{words[1][0]}".ToUpper();
     }
-
     private void OpenCreateModal()
     {
         _isEdit = false;
@@ -273,7 +249,6 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void OpenEditModal(InventoryCategory item)
     {
         _isEdit = true;
@@ -286,13 +261,11 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void CloseModal()
     {
         _showModal = false;
         _modalError = null;
     }
-
     private async Task SaveCategoryAsync()
     {
         if (string.IsNullOrWhiteSpace(_activeCategory.Name))
@@ -300,10 +273,8 @@
             _modalError = "Category Name is required.";
             return;
         }
-
         _saving = true;
         _modalError = null;
-
         try
         {
             if (_isEdit)
@@ -337,7 +308,6 @@
             _saving = false;
         }
     }
-
     private async Task DeleteCategoryAsync(InventoryCategory item)
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
@@ -345,10 +315,8 @@
             $"Are you sure you want to delete category '{item.Name}'?",
             yesText: "Delete",
             cancelText: "Cancel");
-
         if (confirmed != true)
             return;
-
         var deleted = await InventoryService.DeleteCategoryAsync(item.Id);
         if (deleted)
         {
@@ -360,7 +328,6 @@
             Snackbar.Add("Unable to delete category.", Severity.Error);
         }
     }
-
     private void ShowToast(string message)
     {
         _successMessage = message;

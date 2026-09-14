@@ -7,9 +7,7 @@
 @inject InventoryService InventoryService
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
-
 <PageTitle>Procurement | Quantum Count</PageTitle>
-
 <div class="procurement-page">
     <div class="page-header">
         <div>
@@ -27,8 +25,6 @@
             </button>
         </div>
     </div>
-
-    <!-- SUMMARY CARDS -->
     <div class="summary-grid">
         <div class="summary-card">
             <div class="summary-card-content">
@@ -40,7 +36,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Medium" />
             </div>
         </div>
-
         <div class="summary-card">
             <div class="summary-card-content">
                 <span class="summary-label">Draft</span>
@@ -51,7 +46,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.EditNote" Size="Size.Medium" />
             </div>
         </div>
-
         <div class="summary-card">
             <div class="summary-card-content">
                 <span class="summary-label">Ordered</span>
@@ -62,7 +56,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Medium" />
             </div>
         </div>
-
         <div class="summary-card">
             <div class="summary-card-content">
                 <span class="summary-label">Partially Received</span>
@@ -73,7 +66,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.HourglassBottom" Size="Size.Medium" />
             </div>
         </div>
-
         <div class="summary-card">
             <div class="summary-card-content">
                 <span class="summary-label">Received</span>
@@ -85,8 +77,6 @@
             </div>
         </div>
     </div>
-
-    <!-- TOAST NOTIFICATION -->
     @if (!string.IsNullOrEmpty(_toastMessage))
     {
         <div class="qc-toast @_toastType">
@@ -94,8 +84,6 @@
             <button type="button" @onclick="() => _toastMessage = null">×</button>
         </div>
     }
-
-    <!-- TOOLBAR -->
     <div class="procurement-toolbar">
         <div class="search-box-wrapper">
             <span class="search-icon">⌕</span>
@@ -109,7 +97,6 @@
                 <button type="button" class="clear-search-btn" @onclick="() => searchText = string.Empty">×</button>
             }
         </div>
-
         <select class="qc-select status-filter" @bind="statusFilter">
             <option value="All">All Statuses</option>
             <option value="Draft">Draft</option>
@@ -119,8 +106,6 @@
             <option value="Cancelled">Cancelled</option>
         </select>
     </div>
-
-    <!-- CONTENT -->
     @if (isLoading)
     {
         <div class="loading-container">
@@ -157,7 +142,6 @@
                     <span>Showing @FilteredOrders.Count of @purchaseOrders.Count orders</span>
                 </div>
             </div>
-
             <div class="table-responsive">
                 <table class="qc-table">
                     <thead>
@@ -232,8 +216,6 @@
         </div>
     }
 </div>
-
-<!-- CREATE / EDIT PURCHASE ORDER MODAL -->
 @if (_showModal)
 {
     <div class="modal-overlay" @onclick="CloseModal">
@@ -245,13 +227,11 @@
                 </div>
                 <button type="button" class="close-modal" @onclick="CloseModal">×</button>
             </div>
-
             <div class="modal-body">
                 @if (!string.IsNullOrEmpty(_modalError))
                 {
                     <div class="form-error">@_modalError</div>
                 }
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>PO Number *</label>
@@ -268,7 +248,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Order Date *</label>
@@ -279,18 +258,15 @@
                         <input type="date" value="@(_expectedDeliveryDate?.ToString("yyyy-MM-dd"))" @onchange="OnDeliveryDateChanged" />
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Notes / Instructions (Optional)</label>
                     <textarea @bind="_activePO.Notes" placeholder="Delivery instructions, reference codes, vendor notes..."></textarea>
                 </div>
-
                 <div class="po-info-banner">
                     <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-2" />
                     <span>Purchase orders are created in <strong>Draft</strong> status. You can add materials and line items on the details page.</span>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="qc-btn-secondary" @onclick="CloseModal" disabled="@_saving">Cancel</button>
                 <button type="button" class="qc-btn-primary" @onclick="SavePurchaseOrderAsync" disabled="@_saving">
@@ -308,7 +284,6 @@
         </div>
     </div>
 }
-
 @code {
     private List<PurchaseOrder> purchaseOrders = new();
     private List<Supplier> suppliers = new();
@@ -318,8 +293,6 @@
     private string? errorMessage;
     private string? _toastMessage;
     private string _toastType = "success";
-
-    // Modal state
     private bool _showModal;
     private bool _isEdit;
     private bool _saving;
@@ -327,7 +300,6 @@
     private PurchaseOrder _activePO = new();
     private DateTime? _orderDate = DateTime.Today;
     private DateTime? _expectedDeliveryDate;
-
     private List<PurchaseOrder> FilteredOrders =>
         purchaseOrders
             .Where(p =>
@@ -338,7 +310,6 @@
                 &&
                 (statusFilter == "All" || p.Status.Equals(statusFilter, StringComparison.OrdinalIgnoreCase)))
             .ToList();
-
     protected override async Task OnInitializedAsync()
     {
         await LoadPurchaseOrders();
@@ -348,7 +319,6 @@
         }
         catch { }
     }
-
     private async Task LoadPurchaseOrders()
     {
         try
@@ -366,12 +336,10 @@
             isLoading = false;
         }
     }
-
     private int CountStatus(string status)
     {
         return purchaseOrders.Count(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
     }
-
     private string GetStatusClass(string status)
     {
         return status switch
@@ -384,7 +352,6 @@
             _ => "default"
         };
     }
-
     private void OpenCreateModal()
     {
         _isEdit = false;
@@ -399,7 +366,6 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void OpenEditModal(PurchaseOrder po)
     {
         _isEdit = true;
@@ -419,13 +385,11 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void CloseModal()
     {
         _showModal = false;
         _modalError = null;
     }
-
     private void OnOrderDateChanged(ChangeEventArgs e)
     {
         if (DateTime.TryParse(e.Value?.ToString(), out var dt))
@@ -433,7 +397,6 @@
         else
             _orderDate = null;
     }
-
     private void OnDeliveryDateChanged(ChangeEventArgs e)
     {
         if (DateTime.TryParse(e.Value?.ToString(), out var dt))
@@ -441,7 +404,6 @@
         else
             _expectedDeliveryDate = null;
     }
-
     private async Task SavePurchaseOrderAsync()
     {
         if (string.IsNullOrWhiteSpace(_activePO.PONumber))
@@ -455,10 +417,8 @@
             _modalError = "Please select a Supplier.";
             return;
         }
-
         _saving = true;
         _modalError = null;
-
         try
         {
             _activePO.OrderDate = _orderDate ?? DateTime.UtcNow;
@@ -502,7 +462,6 @@
             _saving = false;
         }
     }
-
     private async Task CancelPurchaseOrder(PurchaseOrder po)
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
@@ -510,10 +469,8 @@
             $"Are you sure you want to cancel order '{po.PONumber}'?",
             yesText: "Cancel Order",
             cancelText: "Keep Order");
-
         if (confirmed != true)
             return;
-
         var result = await InventoryService.DeletePurchaseOrderAsync(po.Id);
         if (result.success)
         {
@@ -525,7 +482,6 @@
             ShowToast(result.message, "danger");
         }
     }
-
     private void ShowToast(string message, string type = "success")
     {
         _toastMessage = message;

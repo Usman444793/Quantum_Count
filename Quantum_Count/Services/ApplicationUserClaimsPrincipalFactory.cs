@@ -6,8 +6,7 @@ namespace Quantum_Count.Services;
 public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<ApplicationUsers, IdentityRole>
 {
     public ApplicationUserClaimsPrincipalFactory(UserManager<ApplicationUsers> userManager,RoleManager<IdentityRole> roleManager,
-        IOptions<IdentityOptions> optionsAccessor)
-        : base(userManager,roleManager,optionsAccessor)
+        IOptions<IdentityOptions> optionsAccessor) : base(userManager,roleManager,optionsAccessor)
     {
     }
     protected override async Task<ClaimsIdentity>

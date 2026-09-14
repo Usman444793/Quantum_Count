@@ -8,9 +8,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
-
 <PageTitle>Equipment & Assets | Quantum Count</PageTitle>
-
 <div class="equipment-page">
     <div class="page-header">
         <div class="page-title-section">
@@ -21,7 +19,6 @@
             <span>+</span> New Equipment
         </button>
     </div>
-
     @if (_loading)
     {
         <div class="loading-state">
@@ -73,16 +70,13 @@
                 </div>
             </div>
         </div>
-
         <div class="equipment-container">
             <div class="section-header">
                 <div>
                     <h2>Equipment</h2>
                     <span>@FilteredEquipment.Count() assets displayed</span>
                 </div>
-            </div>
-
-            <!-- SEARCH & FILTERS -->
+            </div> 
             <div class="filter-bar">
                 <div class="search-box-wrapper">
                     <span class="search-icon">⌕</span>
@@ -96,7 +90,6 @@
                         <button type="button" class="clear-search-btn" @onclick="() => _searchText = string.Empty">×</button>
                     }
                 </div>
-
                 <select class="qc-select category-filter" @bind="_selectedCategory">
                     <option value="@((int?)null)">All Categories</option>
                     @foreach (var category in _categories)
@@ -104,7 +97,6 @@
                         <option value="@category.Id">@category.Name</option>
                     }
                 </select>
-
                 <select class="qc-select status-filter" @bind="_statusFilter">
                     <option value="All">All Status</option>
                     <option value="Available">Available</option>
@@ -114,8 +106,6 @@
                     <option value="Retired">Retired</option>
                 </select>
             </div>
-
-            <!-- TABLE -->
             <div class="table-wrapper">
                 <table class="equipment-table">
                     <thead>
@@ -184,7 +174,7 @@
                                             ✎
                                         </button>
                                         <button class="action-btn trans-btn" title="Activity History" @onclick="() => ViewHistory(equipment.Id)">
-                                            📋
+                                            ⇄
                                         </button>
                                         <button class="action-btn delete-btn" title="Delete Equipment" @onclick="() => DeleteEquipmentAsync(equipment)">
                                             ✕
@@ -195,7 +185,6 @@
                         }
                     </tbody>
                 </table>
-
                 @if (!FilteredEquipment.Any())
                 {
                     <div class="empty-state">
@@ -208,8 +197,6 @@
         </div>
     }
 </div>
-
-<!-- CREATE / EDIT EQUIPMENT MODAL -->
 @if (_showModal)
 {
     <div class="modal-overlay" @onclick="CloseModal">
@@ -221,13 +208,11 @@
                 </div>
                 <button type="button" class="close-modal" @onclick="CloseModal">×</button>
             </div>
-
             <div class="modal-body">
                 @if (!string.IsNullOrEmpty(_modalError))
                 {
                     <div class="form-error">@_modalError</div>
                 }
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Equipment Name *</label>
@@ -238,7 +223,6 @@
                         <input @bind="_activeEquipment.EquipmentCode" placeholder="e.g. EQ-001" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Category</label>
@@ -261,7 +245,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Serial Number</label>
@@ -272,7 +255,6 @@
                         <input type="number" step="any" @bind="_activeEquipment.PurchasePrice" placeholder="0.00" />
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Brand</label>
@@ -283,13 +265,11 @@
                         <input @bind="_activeEquipment.Model" placeholder="e.g. CAT-320D" />
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Description / Notes</label>
                     <textarea @bind="_activeEquipment.Description" placeholder="Maintenance specifications, serial notes, storage location..."></textarea>
                 </div>
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="qc-btn-secondary" @onclick="CloseModal">Cancel</button>
                 <button type="button" class="qc-btn-primary" disabled="@_saving" @onclick="SaveEquipmentAsync">
@@ -306,14 +286,12 @@
         </div>
     </div>
 }
-
 @if (!string.IsNullOrEmpty(_successMessage))
 {
     <div class="toast-success">
         ✓ @_successMessage
     </div>
 }
-
 @code {
     private bool _loading = true;
     private bool _saving = false;
@@ -322,19 +300,15 @@
     private string _statusFilter = "All";
     private List<Equipment> _equipment = new();
     private List<InventoryCategory> _categories = new();
-
-    // Modal state
     private bool _showModal = false;
     private bool _isEdit = false;
     private Equipment _activeEquipment = new();
     private string? _modalError;
     private string? _successMessage;
-
     protected override async Task OnInitializedAsync()
     {
         await LoadDataAsync();
     }
-
     private async Task LoadDataAsync()
     {
         _loading = true;
@@ -352,7 +326,6 @@
             _loading = false;
         }
     }
-
     private IEnumerable<Equipment> FilteredEquipment =>
         _equipment.Where(e =>
             (string.IsNullOrWhiteSpace(_searchText)
@@ -367,7 +340,6 @@
     private int AvailableCount => _equipment.Count(e => e.Status == "Available");
     private int InUseCount => _equipment.Count(e => e.Status == "In Use");
     private int MaintenanceCount => _equipment.Count(e => e.Status == "Maintenance" || e.Status == "Maintanence" || e.Status == "Damaged");
-
     private string GetStatusClass(string status)
     {
         return status switch
@@ -380,7 +352,6 @@
             _ => "default"
         };
     }
-
     private void OpenCreateModal()
     {
         _isEdit = false;
@@ -393,7 +364,6 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void OpenEditModal(Equipment item)
     {
         _isEdit = true;
@@ -414,13 +384,11 @@
         _modalError = null;
         _showModal = true;
     }
-
     private void CloseModal()
     {
         _showModal = false;
         _modalError = null;
     }
-
     private async Task SaveEquipmentAsync()
     {
         if (string.IsNullOrWhiteSpace(_activeEquipment.Name))
@@ -428,20 +396,17 @@
             _modalError = "Equipment Name is required.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(_activeEquipment.EquipmentCode))
         {
             _modalError = "Equipment Code is required.";
             return;
         }
-
         var codeExists = await InventoryService.EquipmentCodeExistsAsync(_activeEquipment.EquipmentCode, _isEdit ? _activeEquipment.Id : null);
         if (codeExists)
         {
             _modalError = $"Equipment Code '{_activeEquipment.EquipmentCode}' is already in use.";
             return;
         }
-
         if (!string.IsNullOrWhiteSpace(_activeEquipment.SerialNumber))
         {
             var snExists = await InventoryService.SerialNumberExistsAsync(_activeEquipment.SerialNumber, _isEdit ? _activeEquipment.Id : null);
@@ -451,10 +416,8 @@
                 return;
             }
         }
-
         _saving = true;
         _modalError = null;
-
         try
         {
             if (_isEdit)
@@ -488,7 +451,6 @@
             _saving = false;
         }
     }
-
     private async Task DeleteEquipmentAsync(Equipment item)
     {
         var confirmed = await DialogService.ShowMessageBoxAsync(
@@ -496,10 +458,8 @@
             $"Are you sure you want to delete '{item.Name}'?",
             yesText: "Delete",
             cancelText: "Cancel");
-
         if (confirmed != true)
             return;
-
         var deleted = await InventoryService.DeleteEquipmentAsync(item.Id);
         if (deleted)
         {
@@ -511,12 +471,10 @@
             Snackbar.Add("Unable to delete equipment.", Severity.Error);
         }
     }
-
     private void ViewHistory(int id)
     {
         Navigation.NavigateTo($"/equipment/{id}/history");
     }
-
     private void ShowToast(string message)
     {
         _successMessage = message;

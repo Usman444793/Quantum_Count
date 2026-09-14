@@ -39,63 +39,44 @@
        </div>
        </div>
         <div class="stock-summary">
-
             <div class="stock-card">
-
                 <span class="stock-label">
                     Current Stock
                 </span>
-
                 <strong class="stock-value">
                     @_material.Quantity.ToString("0.##")
                 </strong>
-
                 <span class="stock-unit">
                     @_material.Unit
                 </span>
-
             </div>
-
             <div class="stock-card">
-
                 <span class="stock-label">
                     Minimum Level
                 </span>
-
                 <strong class="stock-value">
                     @_material.MinimumStockLevel.ToString("0.##")
                 </strong>
-
                 <span class="stock-unit">
                     @_material.Unit
                 </span>
-
             </div>
-
             <div class="stock-card">
-
                 <span class="stock-label">
                     Transactions
                 </span>
-
                 <strong class="stock-value">
                     @_transactions.Count
                 </strong>
-
                 <span class="stock-unit">
                     records
                 </span>
-
             </div>
-
         </div>
-
         <div class="transactions-card">
-
             <div class="section-header">
                 <h2>Transaction History</h2>
             </div>
-
             @if (!_transactions.Any())
             {
                 <div class="empty-state">
@@ -166,7 +147,6 @@
     {
         Navigation.NavigateTo($"/materials/{Id}/transactions/new");
     }
-
     private void GoBack()
     {
         Navigation.NavigateTo("/materials");

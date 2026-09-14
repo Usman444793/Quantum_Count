@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Quantum_Count.Services;
-using Microsoft.AspNetCore.Authorization;
 using ClosedXML.Excel;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using Quantum_Count.DTO.Reports;
 namespace Quantum_Count.Controllers;
-
 [ApiController]
 [Route("api/[controller]")]
 public class ReportsController : ControllerBase

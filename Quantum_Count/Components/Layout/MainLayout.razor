@@ -12,7 +12,6 @@
 @inject SettingsService SettingsService
 @inject Quantum_Count.Services.InventoryAiOrchestrator Orchestrator
 @inject IJSRuntime JS
-
 <MudThemeProvider Theme="@_theme" IsDarkMode="@_isDarkTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -22,7 +21,7 @@
     <header class="quantum-topbar">
         <div class="topbar-left">
             <button type="button" class="mobile-toggle-btn" @onclick="ToggleMobileDrawer" aria-label="Toggle navigation menu">
-                ☰
+                <MudIcon Icon="@Icons.Material.Filled.Menu" />
             </button>
             <a class="topbar-brand" href="/dashboard">
                 <div class="topbar-logo">QC</div>
@@ -36,7 +35,7 @@
         <div class="topbar-right">
             <!-- Theme Mode Switcher -->
             <button type="button" class="theme-toggle-btn" @onclick="ToggleTheme" title="@(_isDarkTheme ? "Switch to Light Mode" : "Switch to Dark Mode")">
-                @(_isDarkTheme ? "🌙" : "☀️")
+                <MudIcon Icon="@(_isDarkTheme ? Icons.Material.Outlined.DarkMode : Icons.Material.Outlined.LightMode)" />
             </button>
 
             <!-- Account Menu -->
@@ -52,16 +51,16 @@
                                 <div class="user-email">@GetUserEmail(authState.User)</div>
                             </div>
                             <div class="popover-divider"></div>
-                            <a class="popover-item" href="/dashboard" @onclick="CloseAccountMenu">📊 Dashboard</a>
-                            <a class="popover-item" href="/materials" @onclick="CloseAccountMenu">📦 Materials</a>
-                            <a class="popover-item" href="/equipment" @onclick="CloseAccountMenu">🛠 Equipment</a>
-                            <a class="popover-item" href="/categories" @onclick="CloseAccountMenu">🏷 Categories</a>
-                            <a class="popover-item" href="/projects" @onclick="CloseAccountMenu">📋 Projects</a>
-                            <a class="popover-item" href="/procurement" @onclick="CloseAccountMenu">🛒 Procurement</a>
-                            <a class="popover-item" href="/suppliers" @onclick="CloseAccountMenu">🏢 Suppliers</a>
-                            <a class="popover-item" href="/reports" @onclick="CloseAccountMenu">📈 Reports & Analytics</a>
-                            <a class="popover-item" href="/staff" @onclick="CloseAccountMenu">👥 Staff & Roles</a>
-                            <a class="popover-item" href="/settings" @onclick="CloseAccountMenu">⚙ Settings</a>
+                            <a class="popover-item" href="/dashboard" @onclick="CloseAccountMenu"> Dashboard</a>
+                            <a class="popover-item" href="/materials" @onclick="CloseAccountMenu"> Materials</a>
+                            <a class="popover-item" href="/equipment" @onclick="CloseAccountMenu"> Equipment</a>
+                            <a class="popover-item" href="/categories" @onclick="CloseAccountMenu"> Categories</a>
+                            <a class="popover-item" href="/projects" @onclick="CloseAccountMenu"> Projects</a>
+                            <a class="popover-item" href="/procurement" @onclick="CloseAccountMenu"> Procurement</a>
+                            <a class="popover-item" href="/suppliers" @onclick="CloseAccountMenu"> Suppliers</a>
+                            <a class="popover-item" href="/reports" @onclick="CloseAccountMenu"> Reports & Analytics</a>
+                            <a class="popover-item" href="/staff" @onclick="CloseAccountMenu"> Staff & Roles</a>
+                            <a class="popover-item" href="/settings" @onclick="CloseAccountMenu"> Settings</a>
                             <div class="popover-divider"></div>
                             <form method="post" action="/api/auth/logout" style="margin: 0; padding: 0;">
                                 <AntiforgeryToken />
@@ -79,15 +78,11 @@
             </AuthorizeView>
         </div>
     </header>
-
-    <!-- LAYOUT BODY -->
     <div class="quantum-layout-body">
         @if (_mobileDrawerOpen)
         {
             <div class="sidebar-backdrop" @onclick="CloseMobileDrawer"></div>
         }
-
-        <!-- COLLAPSIBLE HOVER SIDEBAR -->
         <aside class="quantum-sidebar @(_mobileDrawerOpen ? "mobile-open" : "")">
             <div class="sidebar-header">
                 <div class="sidebar-brand-icon">QC</div>
@@ -96,14 +91,12 @@
                     <span class="brand-sub">Operations</span>
                 </div>
             </div>
-
             <div class="sidebar-search">
                 <div class="sidebar-search-box">
                     <span class="sidebar-search-icon">⌕</span>
                     <input class="sidebar-search-input" placeholder="Search menu..." @bind="_searchText" @bind:event="oninput" />
                 </div>
             </div>
-
             <div class="sidebar-nav-container">
                 <NavMenu SearchText="@_searchText" />
             </div>
@@ -113,7 +106,7 @@
                     <div class="qc-nav-icon-badge">
                         <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Small" />
                     </div>
-                    <span class="qc-nav-label">Settings</span>
+                    <span class="qc-nav-label">&nbsp;Settings</span>
                 </NavLink>
             </div>
         </aside>
@@ -193,6 +186,7 @@
     private string _searchText = string.Empty;
     private bool accountMenuOpen = false;
     private ApplicationSettings? _settings;
+    private ApplicationSettings? _currentSettings;
     private MudTheme _theme = new MudTheme
     {
         PaletteLight = new PaletteLight
@@ -224,6 +218,7 @@
     };
     protected override async Task OnInitializedAsync()
     {
+        _currentSettings = await SettingsService.GetSettingsAsync();
         SettingsService.SettingsUpdated += OnSettingsUpdated;
         try
         {
@@ -325,13 +320,19 @@
             _aiLoading = false;
         }
     }
-    public void Dispose()
-    {
-        SettingsService.SettingsUpdated -= OnSettingsUpdated;
-    }
     private class AIMessage
     {
         public string Text { get; set; } = string.Empty;
         public bool IsUser { get; set; }
+    }
+    private void HandleSettingsUpdated(ApplicationSettings updatedSettings)
+    {
+        _currentSettings = updatedSettings;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        SettingsService.SettingsUpdated -= HandleSettingsUpdated;
     }
 }
