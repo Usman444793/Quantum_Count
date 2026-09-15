@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Quantum_Count.Services;
 namespace Quantum_Count.Controllers;
 [ApiController]
+[Authorise]
 [Route("api/[controller]")]
 public class DashboardController : ControllerBase
 {
