@@ -3,9 +3,11 @@ using Quantum_Count.DTOs;
 using Quantum_Count.Services;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore Authorization;
 namespace Quantum_Count.Controllers
 {
     [ApiController]
+    [Authorise]
     [Route("api/[controller]")]
     public class AIController : ControllerBase
     {
