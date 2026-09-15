@@ -4,6 +4,7 @@ using Quantum_Count.Services;
 namespace Quantum_Count.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorise]
 public class StaffController : ControllerBase
 {
     private readonly StaffService _staffService;
