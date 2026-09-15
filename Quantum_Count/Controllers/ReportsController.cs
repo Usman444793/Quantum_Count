@@ -8,6 +8,7 @@ using Quantum_Count.DTO.Reports;
 namespace Quantum_Count.Controllers;
 [ApiController]
 [Route("api/[controller]")]
+[Authorise]
 public class ReportsController : ControllerBase
 {
     private readonly ReportsService _reportsService;
